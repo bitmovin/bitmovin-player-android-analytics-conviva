@@ -262,8 +262,10 @@ public class ConvivaAnalytics {
 
     private void cleanupConvivaClient() {
         try {
-            client.releasePlayerStateManager(playerStateManager);
-            client.cleanupSession(sessionId);
+            if(client != null) {
+                client.releasePlayerStateManager(playerStateManager);
+                client.cleanupSession(sessionId);
+            }
         } catch (ConvivaException e) {
             Log.e(TAG, e.getLocalizedMessage());
         }
