@@ -1,10 +1,12 @@
 package com.bitmovin.analytics.convivaanalyticsexample;
 
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.Button;
 
+import com.bitmovin.analytics.conviva.ConvivaAnalytics;
+import com.bitmovin.analytics.conviva.ConvivaConfig;
 import com.bitmovin.player.BitmovinPlayer;
 import com.bitmovin.player.BitmovinPlayerView;
 import com.bitmovin.player.config.media.SourceConfiguration;
@@ -12,6 +14,7 @@ import com.bitmovin.player.config.media.SourceConfiguration;
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
     private BitmovinPlayerView bitmovinPlayerView;
     private BitmovinPlayer bitmovinPlayer;
+    private ConvivaAnalytics convivaAnalytics;
     private Button releaseButton;
     private Button createButton;
 
@@ -28,18 +31,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         this.bitmovinPlayer = this.bitmovinPlayerView.getPlayer();
         this.bitmovinPlayer.getConfig().getPlaybackConfiguration().setAutoplayEnabled(true);
 
-        this.initializeAnalytics();
-
         this.initializePlayer();
 
-    }
-
-    protected void initializeAnalytics(){
-        //Step 1: Create your ConvivaAnalyticsConfig object
-
-        //Step 2: Add optional parameters
-
-        //Step 3: Create ConvivaAnalytics
     }
 
 
@@ -50,8 +43,15 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         // Add a new source item
         sourceConfiguration.addSourceItem("https://bitmovin-a.akamaihd.net/content/MI201109210084_1/mpds/f08e80da-bf1d-4e3d-8899-f0f6155f6efa.mpd");
 
+        // Create your ConvivaConfig object
+        ConvivaConfig convivaConfig = new ConvivaConfig("e94c66c4c6eb1d888077767e5db0d7b12b15f5b6", "https://rtl-nl-xl-test.testonly.conviva.com/","ConvivaExample_BitmovinPlayer","ViewerId1","Asset1");
 
-        //Step 4: Attach ConvivaAnalytics
+        // Add optional parameters
+        convivaConfig.setDebugLoggingEnabled(true);
+
+        // Create ConvivaAnalytics
+        convivaAnalytics = ConvivaAnalytics.getInstance();
+        convivaAnalytics.attachPlayer(convivaConfig, bitmovinPlayer, getApplicationContext());
 
         // load source using the created source configuration
         bitmovinPlayer.load(sourceConfiguration);
@@ -78,8 +78,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private void releasePlayer() {
         if (bitmovinPlayer != null) {
             bitmovinPlayer.unload();
-
-            //Step 5: Detach Conviva Analytics
         }
     }
 
