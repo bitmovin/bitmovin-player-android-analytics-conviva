@@ -64,7 +64,6 @@ Before you switch to a new video, make sure to detach your player from the Convi
 ```java
 
 convivaAnalytics.detachPlayer();
-bitmovinPlayer.unload();
 
 ```
 
