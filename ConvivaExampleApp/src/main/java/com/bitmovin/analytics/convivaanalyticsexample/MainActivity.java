@@ -41,7 +41,15 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         SourceConfiguration sourceConfiguration = new SourceConfiguration();
 
         // Add a new source item
+
+        //DASH LIVE STREAM
+//        sourceConfiguration.addSourceItem("http://vm2.dashif.org/livesim/mup_300/tsbd_500/testpic_2s/Manifest.mpd");
+
+        //DASH VOD STREAM
         sourceConfiguration.addSourceItem("https://bitmovin-a.akamaihd.net/content/MI201109210084_1/mpds/f08e80da-bf1d-4e3d-8899-f0f6155f6efa.mpd");
+
+        //HLS VOD Stream
+//        sourceConfiguration.addSourceItem("https://bitmovin-a.akamaihd.net/content/MI201109210084_1/m3u8s/f08e80da-bf1d-4e3d-8899-f0f6155f6efa.m3u8");
 
         // Create your ConvivaConfig object
         ConvivaConfig convivaConfig = new ConvivaConfig("e94c66c4c6eb1d888077767e5db0d7b12b15f5b6", "https://rtl-nl-xl-test.testonly.conviva.com/","ConvivaExample_BitmovinPlayer","ViewerId1","Asset1");

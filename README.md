@@ -1,6 +1,9 @@
 # bitmovin-player-android-analytics-conviva
 Integration of the Bitmovin Android Player SDK with the Conviva Analytics
 
+# Limitations
+Our conviva integration does not support ad tracking yet. It will be added in a future release
+
 # Getting Started
 
 ## Integrating into your project
