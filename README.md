@@ -1,7 +1,7 @@
 # bitmovin-player-android-analytics-conviva
 Integration of the Bitmovin Android Player SDK with the Conviva Analytics
 
-#Getting Started
+# Getting Started
 
 ## Integrating into your project
 
@@ -32,7 +32,7 @@ Add the following permissions
 <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
 ```
 
-##Examples
+## Examples
 
 The following example create a ConvivaAnalytics object and attaches at Bitmovin Native SDK to it
 
