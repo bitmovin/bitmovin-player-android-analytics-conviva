@@ -2,7 +2,8 @@
 Integration of the Bitmovin Android Player SDK with the Conviva Analytics
 
 #Getting Started
-## Integratiing into your project
+
+## Integrating into your project
 
 Add this to your top level `build.gradle`
 
