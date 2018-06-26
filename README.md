@@ -23,7 +23,7 @@ allprojects {
 And this line to your main project
 ```
 dependencies {
-    compile 'com.bitmovin.analytics:collector:0.1.0'
+    compile 'com.bitmovin.analytics:conviva:0.1.0'
 }
 ```
 
