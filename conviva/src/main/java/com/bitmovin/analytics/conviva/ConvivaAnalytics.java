@@ -173,7 +173,8 @@ public class ConvivaAnalytics {
         public void onError(ErrorEvent errorEvent) {
             Log.d(TAG, "OnError");
             try {
-                client.reportError(errorEvent.getCode(), errorEvent.getMessage(), Client.ErrorSeverity.FATAL);
+                String message = String.format("%s - %s", errorEvent.getCode(), errorEvent.getMessage());
+                client.reportError(sessionId, message, Client.ErrorSeverity.FATAL);
             } catch (ConvivaException e) {
                 Log.e(TAG, e.getLocalizedMessage());
             }
@@ -184,7 +185,8 @@ public class ConvivaAnalytics {
         public void onWarning(WarningEvent warningEvent) {
             Log.d(TAG, "OnWarning");
             try {
-                client.reportError(warningEvent.getCode(), warningEvent.getMessage(), Client.ErrorSeverity.WARNING);
+                String message = String.format("%s - %s", warningEvent.getCode(), warningEvent.getMessage());
+                client.reportError(sessionId, message, Client.ErrorSeverity.WARNING);
             } catch (ConvivaException e) {
                 Log.e(TAG, e.getLocalizedMessage());
             }
