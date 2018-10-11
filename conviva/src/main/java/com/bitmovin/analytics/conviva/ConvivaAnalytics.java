@@ -12,7 +12,6 @@ import com.bitmovin.player.api.event.data.PlayingEvent;
 import com.bitmovin.player.api.event.data.ReadyEvent;
 import com.bitmovin.player.api.event.data.SeekEvent;
 import com.bitmovin.player.api.event.data.SeekedEvent;
-import com.bitmovin.player.api.event.data.SourceLoadedEvent;
 import com.bitmovin.player.api.event.data.SourceUnloadedEvent;
 import com.bitmovin.player.api.event.data.StallEndedEvent;
 import com.bitmovin.player.api.event.data.StallStartedEvent;
@@ -26,7 +25,6 @@ import com.bitmovin.player.api.event.listener.OnPlayingListener;
 import com.bitmovin.player.api.event.listener.OnReadyListener;
 import com.bitmovin.player.api.event.listener.OnSeekListener;
 import com.bitmovin.player.api.event.listener.OnSeekedListener;
-import com.bitmovin.player.api.event.listener.OnSourceLoadedListener;
 import com.bitmovin.player.api.event.listener.OnSourceUnloadedListener;
 import com.bitmovin.player.api.event.listener.OnStallEndedListener;
 import com.bitmovin.player.api.event.listener.OnStallStartedListener;
@@ -110,8 +108,10 @@ public class ConvivaAnalytics {
         @Override
         public void onPlay(PlayEvent playEvent) {
             Log.d(TAG, "OnPlay");
-            createContentMetadata();
-            createConvivaSession();
+            if (!isValidSession()) {
+                createContentMetadata();
+                createConvivaSession();
+            }
         }
     };
     private OnPlayingListener onPlayingListener = new OnPlayingListener() {
@@ -282,6 +282,10 @@ public class ConvivaAnalytics {
         removeBitmovinEventListeners();
         playerStarted = false;
         bitmovinPlayer = null;
+    }
+
+    private boolean isValidSession() {
+        return sessionId != Client.NO_SESSION_KEY;
     }
 
     private void attachBitmovinEventListeners() {
