@@ -74,7 +74,6 @@ public class ConvivaAnalytics {
             try {
                 playerStarted = true;
                 Log.d(TAG, "Setting Duration: " + String.valueOf(bitmovinPlayer.getDuration()));
-                ContentMetadata contentMetadata = new ContentMetadata();
                 contentMetadata.duration = (int) bitmovinPlayer.getDuration();
                 client.updateContentMetadata(sessionId, contentMetadata);
 
@@ -231,7 +230,6 @@ public class ConvivaAnalytics {
 
     private void createContentMetadata(){
         contentMetadata = new ContentMetadata();
-        ContentMetadata contentMetadata = new ContentMetadata();
         contentMetadata.custom = config.getCustomData();
         contentMetadata.assetName = config.getAssetName();
         contentMetadata.viewerId = config.getViewerId();
