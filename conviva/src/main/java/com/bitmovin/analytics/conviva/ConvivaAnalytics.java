@@ -8,6 +8,7 @@ import com.bitmovin.player.api.event.data.ErrorEvent;
 import com.bitmovin.player.api.event.data.PausedEvent;
 import com.bitmovin.player.api.event.data.PlayEvent;
 import com.bitmovin.player.api.event.data.PlaybackFinishedEvent;
+import com.bitmovin.player.api.event.data.PlayingEvent;
 import com.bitmovin.player.api.event.data.ReadyEvent;
 import com.bitmovin.player.api.event.data.SeekEvent;
 import com.bitmovin.player.api.event.data.SeekedEvent;
@@ -21,6 +22,7 @@ import com.bitmovin.player.api.event.listener.OnErrorListener;
 import com.bitmovin.player.api.event.listener.OnPausedListener;
 import com.bitmovin.player.api.event.listener.OnPlayListener;
 import com.bitmovin.player.api.event.listener.OnPlaybackFinishedListener;
+import com.bitmovin.player.api.event.listener.OnPlayingListener;
 import com.bitmovin.player.api.event.listener.OnReadyListener;
 import com.bitmovin.player.api.event.listener.OnSeekListener;
 import com.bitmovin.player.api.event.listener.OnSeekedListener;
@@ -56,14 +58,6 @@ public class ConvivaAnalytics {
         public void onSourceUnloaded(SourceUnloadedEvent sourceUnloadedEvent) {
             Log.d(TAG, "OnSourceUnloaded");
             cleanupConvivaClient();
-        }
-    };
-    private OnSourceLoadedListener onSourceLoadedListener = new OnSourceLoadedListener() {
-        @Override
-        public void onSourceLoaded(SourceLoadedEvent sourceLoadedEvent) {
-            Log.d(TAG, "OnSourceLoaded");
-            createContentMetadata();
-            createConvivaSession();
         }
     };
     private OnReadyListener onReadyListener = new OnReadyListener() {
@@ -116,6 +110,14 @@ public class ConvivaAnalytics {
         @Override
         public void onPlay(PlayEvent playEvent) {
             Log.d(TAG, "OnPlay");
+            createContentMetadata();
+            createConvivaSession();
+        }
+    };
+    private OnPlayingListener onPlayingListener = new OnPlayingListener() {
+        @Override
+        public void onPlaying(PlayingEvent playingEvent) {
+            Log.d(TAG, "OnPlaying");
             transitionState(PlayerStateManager.PlayerState.PLAYING);
         }
     };
@@ -281,12 +283,12 @@ public class ConvivaAnalytics {
     }
 
     private void attachBitmovinEventListeners() {
-        bitmovinPlayer.addEventListener(onSourceLoadedListener);
         bitmovinPlayer.addEventListener(onSourceUnloadedListener);
         bitmovinPlayer.addEventListener(onErrorListener);
         bitmovinPlayer.addEventListener(onWarningListener);
         bitmovinPlayer.addEventListener(onPausedListener);
         bitmovinPlayer.addEventListener(onPlayListener);
+        bitmovinPlayer.addEventListener(onPlayingListener);
         bitmovinPlayer.addEventListener(onSeekedListener);
         bitmovinPlayer.addEventListener(onSeekListener);
         bitmovinPlayer.addEventListener(onStallEndedListener);
@@ -299,11 +301,11 @@ public class ConvivaAnalytics {
     private void removeBitmovinEventListeners() {
         if (bitmovinPlayer != null) {
             bitmovinPlayer.removeEventListener(onSourceUnloadedListener);
-            bitmovinPlayer.removeEventListener(onSourceLoadedListener);
             bitmovinPlayer.removeEventListener(onErrorListener);
             bitmovinPlayer.removeEventListener(onWarningListener);
             bitmovinPlayer.removeEventListener(onPausedListener);
             bitmovinPlayer.removeEventListener(onPlayListener);
+            bitmovinPlayer.removeEventListener(onPlayingListener);
             bitmovinPlayer.removeEventListener(onSeekedListener);
             bitmovinPlayer.removeEventListener(onSeekListener);
             bitmovinPlayer.removeEventListener(onStallEndedListener);
