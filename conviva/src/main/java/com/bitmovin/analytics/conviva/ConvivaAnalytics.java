@@ -67,7 +67,13 @@ public class ConvivaAnalytics {
                 playerStarted = true;
                 Log.d(TAG, "Setting Duration: " + String.valueOf(bitmovinPlayer.getDuration()));
                 contentMetadata.duration = (int) bitmovinPlayer.getDuration();
-                contentMetadata.encodedFrameRate = (int)bitmovinPlayer.getPlaybackVideoData().getFrameRate();
+
+                VideoQuality videoData = bitmovinPlayer.getPlaybackVideoData();
+                if (videoData != null)
+                {
+                    contentMetadata.encodedFrameRate = (int) videoData.getFrameRate();
+                }
+
                 client.updateContentMetadata(sessionId, contentMetadata);
 
                 PlayerStateManager.PlayerState state = PlayerStateManager.PlayerState.PLAYING;
