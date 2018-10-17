@@ -1,6 +1,7 @@
 package com.bitmovin.analytics.conviva;
 
 import android.content.Context;
+import android.os.Handler;
 import android.util.Log;
 
 import com.bitmovin.player.BitmovinPlayer;
@@ -54,8 +55,16 @@ public class ConvivaAnalytics {
     private OnSourceUnloadedListener onSourceUnloadedListener = new OnSourceUnloadedListener() {
         @Override
         public void onSourceUnloaded(SourceUnloadedEvent sourceUnloadedEvent) {
-            Log.d(TAG, "OnSourceUnloaded");
-            cleanupConvivaClient();
+            // The default SDK error handling is that it triggers the onSourceUnloaded before the onError event.
+            // To track errors on Conviva we need to delay the onSourceUnloaded to ensure the onError event is
+            // called first.
+            new Handler().postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    Log.d(TAG, "OnSourceUnloaded");
+                    cleanupConvivaClient();
+                }
+            }, 100);
         }
     };
     private OnReadyListener onReadyListener = new OnReadyListener() {
@@ -272,11 +281,6 @@ public class ConvivaAnalytics {
 
         //TODO default Resource?
         contentMetadata.defaultResource = config.getDefaultReportingResource(); //defaultReportingResource should not be null
-
-        //TODO add encoded frame rate once its available
-        // _contentMetadata.encodedFrameRate = "updated encoded frame rate value"; // encodedFrameRate is measured in frames per second
-        // encodedFrameRate should be greater than 0
-
     }
 
     private void cleanupConvivaClient() {
