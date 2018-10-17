@@ -114,12 +114,10 @@ public class ConvivaAnalytics {
         @Override
         public void onPlay(PlayEvent playEvent) {
             Log.d(TAG, "OnPlay");
-            if (!isValidSession()) {
-                createContentMetadata();
-                createConvivaSession();
-            }
+            ensureConvivaSessionIsCreatedAndInitialized();
         }
     };
+
     private OnPlayingListener onPlayingListener = new OnPlayingListener() {
         @Override
         public void onPlaying(PlayingEvent playingEvent) {
@@ -179,6 +177,8 @@ public class ConvivaAnalytics {
         public void onError(ErrorEvent errorEvent) {
             Log.d(TAG, "OnError");
             try {
+                ensureConvivaSessionIsCreatedAndInitialized();
+
                 String message = String.format("%s - %s", errorEvent.getCode(), errorEvent.getMessage());
                 client.reportError(sessionId, message, Client.ErrorSeverity.FATAL);
             } catch (ConvivaException e) {
@@ -191,6 +191,8 @@ public class ConvivaAnalytics {
         public void onWarning(WarningEvent warningEvent) {
             Log.d(TAG, "OnWarning");
             try {
+                ensureConvivaSessionIsCreatedAndInitialized();
+
                 String message = String.format("%s - %s", warningEvent.getCode(), warningEvent.getMessage());
                 client.reportError(sessionId, message, Client.ErrorSeverity.WARNING);
             } catch (ConvivaException e) {
@@ -213,6 +215,14 @@ public class ConvivaAnalytics {
         bitmovinPlayer = player;
         attachBitmovinEventListeners();
         createConvivaClient(context);
+    }
+
+    private void ensureConvivaSessionIsCreatedAndInitialized()
+    {
+        if (!isValidSession()) {
+            createContentMetadata();
+            createConvivaSession();
+        }
     }
 
     private void createConvivaClient(Context context) {
