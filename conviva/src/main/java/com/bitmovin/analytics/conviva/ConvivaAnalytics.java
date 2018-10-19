@@ -1,6 +1,7 @@
 package com.bitmovin.analytics.conviva;
 
 import android.content.Context;
+import android.os.Handler;
 import android.util.Log;
 
 import com.bitmovin.player.BitmovinPlayer;
@@ -8,10 +9,10 @@ import com.bitmovin.player.api.event.data.ErrorEvent;
 import com.bitmovin.player.api.event.data.PausedEvent;
 import com.bitmovin.player.api.event.data.PlayEvent;
 import com.bitmovin.player.api.event.data.PlaybackFinishedEvent;
+import com.bitmovin.player.api.event.data.PlayingEvent;
 import com.bitmovin.player.api.event.data.ReadyEvent;
 import com.bitmovin.player.api.event.data.SeekEvent;
 import com.bitmovin.player.api.event.data.SeekedEvent;
-import com.bitmovin.player.api.event.data.SourceLoadedEvent;
 import com.bitmovin.player.api.event.data.SourceUnloadedEvent;
 import com.bitmovin.player.api.event.data.StallEndedEvent;
 import com.bitmovin.player.api.event.data.StallStartedEvent;
@@ -21,10 +22,10 @@ import com.bitmovin.player.api.event.listener.OnErrorListener;
 import com.bitmovin.player.api.event.listener.OnPausedListener;
 import com.bitmovin.player.api.event.listener.OnPlayListener;
 import com.bitmovin.player.api.event.listener.OnPlaybackFinishedListener;
+import com.bitmovin.player.api.event.listener.OnPlayingListener;
 import com.bitmovin.player.api.event.listener.OnReadyListener;
 import com.bitmovin.player.api.event.listener.OnSeekListener;
 import com.bitmovin.player.api.event.listener.OnSeekedListener;
-import com.bitmovin.player.api.event.listener.OnSourceLoadedListener;
 import com.bitmovin.player.api.event.listener.OnSourceUnloadedListener;
 import com.bitmovin.player.api.event.listener.OnStallEndedListener;
 import com.bitmovin.player.api.event.listener.OnStallStartedListener;
@@ -54,16 +55,17 @@ public class ConvivaAnalytics {
     private OnSourceUnloadedListener onSourceUnloadedListener = new OnSourceUnloadedListener() {
         @Override
         public void onSourceUnloaded(SourceUnloadedEvent sourceUnloadedEvent) {
-            Log.d(TAG, "OnSourceUnloaded");
-            cleanupConvivaClient();
-        }
-    };
-    private OnSourceLoadedListener onSourceLoadedListener = new OnSourceLoadedListener() {
-        @Override
-        public void onSourceLoaded(SourceLoadedEvent sourceLoadedEvent) {
-            Log.d(TAG, "OnSourceLoaded");
-            createContentMetadata();
-            createConvivaSession();
+            // The default SDK error handling is that it triggers the onSourceUnloaded before the onError event.
+            // To track errors on Conviva we need to delay the onSourceUnloaded to ensure the onError event is
+            // called first.
+            // TODO: remove this once the event order is fixed on the Android SDK.
+            new Handler().postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    Log.d(TAG, "OnSourceUnloaded");
+                    cleanupConvivaClient();
+                }
+            }, 100);
         }
     };
     private OnReadyListener onReadyListener = new OnReadyListener() {
@@ -74,8 +76,14 @@ public class ConvivaAnalytics {
             try {
                 playerStarted = true;
                 Log.d(TAG, "Setting Duration: " + String.valueOf(bitmovinPlayer.getDuration()));
-                ContentMetadata contentMetadata = new ContentMetadata();
                 contentMetadata.duration = (int) bitmovinPlayer.getDuration();
+
+                VideoQuality videoData = bitmovinPlayer.getPlaybackVideoData();
+                if (videoData != null)
+                {
+                    contentMetadata.encodedFrameRate = (int) videoData.getFrameRate();
+                }
+
                 client.updateContentMetadata(sessionId, contentMetadata);
 
                 PlayerStateManager.PlayerState state = PlayerStateManager.PlayerState.PLAYING;
@@ -116,6 +124,14 @@ public class ConvivaAnalytics {
         @Override
         public void onPlay(PlayEvent playEvent) {
             Log.d(TAG, "OnPlay");
+            ensureConvivaSessionIsCreatedAndInitialized();
+        }
+    };
+
+    private OnPlayingListener onPlayingListener = new OnPlayingListener() {
+        @Override
+        public void onPlaying(PlayingEvent playingEvent) {
+            Log.d(TAG, "OnPlaying");
             transitionState(PlayerStateManager.PlayerState.PLAYING);
         }
     };
@@ -171,7 +187,10 @@ public class ConvivaAnalytics {
         public void onError(ErrorEvent errorEvent) {
             Log.d(TAG, "OnError");
             try {
-                client.reportError(errorEvent.getCode(), errorEvent.getMessage(), Client.ErrorSeverity.FATAL);
+                ensureConvivaSessionIsCreatedAndInitialized();
+
+                String message = String.format("%s - %s", errorEvent.getCode(), errorEvent.getMessage());
+                client.reportError(sessionId, message, Client.ErrorSeverity.FATAL);
             } catch (ConvivaException e) {
                 Log.e(TAG, e.getLocalizedMessage());
             }
@@ -182,7 +201,10 @@ public class ConvivaAnalytics {
         public void onWarning(WarningEvent warningEvent) {
             Log.d(TAG, "OnWarning");
             try {
-                client.reportError(warningEvent.getCode(), warningEvent.getMessage(), Client.ErrorSeverity.WARNING);
+                ensureConvivaSessionIsCreatedAndInitialized();
+
+                String message = String.format("%s - %s", warningEvent.getCode(), warningEvent.getMessage());
+                client.reportError(sessionId, message, Client.ErrorSeverity.WARNING);
             } catch (ConvivaException e) {
                 Log.e(TAG, e.getLocalizedMessage());
             }
@@ -203,6 +225,14 @@ public class ConvivaAnalytics {
         bitmovinPlayer = player;
         attachBitmovinEventListeners();
         createConvivaClient(context);
+    }
+
+    private void ensureConvivaSessionIsCreatedAndInitialized()
+    {
+        if (!isValidSession()) {
+            createContentMetadata();
+            createConvivaSession();
+        }
     }
 
     private void createConvivaClient(Context context) {
@@ -231,7 +261,6 @@ public class ConvivaAnalytics {
 
     private void createContentMetadata(){
         contentMetadata = new ContentMetadata();
-        ContentMetadata contentMetadata = new ContentMetadata();
         contentMetadata.custom = config.getCustomData();
         contentMetadata.assetName = config.getAssetName();
         contentMetadata.viewerId = config.getViewerId();
@@ -253,11 +282,6 @@ public class ConvivaAnalytics {
 
         //TODO default Resource?
         contentMetadata.defaultResource = config.getDefaultReportingResource(); //defaultReportingResource should not be null
-
-        //TODO add encoded frame rate once its available
-        // _contentMetadata.encodedFrameRate = "updated encoded frame rate value"; // encodedFrameRate is measured in frames per second
-        // encodedFrameRate should be greater than 0
-
     }
 
     private void cleanupConvivaClient() {
@@ -281,13 +305,17 @@ public class ConvivaAnalytics {
         bitmovinPlayer = null;
     }
 
+    private boolean isValidSession() {
+        return sessionId != Client.NO_SESSION_KEY;
+    }
+
     private void attachBitmovinEventListeners() {
-        bitmovinPlayer.addEventListener(onSourceLoadedListener);
         bitmovinPlayer.addEventListener(onSourceUnloadedListener);
         bitmovinPlayer.addEventListener(onErrorListener);
         bitmovinPlayer.addEventListener(onWarningListener);
         bitmovinPlayer.addEventListener(onPausedListener);
         bitmovinPlayer.addEventListener(onPlayListener);
+        bitmovinPlayer.addEventListener(onPlayingListener);
         bitmovinPlayer.addEventListener(onSeekedListener);
         bitmovinPlayer.addEventListener(onSeekListener);
         bitmovinPlayer.addEventListener(onStallEndedListener);
@@ -300,11 +328,11 @@ public class ConvivaAnalytics {
     private void removeBitmovinEventListeners() {
         if (bitmovinPlayer != null) {
             bitmovinPlayer.removeEventListener(onSourceUnloadedListener);
-            bitmovinPlayer.removeEventListener(onSourceLoadedListener);
             bitmovinPlayer.removeEventListener(onErrorListener);
             bitmovinPlayer.removeEventListener(onWarningListener);
             bitmovinPlayer.removeEventListener(onPausedListener);
             bitmovinPlayer.removeEventListener(onPlayListener);
+            bitmovinPlayer.removeEventListener(onPlayingListener);
             bitmovinPlayer.removeEventListener(onSeekedListener);
             bitmovinPlayer.removeEventListener(onSeekListener);
             bitmovinPlayer.removeEventListener(onStallEndedListener);
