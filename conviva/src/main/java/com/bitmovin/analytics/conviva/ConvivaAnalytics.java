@@ -58,6 +58,7 @@ public class ConvivaAnalytics {
             // The default SDK error handling is that it triggers the onSourceUnloaded before the onError event.
             // To track errors on Conviva we need to delay the onSourceUnloaded to ensure the onError event is
             // called first.
+            // TODO: remove this once the event order is fixed on the Android SDK.
             new Handler().postDelayed(new Runnable() {
                 @Override
                 public void run() {
