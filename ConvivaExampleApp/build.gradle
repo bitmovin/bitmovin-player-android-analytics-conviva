@@ -29,6 +29,6 @@ dependencies {
 
     implementation project(':conviva')
 
-    //implementation 'com.bitmovin.analytics:conviva:0.1.0'
+    //implementation 'com.bitmovin.analytics:conviva:0.2.0'
 
 }
