@@ -171,6 +171,7 @@ public class ConvivaAnalytics {
 
     private void endConvivaSession() {
         try {
+            removeBitmovinEventListeners();
             client.detachPlayer(sessionId);
             client.cleanupSession(sessionId);
             client.releasePlayerStateManager(playerStateManager);
