@@ -97,11 +97,22 @@ public class ConvivaAnalytics {
         }
     }
 
+    private void setupPlayerStateManager() {
+        try {
+            playerStateManager = client.getPlayerStateManager();
+            playerStateManager.setPlayerState(PlayerStateManager.PlayerState.STOPPED);
+            playerStateManager.setPlayerType("Bitmovin Player Android");
+            playerStateManager.setPlayerVersion(playerHelper.getSdkVersionString());
+        } catch (ConvivaException e) {
+            Log.e(TAG, e.getLocalizedMessage());
+        }
+    }
+
     private void createConvivaSession() {
         try {
             createContentMetadata();
             sessionId = client.createSession(contentMetadata);
-            playerStateManager = client.getPlayerStateManager();
+            setupPlayerStateManager();
             Log.i(TAG, "Created SessionID - " + sessionId);
             client.attachPlayer(sessionId, playerStateManager);
         } catch (ConvivaException e) {
@@ -109,14 +120,14 @@ public class ConvivaAnalytics {
         }
     }
 
-    private void createContentMetadata() {
-        SourceItem sourceItem = bitmovinPlayer.getConfig().getSourceItem();
-        contentMetadata.assetName = sourceItem.getTitle();
+    private void updateSession() {
+        if (!isValidSession()) {
+            return;
+        }
 
-        contentMetadata.applicationName = config.getApplicationName();
-        contentMetadata.viewerId = config.getViewerId();
-
-        contentMetadata.custom = config.getCustomData();
+        if (!bitmovinPlayer.isLive()) {
+            contentMetadata.duration = (int) bitmovinPlayer.getDuration();
+        }
 
         if (bitmovinPlayer.isLive()) {
             contentMetadata.streamType = ContentMetadata.StreamType.LIVE;
@@ -125,6 +136,32 @@ public class ConvivaAnalytics {
         }
 
         contentMetadata.streamUrl = playerHelper.getStreamUrl();
+
+        VideoQuality videoQuality = bitmovinPlayer.getVideoQuality();
+        if (videoQuality != null) {
+            int bitrate = videoQuality.getBitrate() / 1000; // in kbps
+            try {
+                playerStateManager.setBitrateKbps(bitrate);
+                playerStateManager.setVideoHeight(videoQuality.getHeight());
+                playerStateManager.setVideoWidth(videoQuality.getWidth());
+            } catch (ConvivaException e) {
+                Log.e(TAG, e.getLocalizedMessage());
+            }
+        }
+
+        try {
+            client.updateContentMetadata(sessionId, contentMetadata);
+        } catch (ConvivaException e) {
+            Log.e(TAG, e.getLocalizedMessage());
+        }
+    }
+
+    private void createContentMetadata() {
+        SourceItem sourceItem = bitmovinPlayer.getConfig().getSourceItem();
+
+        contentMetadata.applicationName = config.getApplicationName();
+        contentMetadata.assetName = sourceItem.getTitle();
+        contentMetadata.viewerId = config.getViewerId();
 
         // Build custom tags
         Map<String, String> customInternTags = new HashMap<>();
@@ -169,7 +206,6 @@ public class ConvivaAnalytics {
         bitmovinPlayer.addEventListener(onSeekListener);
         bitmovinPlayer.addEventListener(onStallEndedListener);
         bitmovinPlayer.addEventListener(onStallStartedListener);
-        bitmovinPlayer.addEventListener(onReadyListener);
         bitmovinPlayer.addEventListener(onPlaybackFinishedListener);
         bitmovinPlayer.addEventListener(onVideoPlaybackQualityChangedListener);
     }
@@ -189,7 +225,6 @@ public class ConvivaAnalytics {
         bitmovinPlayer.removeEventListener(onSeekListener);
         bitmovinPlayer.removeEventListener(onStallEndedListener);
         bitmovinPlayer.removeEventListener(onStallStartedListener);
-        bitmovinPlayer.removeEventListener(onReadyListener);
         bitmovinPlayer.removeEventListener(onPlaybackFinishedListener);
         bitmovinPlayer.removeEventListener(onVideoPlaybackQualityChangedListener);
     }
@@ -225,48 +260,11 @@ public class ConvivaAnalytics {
             }, 100);
         }
     };
-    private OnReadyListener onReadyListener = new OnReadyListener() {
-        @Override
-        public void onReady(ReadyEvent readyEvent) {
-            Log.d(TAG, "OnReady");
-
-            try {
-                playerStarted = true;
-                Log.d(TAG, "Setting Duration: " + String.valueOf(bitmovinPlayer.getDuration()));
-                contentMetadata.duration = (int) bitmovinPlayer.getDuration();
-
-                VideoQuality videoData = bitmovinPlayer.getPlaybackVideoData();
-                if (videoData != null) {
-                    contentMetadata.encodedFrameRate = (int) videoData.getFrameRate();
-                }
-
-                client.updateContentMetadata(sessionId, contentMetadata);
-
-                PlayerStateManager.PlayerState state = PlayerStateManager.PlayerState.PLAYING;
-                if (bitmovinPlayer.isPaused()) {
-                    state = PlayerStateManager.PlayerState.PAUSED;
-                }
-                transitionState(state);
-
-            } catch (ConvivaException e) {
-                Log.e(TAG, e.getLocalizedMessage());
-            }
-        }
-    };
     private OnVideoPlaybackQualityChangedListener onVideoPlaybackQualityChangedListener = new OnVideoPlaybackQualityChangedListener() {
         @Override
         public void onVideoPlaybackQualityChanged(VideoPlaybackQualityChangedEvent videoPlaybackQualityChangedEvent) {
             Log.d(TAG, "OnVideoPlaybackQualityChanged");
-            try {
-                if (videoPlaybackQualityChangedEvent != null && videoPlaybackQualityChangedEvent.getNewVideoQuality() != null) {
-                    VideoQuality newVideoQuality = videoPlaybackQualityChangedEvent.getNewVideoQuality();
-                    playerStateManager.setBitrateKbps(newVideoQuality.getBitrate() / 1000);
-                    playerStateManager.setVideoHeight(newVideoQuality.getHeight());
-                    playerStateManager.setVideoWidth(newVideoQuality.getWidth());
-                }
-            } catch (ConvivaException e) {
-                Log.e(TAG, e.getLocalizedMessage());
-            }
+            updateSession();
         }
     };
     private OnPausedListener onPausedListener = new OnPausedListener() {
@@ -281,6 +279,7 @@ public class ConvivaAnalytics {
         public void onPlay(PlayEvent playEvent) {
             Log.d(TAG, "OnPlay");
             ensureConvivaSessionIsCreatedAndInitialized();
+            updateSession();
         }
     };
 
