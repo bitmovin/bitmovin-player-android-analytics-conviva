@@ -6,7 +6,7 @@ import java.util.Map;
 public class ConvivaConfiguration {
     private String gatewayUrl;
     private boolean debugLoggingEnabled;
-    private String applicationName;
+    private String applicationName = "Unknown (no config.applicationName set)";
     private String viewerId;
     private Map<String,String> customData = new HashMap<>();
 
