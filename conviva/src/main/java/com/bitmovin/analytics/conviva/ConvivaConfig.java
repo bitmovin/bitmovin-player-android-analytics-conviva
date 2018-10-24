@@ -1,5 +1,6 @@
 package com.bitmovin.analytics.conviva;
 
+import java.util.HashMap;
 import java.util.Map;
 
 public class ConvivaConfig {
@@ -7,8 +8,7 @@ public class ConvivaConfig {
     private boolean debugLoggingEnabled;
     private String applicationName;
     private String viewerId;
-    private String defaultReportingResource;
-    private Map<String,String> customData;
+    private Map<String,String> customData = new HashMap<>();
 
     public ConvivaConfig() {
 
@@ -25,14 +25,6 @@ public class ConvivaConfig {
 
     public void setCustomData(Map<String, String> customData) {
         this.customData = customData;
-    }
-
-    public String getDefaultReportingResource() {
-        return defaultReportingResource;
-    }
-
-    public void setDefaultReportingResource(String defaultReportingResource) {
-        this.defaultReportingResource = defaultReportingResource;
     }
 
     public String getGatewayUrl() {
