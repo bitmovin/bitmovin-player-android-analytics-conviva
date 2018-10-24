@@ -31,6 +31,7 @@ import com.bitmovin.player.api.event.listener.OnStallEndedListener;
 import com.bitmovin.player.api.event.listener.OnStallStartedListener;
 import com.bitmovin.player.api.event.listener.OnVideoPlaybackQualityChangedListener;
 import com.bitmovin.player.api.event.listener.OnWarningListener;
+import com.bitmovin.player.config.media.SourceItem;
 import com.bitmovin.player.config.quality.VideoQuality;
 import com.conviva.api.AndroidSystemInterfaceFactory;
 import com.conviva.api.Client;
@@ -42,16 +43,22 @@ import com.conviva.api.SystemSettings;
 import com.conviva.api.player.PlayerStateManager;
 import com.conviva.api.system.SystemInterface;
 
+import java.util.HashMap;
+import java.util.Map;
+
 public class ConvivaAnalytics {
     private static final String TAG = "ConvivaAnalytics";
 
     private Client client;
     private BitmovinPlayer bitmovinPlayer;
-    private ContentMetadata contentMetadata;
+    private ContentMetadata contentMetadata = new ContentMetadata();
     private ConvivaConfiguration config;
     private int sessionId = Client.NO_SESSION_KEY;
     private boolean playerStarted = false;
     private PlayerStateManager playerStateManager;
+
+    // Wrapper to extract bitmovinPlayer helper methods
+    private BitmovinPlayerHelper playerHelper;
 
     public ConvivaAnalytics(BitmovinPlayer player, String customerKey, Context context) {
         this(player, customerKey, context, new ConvivaConfiguration());
@@ -62,6 +69,7 @@ public class ConvivaAnalytics {
                             Context context,
                             ConvivaConfiguration config) {
         this.bitmovinPlayer = player;
+        this.playerHelper = new BitmovinPlayerHelper(player);
         this.config = config;
 
         SystemInterface androidSystemInterface = AndroidSystemInterfaceFactory.buildSecure(context);
@@ -85,13 +93,13 @@ public class ConvivaAnalytics {
 
     private void ensureConvivaSessionIsCreatedAndInitialized() {
         if (!isValidSession()) {
-            createContentMetadata();
             createConvivaSession();
         }
     }
 
     private void createConvivaSession() {
         try {
+            createContentMetadata();
             sessionId = client.createSession(contentMetadata);
             playerStateManager = client.getPlayerStateManager();
             Log.i(TAG, "Created SessionID - " + sessionId);
@@ -102,24 +110,27 @@ public class ConvivaAnalytics {
     }
 
     private void createContentMetadata() {
-        contentMetadata = new ContentMetadata();
-        contentMetadata.custom = config.getCustomData();
-        contentMetadata.viewerId = config.getViewerId();
-        contentMetadata.applicationName = config.getApplicationName();
+        SourceItem sourceItem = bitmovinPlayer.getConfig().getSourceItem();
+        contentMetadata.assetName = sourceItem.getTitle();
 
-        // streamType
+        contentMetadata.applicationName = config.getApplicationName();
+        contentMetadata.viewerId = config.getViewerId();
+
+        contentMetadata.custom = config.getCustomData();
+
         if (bitmovinPlayer.isLive()) {
             contentMetadata.streamType = ContentMetadata.StreamType.LIVE;
         } else {
             contentMetadata.streamType = ContentMetadata.StreamType.VOD;
         }
 
-        // streamUrl
-        if (bitmovinPlayer.getConfig() != null && bitmovinPlayer.getConfig().getSourceItem() != null && bitmovinPlayer.getConfig().getSourceItem().getDashSource() != null) {
-            contentMetadata.streamUrl = bitmovinPlayer.getConfig().getSourceItem().getDashSource().getUrl();
-        } else if (bitmovinPlayer.getConfig() != null && bitmovinPlayer.getConfig().getSourceItem() != null && bitmovinPlayer.getConfig().getSourceItem().getHlsSource() != null) {
-            contentMetadata.streamUrl = bitmovinPlayer.getConfig().getSourceItem().getHlsSource().getUrl();
-        }
+        contentMetadata.streamUrl = playerHelper.getStreamUrl();
+
+        // Build custom tags
+        Map<String, String> customInternTags = new HashMap<>();
+        customInternTags.put("streamType", playerHelper.getStreamType().toString());
+        customInternTags.putAll(config.getCustomData());
+        contentMetadata.custom = customInternTags;
     }
 
     private void cleanupConvivaClient() {
