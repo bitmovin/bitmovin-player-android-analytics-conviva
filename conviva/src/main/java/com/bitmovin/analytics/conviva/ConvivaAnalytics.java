@@ -44,7 +44,7 @@ import com.conviva.api.system.SystemInterface;
 
 public class ConvivaAnalytics {
     private static final String TAG = "ConvivaAnalytics";
-    private static final ConvivaAnalytics ourInstance = new ConvivaAnalytics();
+
     private Client client;
     private BitmovinPlayer bitmovinPlayer;
     private ContentMetadata contentMetadata;
@@ -211,20 +211,34 @@ public class ConvivaAnalytics {
         }
     };
 
-    private ConvivaAnalytics() {
-
+    public ConvivaAnalytics(BitmovinPlayer player, String customerKey, Context context) {
+        this(player, customerKey, context, new ConvivaConfig());
     }
 
-    public static ConvivaAnalytics getInstance() {
-        return ourInstance;
-    }
-
-    public void attachPlayer(ConvivaConfig config, BitmovinPlayer player, Context context) {
-        detachPlayer();
+    public ConvivaAnalytics(BitmovinPlayer player,
+                            String customerKey,
+                            Context context,
+                            ConvivaConfig config) {
+        this.bitmovinPlayer = player;
         this.config = config;
-        bitmovinPlayer = player;
-        attachBitmovinEventListeners();
-        createConvivaClient(context);
+
+        SystemInterface androidSystemInterface = AndroidSystemInterfaceFactory.buildSecure(context);
+        if (androidSystemInterface.isInitialized()) {
+            SystemSettings systemSettings = new SystemSettings();
+            systemSettings.logLevel = SystemSettings.LogLevel.DEBUG;
+            systemSettings.allowUncaughtExceptions = false;
+
+            SystemFactory androidSystemFactory = new SystemFactory(androidSystemInterface, systemSettings);
+            ClientSettings clientSettings = new ClientSettings(customerKey);
+
+            if (config.getGatewayUrl() != null) {
+                clientSettings.gatewayUrl = config.getGatewayUrl();
+            }
+
+            this.client = new Client(clientSettings, androidSystemFactory);
+
+            attachBitmovinEventListeners();
+        }
     }
 
     private void ensureConvivaSessionIsCreatedAndInitialized()
@@ -232,19 +246,6 @@ public class ConvivaAnalytics {
         if (!isValidSession()) {
             createContentMetadata();
             createConvivaSession();
-        }
-    }
-
-    private void createConvivaClient(Context context) {
-        SystemInterface androidSystemInterface = AndroidSystemInterfaceFactory.buildSecure(context);
-        if (androidSystemInterface.isInitialized()) {
-            SystemSettings systemSettings = new SystemSettings();
-            systemSettings.logLevel = SystemSettings.LogLevel.DEBUG;
-            systemSettings.allowUncaughtExceptions = false;
-            SystemFactory androidSystemFactory = new SystemFactory(androidSystemInterface, systemSettings);
-            ClientSettings clientSettings = new ClientSettings(config.getCustomerKey());
-            clientSettings.gatewayUrl = config.getGatewayUrl();
-            client = new Client(clientSettings, androidSystemFactory);
         }
     }
 
@@ -262,7 +263,6 @@ public class ConvivaAnalytics {
     private void createContentMetadata(){
         contentMetadata = new ContentMetadata();
         contentMetadata.custom = config.getCustomData();
-        contentMetadata.assetName = config.getAssetName();
         contentMetadata.viewerId = config.getViewerId();
         contentMetadata.applicationName = config.getApplicationName();
 
