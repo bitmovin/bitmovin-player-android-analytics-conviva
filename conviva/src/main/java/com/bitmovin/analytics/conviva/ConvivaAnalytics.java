@@ -52,6 +52,152 @@ public class ConvivaAnalytics {
     private int sessionId = Client.NO_SESSION_KEY;
     private boolean playerStarted = false;
     private PlayerStateManager playerStateManager;
+
+    public ConvivaAnalytics(BitmovinPlayer player, String customerKey, Context context) {
+        this(player, customerKey, context, new ConvivaConfiguration());
+    }
+
+    public ConvivaAnalytics(BitmovinPlayer player,
+                            String customerKey,
+                            Context context,
+                            ConvivaConfiguration config) {
+        this.bitmovinPlayer = player;
+        this.config = config;
+
+        SystemInterface androidSystemInterface = AndroidSystemInterfaceFactory.buildSecure(context);
+        if (androidSystemInterface.isInitialized()) {
+            SystemSettings systemSettings = new SystemSettings();
+            systemSettings.logLevel = SystemSettings.LogLevel.DEBUG;
+            systemSettings.allowUncaughtExceptions = false;
+
+            SystemFactory androidSystemFactory = new SystemFactory(androidSystemInterface, systemSettings);
+            ClientSettings clientSettings = new ClientSettings(customerKey);
+
+            if (config.getGatewayUrl() != null) {
+                clientSettings.gatewayUrl = config.getGatewayUrl();
+            }
+
+            this.client = new Client(clientSettings, androidSystemFactory);
+
+            attachBitmovinEventListeners();
+        }
+    }
+
+    private void ensureConvivaSessionIsCreatedAndInitialized() {
+        if (!isValidSession()) {
+            createContentMetadata();
+            createConvivaSession();
+        }
+    }
+
+    private void createConvivaSession() {
+        try {
+            sessionId = client.createSession(contentMetadata);
+            playerStateManager = client.getPlayerStateManager();
+            Log.i(TAG, "Created SessionID - " + sessionId);
+            client.attachPlayer(sessionId, playerStateManager);
+        } catch (ConvivaException e) {
+            Log.e(TAG, e.getLocalizedMessage());
+        }
+    }
+
+    private void createContentMetadata() {
+        contentMetadata = new ContentMetadata();
+        contentMetadata.custom = config.getCustomData();
+        contentMetadata.viewerId = config.getViewerId();
+        contentMetadata.applicationName = config.getApplicationName();
+
+        // streamType
+        if (bitmovinPlayer.isLive()) {
+            contentMetadata.streamType = ContentMetadata.StreamType.LIVE;
+        } else {
+            contentMetadata.streamType = ContentMetadata.StreamType.VOD;
+        }
+
+        // streamUrl
+        if (bitmovinPlayer.getConfig() != null && bitmovinPlayer.getConfig().getSourceItem() != null && bitmovinPlayer.getConfig().getSourceItem().getDashSource() != null) {
+            contentMetadata.streamUrl = bitmovinPlayer.getConfig().getSourceItem().getDashSource().getUrl();
+        } else if (bitmovinPlayer.getConfig() != null && bitmovinPlayer.getConfig().getSourceItem() != null && bitmovinPlayer.getConfig().getSourceItem().getHlsSource() != null) {
+            contentMetadata.streamUrl = bitmovinPlayer.getConfig().getSourceItem().getHlsSource().getUrl();
+        }
+    }
+
+    private void cleanupConvivaClient() {
+        try {
+            if (client != null) {
+                client.releasePlayerStateManager(playerStateManager);
+                client.cleanupSession(sessionId);
+            }
+        } catch (ConvivaException e) {
+            Log.e(TAG, e.getLocalizedMessage());
+        }
+        playerStateManager = null;
+        playerStarted = false;
+        sessionId = Client.NO_SESSION_KEY;
+    }
+
+    public void detachPlayer() {
+        cleanupConvivaClient();
+        removeBitmovinEventListeners();
+        playerStarted = false;
+        bitmovinPlayer = null;
+    }
+
+    private boolean isValidSession() {
+        return sessionId != Client.NO_SESSION_KEY;
+    }
+
+    private void attachBitmovinEventListeners() {
+        bitmovinPlayer.addEventListener(onSourceUnloadedListener);
+        bitmovinPlayer.addEventListener(onErrorListener);
+        bitmovinPlayer.addEventListener(onWarningListener);
+        bitmovinPlayer.addEventListener(onPausedListener);
+        bitmovinPlayer.addEventListener(onPlayListener);
+        bitmovinPlayer.addEventListener(onPlayingListener);
+        bitmovinPlayer.addEventListener(onSeekedListener);
+        bitmovinPlayer.addEventListener(onSeekListener);
+        bitmovinPlayer.addEventListener(onStallEndedListener);
+        bitmovinPlayer.addEventListener(onStallStartedListener);
+        bitmovinPlayer.addEventListener(onReadyListener);
+        bitmovinPlayer.addEventListener(onPlaybackFinishedListener);
+        bitmovinPlayer.addEventListener(onVideoPlaybackQualityChangedListener);
+    }
+
+    private void removeBitmovinEventListeners() {
+        if (bitmovinPlayer == null) {
+            return;
+        }
+
+        bitmovinPlayer.removeEventListener(onSourceUnloadedListener);
+        bitmovinPlayer.removeEventListener(onErrorListener);
+        bitmovinPlayer.removeEventListener(onWarningListener);
+        bitmovinPlayer.removeEventListener(onPausedListener);
+        bitmovinPlayer.removeEventListener(onPlayListener);
+        bitmovinPlayer.removeEventListener(onPlayingListener);
+        bitmovinPlayer.removeEventListener(onSeekedListener);
+        bitmovinPlayer.removeEventListener(onSeekListener);
+        bitmovinPlayer.removeEventListener(onStallEndedListener);
+        bitmovinPlayer.removeEventListener(onStallStartedListener);
+        bitmovinPlayer.removeEventListener(onReadyListener);
+        bitmovinPlayer.removeEventListener(onPlaybackFinishedListener);
+        bitmovinPlayer.removeEventListener(onVideoPlaybackQualityChangedListener);
+    }
+
+
+    private synchronized void transitionState(PlayerStateManager.PlayerState state) {
+        try {
+            if (this.playerStarted) {
+                if (playerStateManager.getPlayerState() != state) {
+                    Log.d(TAG, "Transitioning to :" + state.name());
+                    playerStateManager.setPlayerState(state);
+                }
+            }
+        } catch (ConvivaException e) {
+            Log.e(TAG, "Unable to transition state: " + e.getLocalizedMessage());
+        }
+    }
+
+    // region Listeners
     private OnSourceUnloadedListener onSourceUnloadedListener = new OnSourceUnloadedListener() {
         @Override
         public void onSourceUnloaded(SourceUnloadedEvent sourceUnloadedEvent) {
@@ -209,148 +355,5 @@ public class ConvivaAnalytics {
             }
         }
     };
-
-    public ConvivaAnalytics(BitmovinPlayer player, String customerKey, Context context) {
-        this(player, customerKey, context, new ConvivaConfiguration());
-    }
-
-    public ConvivaAnalytics(BitmovinPlayer player,
-                            String customerKey,
-                            Context context,
-                            ConvivaConfiguration config) {
-        this.bitmovinPlayer = player;
-        this.config = config;
-
-        SystemInterface androidSystemInterface = AndroidSystemInterfaceFactory.buildSecure(context);
-        if (androidSystemInterface.isInitialized()) {
-            SystemSettings systemSettings = new SystemSettings();
-            systemSettings.logLevel = SystemSettings.LogLevel.DEBUG;
-            systemSettings.allowUncaughtExceptions = false;
-
-            SystemFactory androidSystemFactory = new SystemFactory(androidSystemInterface, systemSettings);
-            ClientSettings clientSettings = new ClientSettings(customerKey);
-
-            if (config.getGatewayUrl() != null) {
-                clientSettings.gatewayUrl = config.getGatewayUrl();
-            }
-
-            this.client = new Client(clientSettings, androidSystemFactory);
-
-            attachBitmovinEventListeners();
-        }
-    }
-
-    private void ensureConvivaSessionIsCreatedAndInitialized() {
-        if (!isValidSession()) {
-            createContentMetadata();
-            createConvivaSession();
-        }
-    }
-
-    private void createConvivaSession() {
-        try {
-            sessionId = client.createSession(contentMetadata);
-            playerStateManager = client.getPlayerStateManager();
-            Log.i(TAG, "Created SessionID - " + sessionId);
-            client.attachPlayer(sessionId, playerStateManager);
-        } catch (ConvivaException e) {
-            Log.e(TAG, e.getLocalizedMessage());
-        }
-    }
-
-    private void createContentMetadata() {
-        contentMetadata = new ContentMetadata();
-        contentMetadata.custom = config.getCustomData();
-        contentMetadata.viewerId = config.getViewerId();
-        contentMetadata.applicationName = config.getApplicationName();
-
-        // streamType
-        if (bitmovinPlayer.isLive()) {
-            contentMetadata.streamType = ContentMetadata.StreamType.LIVE;
-        } else {
-            contentMetadata.streamType = ContentMetadata.StreamType.VOD;
-        }
-
-        // streamUrl
-        if (bitmovinPlayer.getConfig() != null && bitmovinPlayer.getConfig().getSourceItem() != null && bitmovinPlayer.getConfig().getSourceItem().getDashSource() != null) {
-            contentMetadata.streamUrl = bitmovinPlayer.getConfig().getSourceItem().getDashSource().getUrl();
-        } else if (bitmovinPlayer.getConfig() != null && bitmovinPlayer.getConfig().getSourceItem() != null && bitmovinPlayer.getConfig().getSourceItem().getHlsSource() != null) {
-            contentMetadata.streamUrl = bitmovinPlayer.getConfig().getSourceItem().getHlsSource().getUrl();
-        }
-    }
-
-    private void cleanupConvivaClient() {
-        try {
-            if (client != null) {
-                client.releasePlayerStateManager(playerStateManager);
-                client.cleanupSession(sessionId);
-            }
-        } catch (ConvivaException e) {
-            Log.e(TAG, e.getLocalizedMessage());
-        }
-        playerStateManager = null;
-        playerStarted = false;
-        sessionId = Client.NO_SESSION_KEY;
-    }
-
-    public void detachPlayer() {
-        cleanupConvivaClient();
-        removeBitmovinEventListeners();
-        playerStarted = false;
-        bitmovinPlayer = null;
-    }
-
-    private boolean isValidSession() {
-        return sessionId != Client.NO_SESSION_KEY;
-    }
-
-    private void attachBitmovinEventListeners() {
-        bitmovinPlayer.addEventListener(onSourceUnloadedListener);
-        bitmovinPlayer.addEventListener(onErrorListener);
-        bitmovinPlayer.addEventListener(onWarningListener);
-        bitmovinPlayer.addEventListener(onPausedListener);
-        bitmovinPlayer.addEventListener(onPlayListener);
-        bitmovinPlayer.addEventListener(onPlayingListener);
-        bitmovinPlayer.addEventListener(onSeekedListener);
-        bitmovinPlayer.addEventListener(onSeekListener);
-        bitmovinPlayer.addEventListener(onStallEndedListener);
-        bitmovinPlayer.addEventListener(onStallStartedListener);
-        bitmovinPlayer.addEventListener(onReadyListener);
-        bitmovinPlayer.addEventListener(onPlaybackFinishedListener);
-        bitmovinPlayer.addEventListener(onVideoPlaybackQualityChangedListener);
-    }
-
-    private void removeBitmovinEventListeners() {
-        if (bitmovinPlayer == null) {
-            return;
-        }
-
-        bitmovinPlayer.removeEventListener(onSourceUnloadedListener);
-        bitmovinPlayer.removeEventListener(onErrorListener);
-        bitmovinPlayer.removeEventListener(onWarningListener);
-        bitmovinPlayer.removeEventListener(onPausedListener);
-        bitmovinPlayer.removeEventListener(onPlayListener);
-        bitmovinPlayer.removeEventListener(onPlayingListener);
-        bitmovinPlayer.removeEventListener(onSeekedListener);
-        bitmovinPlayer.removeEventListener(onSeekListener);
-        bitmovinPlayer.removeEventListener(onStallEndedListener);
-        bitmovinPlayer.removeEventListener(onStallStartedListener);
-        bitmovinPlayer.removeEventListener(onReadyListener);
-        bitmovinPlayer.removeEventListener(onPlaybackFinishedListener);
-        bitmovinPlayer.removeEventListener(onVideoPlaybackQualityChangedListener);
-    }
-
-
-    private synchronized void transitionState(PlayerStateManager.PlayerState state) {
-        try {
-            if (this.playerStarted) {
-                if (playerStateManager.getPlayerState() != state) {
-                    Log.d(TAG, "Transitioning to :" + state.name());
-                    playerStateManager.setPlayerState(state);
-                }
-            }
-        } catch (ConvivaException e) {
-            Log.e(TAG, "Unable to transition state: " + e.getLocalizedMessage());
-        }
-    }
+    // endregion
 }
