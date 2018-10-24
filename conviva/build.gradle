@@ -1,6 +1,7 @@
 apply plugin: 'com.android.library'
 apply plugin: 'com.jfrog.artifactory'
 apply plugin: 'maven-publish'
+apply from: "../bitmovinpropertiesloader.gradle"
 
 def packageName = 'com.bitmovin.analytics'
 def libraryVersion = '0.2.0'
@@ -72,13 +73,13 @@ artifactory {
         repository {
             // The Artifactory repository key to publish to
             repoKey = libraryVersion.endsWith('SNAPSHOT') ? 'libs-snapshot-local' : 'libs-release-local'
+            username = bitmovinProperties.getProperty('artifactory_user') // The publisher user name
+            password = bitmovinProperties.getProperty('artifactory_password') // The publisher password
         }
         defaults {
             // Tell the Artifactory Plugin which artifacts should be published to Artifactory.
             publications('aar')
             publishArtifacts = true
-            username = "${artifactory_user}"
-            password = "${artifactory_password}"
 
             // Properties to be attached to the published artifacts.
             properties = ['qa.level': 'basic', 'dev.team': 'core']
