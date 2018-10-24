@@ -79,8 +79,7 @@ public class ConvivaAnalytics {
                 contentMetadata.duration = (int) bitmovinPlayer.getDuration();
 
                 VideoQuality videoData = bitmovinPlayer.getPlaybackVideoData();
-                if (videoData != null)
-                {
+                if (videoData != null) {
                     contentMetadata.encodedFrameRate = (int) videoData.getFrameRate();
                 }
 
@@ -241,15 +240,14 @@ public class ConvivaAnalytics {
         }
     }
 
-    private void ensureConvivaSessionIsCreatedAndInitialized()
-    {
+    private void ensureConvivaSessionIsCreatedAndInitialized() {
         if (!isValidSession()) {
             createContentMetadata();
             createConvivaSession();
         }
     }
 
-    private void createConvivaSession(){
+    private void createConvivaSession() {
         try {
             sessionId = client.createSession(contentMetadata);
             playerStateManager = client.getPlayerStateManager();
@@ -260,33 +258,30 @@ public class ConvivaAnalytics {
         }
     }
 
-    private void createContentMetadata(){
+    private void createContentMetadata() {
         contentMetadata = new ContentMetadata();
         contentMetadata.custom = config.getCustomData();
         contentMetadata.viewerId = config.getViewerId();
         contentMetadata.applicationName = config.getApplicationName();
 
-        //streamType
+        // streamType
         if (bitmovinPlayer.isLive()) {
             contentMetadata.streamType = ContentMetadata.StreamType.LIVE;
         } else {
             contentMetadata.streamType = ContentMetadata.StreamType.VOD;
         }
 
-        //streamUrl
+        // streamUrl
         if (bitmovinPlayer.getConfig() != null && bitmovinPlayer.getConfig().getSourceItem() != null && bitmovinPlayer.getConfig().getSourceItem().getDashSource() != null) {
             contentMetadata.streamUrl = bitmovinPlayer.getConfig().getSourceItem().getDashSource().getUrl();
         } else if (bitmovinPlayer.getConfig() != null && bitmovinPlayer.getConfig().getSourceItem() != null && bitmovinPlayer.getConfig().getSourceItem().getHlsSource() != null) {
             contentMetadata.streamUrl = bitmovinPlayer.getConfig().getSourceItem().getHlsSource().getUrl();
         }
-
-        //TODO default Resource?
-        contentMetadata.defaultResource = config.getDefaultReportingResource(); //defaultReportingResource should not be null
     }
 
     private void cleanupConvivaClient() {
         try {
-            if(client != null) {
+            if (client != null) {
                 client.releasePlayerStateManager(playerStateManager);
                 client.cleanupSession(sessionId);
             }
