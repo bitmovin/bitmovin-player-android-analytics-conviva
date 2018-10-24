@@ -54,7 +54,6 @@ public class ConvivaAnalytics {
     private ContentMetadata contentMetadata = new ContentMetadata();
     private ConvivaConfiguration config;
     private int sessionId = Client.NO_SESSION_KEY;
-    private boolean playerStarted = false;
     private PlayerStateManager playerStateManager;
 
     // Wrapper to extract bitmovinPlayer helper methods
@@ -170,25 +169,18 @@ public class ConvivaAnalytics {
         contentMetadata.custom = customInternTags;
     }
 
-    private void cleanupConvivaClient() {
+    private void endConvivaSession() {
         try {
-            if (client != null) {
-                client.releasePlayerStateManager(playerStateManager);
-                client.cleanupSession(sessionId);
-            }
+            client.detachPlayer(sessionId);
+            client.cleanupSession(sessionId);
+            client.releasePlayerStateManager(playerStateManager);
         } catch (ConvivaException e) {
             Log.e(TAG, e.getLocalizedMessage());
+        } finally {
+            sessionId = Client.NO_SESSION_KEY;
+            playerStateManager = null;
+            Log.e(TAG, "Session ended");
         }
-        playerStateManager = null;
-        playerStarted = false;
-        sessionId = Client.NO_SESSION_KEY;
-    }
-
-    public void detachPlayer() {
-        cleanupConvivaClient();
-        removeBitmovinEventListeners();
-        playerStarted = false;
-        bitmovinPlayer = null;
     }
 
     private boolean isValidSession() {
@@ -199,14 +191,19 @@ public class ConvivaAnalytics {
         bitmovinPlayer.addEventListener(onSourceUnloadedListener);
         bitmovinPlayer.addEventListener(onErrorListener);
         bitmovinPlayer.addEventListener(onWarningListener);
-        bitmovinPlayer.addEventListener(onPausedListener);
+
+        // Playback state events
         bitmovinPlayer.addEventListener(onPlayListener);
         bitmovinPlayer.addEventListener(onPlayingListener);
-        bitmovinPlayer.addEventListener(onSeekedListener);
-        bitmovinPlayer.addEventListener(onSeekListener);
+        bitmovinPlayer.addEventListener(onPausedListener);
         bitmovinPlayer.addEventListener(onStallEndedListener);
         bitmovinPlayer.addEventListener(onStallStartedListener);
         bitmovinPlayer.addEventListener(onPlaybackFinishedListener);
+
+        // Seek events
+        bitmovinPlayer.addEventListener(onSeekedListener);
+        bitmovinPlayer.addEventListener(onSeekListener);
+
         bitmovinPlayer.addEventListener(onVideoPlaybackQualityChangedListener);
     }
 
@@ -218,26 +215,26 @@ public class ConvivaAnalytics {
         bitmovinPlayer.removeEventListener(onSourceUnloadedListener);
         bitmovinPlayer.removeEventListener(onErrorListener);
         bitmovinPlayer.removeEventListener(onWarningListener);
-        bitmovinPlayer.removeEventListener(onPausedListener);
+
+        // Playback state events
         bitmovinPlayer.removeEventListener(onPlayListener);
         bitmovinPlayer.removeEventListener(onPlayingListener);
-        bitmovinPlayer.removeEventListener(onSeekedListener);
-        bitmovinPlayer.removeEventListener(onSeekListener);
+        bitmovinPlayer.removeEventListener(onPausedListener);
         bitmovinPlayer.removeEventListener(onStallEndedListener);
         bitmovinPlayer.removeEventListener(onStallStartedListener);
         bitmovinPlayer.removeEventListener(onPlaybackFinishedListener);
+
+        // Seek events
+        bitmovinPlayer.removeEventListener(onSeekedListener);
+        bitmovinPlayer.removeEventListener(onSeekListener);
+
         bitmovinPlayer.removeEventListener(onVideoPlaybackQualityChangedListener);
     }
 
-
     private synchronized void transitionState(PlayerStateManager.PlayerState state) {
         try {
-            if (this.playerStarted) {
-                if (playerStateManager.getPlayerState() != state) {
-                    Log.d(TAG, "Transitioning to :" + state.name());
-                    playerStateManager.setPlayerState(state);
-                }
-            }
+            Log.d(TAG, "Transitioning to :" + state.name());
+            playerStateManager.setPlayerState(state);
         } catch (ConvivaException e) {
             Log.e(TAG, "Unable to transition state: " + e.getLocalizedMessage());
         }
@@ -255,25 +252,44 @@ public class ConvivaAnalytics {
                 @Override
                 public void run() {
                     Log.d(TAG, "OnSourceUnloaded");
-                    cleanupConvivaClient();
+                    endConvivaSession();
                 }
             }, 100);
         }
     };
-    private OnVideoPlaybackQualityChangedListener onVideoPlaybackQualityChangedListener = new OnVideoPlaybackQualityChangedListener() {
+
+    private OnErrorListener onErrorListener = new OnErrorListener() {
         @Override
-        public void onVideoPlaybackQualityChanged(VideoPlaybackQualityChangedEvent videoPlaybackQualityChangedEvent) {
-            Log.d(TAG, "OnVideoPlaybackQualityChanged");
-            updateSession();
+        public void onError(ErrorEvent errorEvent) {
+            Log.d(TAG, "OnError");
+            try {
+                ensureConvivaSessionIsCreatedAndInitialized();
+
+                String message = String.format("%s - %s", errorEvent.getCode(), errorEvent.getMessage());
+                client.reportError(sessionId, message, Client.ErrorSeverity.FATAL);
+                endConvivaSession();
+            } catch (ConvivaException e) {
+                Log.e(TAG, e.getLocalizedMessage());
+            }
         }
     };
-    private OnPausedListener onPausedListener = new OnPausedListener() {
+
+    private OnWarningListener onWarningListener = new OnWarningListener() {
         @Override
-        public void onPaused(PausedEvent pausedEvent) {
-            Log.d(TAG, "OnPaused");
-            transitionState(PlayerStateManager.PlayerState.PAUSED);
+        public void onWarning(WarningEvent warningEvent) {
+            Log.d(TAG, "OnWarning");
+            try {
+                ensureConvivaSessionIsCreatedAndInitialized();
+
+                String message = String.format("%s - %s", warningEvent.getCode(), warningEvent.getMessage());
+                client.reportError(sessionId, message, Client.ErrorSeverity.WARNING);
+            } catch (ConvivaException e) {
+                Log.e(TAG, e.getLocalizedMessage());
+            }
         }
     };
+
+    // region Playback state events
     private OnPlayListener onPlayListener = new OnPlayListener() {
         @Override
         public void onPlay(PlayEvent playEvent) {
@@ -290,28 +306,24 @@ public class ConvivaAnalytics {
             transitionState(PlayerStateManager.PlayerState.PLAYING);
         }
     };
-    private OnSeekListener onSeekListener = new OnSeekListener() {
+
+    private OnPausedListener onPausedListener = new OnPausedListener() {
         @Override
-        public void onSeek(SeekEvent seekEvent) {
-            Log.d(TAG, "OnSeek");
-            try {
-                playerStateManager.setPlayerSeekStart((int) seekEvent.getSeekTarget());
-            } catch (ConvivaException e) {
-                Log.e(TAG, e.getLocalizedMessage());
-            }
+        public void onPaused(PausedEvent pausedEvent) {
+            Log.d(TAG, "OnPaused");
+            transitionState(PlayerStateManager.PlayerState.PAUSED);
         }
     };
-    private OnSeekedListener onSeekedListener = new OnSeekedListener() {
+
+    private OnPlaybackFinishedListener onPlaybackFinishedListener = new OnPlaybackFinishedListener() {
         @Override
-        public void onSeeked(SeekedEvent seekedEvent) {
-            Log.d(TAG, "OnSeeked");
-            try {
-                playerStateManager.setPlayerSeekEnd();
-            } catch (ConvivaException e) {
-                Log.e(TAG, e.getLocalizedMessage());
-            }
+        public void onPlaybackFinished(PlaybackFinishedEvent playbackFinishedEvent) {
+            Log.d(TAG, "OnPlaybackFinished");
+            transitionState(PlayerStateManager.PlayerState.STOPPED);
+            endConvivaSession();
         }
     };
+
     private OnStallStartedListener onStallStartedListener = new OnStallStartedListener() {
         @Override
         public void onStallStarted(StallStartedEvent stallStartedEvent) {
@@ -319,6 +331,7 @@ public class ConvivaAnalytics {
             transitionState(PlayerStateManager.PlayerState.BUFFERING);
         }
     };
+
     private OnStallEndedListener onStallEndedListener = new OnStallEndedListener() {
         @Override
         public void onStallEnded(StallEndedEvent stallEndedEvent) {
@@ -330,39 +343,48 @@ public class ConvivaAnalytics {
             transitionState(state);
         }
     };
-    private OnPlaybackFinishedListener onPlaybackFinishedListener = new OnPlaybackFinishedListener() {
-        @Override
-        public void onPlaybackFinished(PlaybackFinishedEvent playbackFinishedEvent) {
-            Log.d(TAG, "OnPlaybackFinished");
-            transitionState(PlayerStateManager.PlayerState.STOPPED);
-        }
-    };
-    private OnErrorListener onErrorListener = new OnErrorListener() {
-        @Override
-        public void onError(ErrorEvent errorEvent) {
-            Log.d(TAG, "OnError");
-            try {
-                ensureConvivaSessionIsCreatedAndInitialized();
+    // endregion
 
-                String message = String.format("%s - %s", errorEvent.getCode(), errorEvent.getMessage());
-                client.reportError(sessionId, message, Client.ErrorSeverity.FATAL);
+    // region Seek events
+    private OnSeekListener onSeekListener = new OnSeekListener() {
+        @Override
+        public void onSeek(SeekEvent seekEvent) {
+            if (!isValidSession()) {
+                // Handle the case that the User seeks on the UI before play was triggered.
+                // This also handles startTime feature. The same applies for onTimeShift.
+                return;
+            }
+            Log.d(TAG, "OnSeek");
+            try {
+                playerStateManager.setPlayerSeekStart((int) seekEvent.getSeekTarget() * 1000);
             } catch (ConvivaException e) {
                 Log.e(TAG, e.getLocalizedMessage());
             }
         }
     };
-    private OnWarningListener onWarningListener = new OnWarningListener() {
-        @Override
-        public void onWarning(WarningEvent warningEvent) {
-            Log.d(TAG, "OnWarning");
-            try {
-                ensureConvivaSessionIsCreatedAndInitialized();
 
-                String message = String.format("%s - %s", warningEvent.getCode(), warningEvent.getMessage());
-                client.reportError(sessionId, message, Client.ErrorSeverity.WARNING);
+    private OnSeekedListener onSeekedListener = new OnSeekedListener() {
+        @Override
+        public void onSeeked(SeekedEvent seekedEvent) {
+            if (!isValidSession()) {
+                // See comment in onSeek
+                return;
+            }
+            Log.d(TAG, "OnSeeked");
+            try {
+                playerStateManager.setPlayerSeekEnd();
             } catch (ConvivaException e) {
                 Log.e(TAG, e.getLocalizedMessage());
             }
+        }
+    };
+    // endregion
+
+    private OnVideoPlaybackQualityChangedListener onVideoPlaybackQualityChangedListener = new OnVideoPlaybackQualityChangedListener() {
+        @Override
+        public void onVideoPlaybackQualityChanged(VideoPlaybackQualityChangedEvent videoPlaybackQualityChangedEvent) {
+            Log.d(TAG, "OnVideoPlaybackQualityChanged");
+            updateSession();
         }
     };
     // endregion

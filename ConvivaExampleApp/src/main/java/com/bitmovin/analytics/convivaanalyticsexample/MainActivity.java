@@ -95,7 +95,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     private void releasePlayer() {
         if (bitmovinPlayer != null) {
-            convivaAnalytics.detachPlayer();
             bitmovinPlayer.unload();
         }
     }
