@@ -7,32 +7,46 @@
     tools:context=".MainActivity"
     android:keepScreenOn="true">
 
-    <com.bitmovin.player.BitmovinPlayerView
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:id="@+id/bitmovinPlayerView"
-        android:layout_alignParentTop="true"
-        android:layout_alignParentLeft="true"
-        android:layout_alignParentStart="true">
-
-    </com.bitmovin.player.BitmovinPlayerView>
-
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
-        <Button
-            android:id="@+id/release_button"
-            android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        android:orientation="vertical">
+
+        <com.bitmovin.player.BitmovinPlayerView
+            android:layout_width="match_parent"
+            android:layout_height="200dp"
+            android:id="@+id/bitmovinPlayerView">
+        </com.bitmovin.player.BitmovinPlayerView>
+
+        <LinearLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Release"
-            />
-        <Button
-            android:id="@+id/create_button"
-            android:layout_width="wrap_content"
+            android:gravity="center_horizontal"
+            android:padding="10dp">
+            <Button
+                android:id="@+id/release_button"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Release"
+                />
+            <Button
+                android:id="@+id/create_button"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Create"
+                />
+        </LinearLayout>
+        <LinearLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Create"
-            />
+            android:gravity="center_horizontal"
+            android:padding="10dp">
+            <Button
+                android:id="@+id/custom_event_button"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Send custom event"
+                />
+        </LinearLayout>
     </LinearLayout>
-
-
 </android.support.constraint.ConstraintLayout>

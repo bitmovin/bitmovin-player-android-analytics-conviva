@@ -13,10 +13,14 @@ import com.bitmovin.player.config.media.DASHSource;
 import com.bitmovin.player.config.media.SourceConfiguration;
 import com.bitmovin.player.config.media.SourceItem;
 
+import java.util.HashMap;
+import java.util.Map;
+
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
     // UI
     private Button releaseButton;
     private Button createButton;
+    private Button sendCustomEventButton;
 
     // Conviva
     private static final String customerKey = "";
@@ -35,6 +39,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         releaseButton.setOnClickListener(this);
         createButton = findViewById(R.id.create_button);
         createButton.setOnClickListener(this);
+        sendCustomEventButton = findViewById(R.id.custom_event_button);
+        sendCustomEventButton.setOnClickListener(this);
 
         this.bitmovinPlayerView = this.findViewById(R.id.bitmovinPlayerView);
         this.bitmovinPlayer = this.bitmovinPlayerView.getPlayer();
@@ -49,6 +55,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         // Add a new source item
         DASHSource dashSource = new DASHSource("https://bitmovin-a.akamaihd.net/content/MI201109210084_1/mpds/f08e80da-bf1d-4e3d-8899-f0f6155f6efa.mpd");
         SourceItem sourceItem = new SourceItem(dashSource);
+        sourceItem.setTitle("Art of motion");
         sourceConfiguration.addSourceItem(sourceItem);
 
         // Create your ConvivaConfiguration object
@@ -105,6 +112,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             releasePlayer();
         } else if (v == createButton) {
             initializePlayer();
+        } else if (v == sendCustomEventButton) {
+            Map<String, Object> eventAttributes = new HashMap<>();
+            eventAttributes.put("Some", "Attributes");
+            this.convivaAnalytics.sendCustomPlaybackEvent("Custom Event", eventAttributes);
         }
     }
 }

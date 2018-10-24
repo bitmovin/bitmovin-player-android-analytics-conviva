@@ -5,30 +5,33 @@ import android.os.Handler;
 import android.util.Log;
 
 import com.bitmovin.player.BitmovinPlayer;
+import com.bitmovin.player.api.event.data.BitmovinPlayerEvent;
 import com.bitmovin.player.api.event.data.ErrorEvent;
+import com.bitmovin.player.api.event.data.MutedEvent;
 import com.bitmovin.player.api.event.data.PausedEvent;
 import com.bitmovin.player.api.event.data.PlayEvent;
 import com.bitmovin.player.api.event.data.PlaybackFinishedEvent;
 import com.bitmovin.player.api.event.data.PlayingEvent;
-import com.bitmovin.player.api.event.data.ReadyEvent;
 import com.bitmovin.player.api.event.data.SeekEvent;
 import com.bitmovin.player.api.event.data.SeekedEvent;
 import com.bitmovin.player.api.event.data.SourceUnloadedEvent;
 import com.bitmovin.player.api.event.data.StallEndedEvent;
 import com.bitmovin.player.api.event.data.StallStartedEvent;
+import com.bitmovin.player.api.event.data.UnmutedEvent;
 import com.bitmovin.player.api.event.data.VideoPlaybackQualityChangedEvent;
 import com.bitmovin.player.api.event.data.WarningEvent;
 import com.bitmovin.player.api.event.listener.OnErrorListener;
+import com.bitmovin.player.api.event.listener.OnMutedListener;
 import com.bitmovin.player.api.event.listener.OnPausedListener;
 import com.bitmovin.player.api.event.listener.OnPlayListener;
 import com.bitmovin.player.api.event.listener.OnPlaybackFinishedListener;
 import com.bitmovin.player.api.event.listener.OnPlayingListener;
-import com.bitmovin.player.api.event.listener.OnReadyListener;
 import com.bitmovin.player.api.event.listener.OnSeekListener;
 import com.bitmovin.player.api.event.listener.OnSeekedListener;
 import com.bitmovin.player.api.event.listener.OnSourceUnloadedListener;
 import com.bitmovin.player.api.event.listener.OnStallEndedListener;
 import com.bitmovin.player.api.event.listener.OnStallStartedListener;
+import com.bitmovin.player.api.event.listener.OnUnmutedListener;
 import com.bitmovin.player.api.event.listener.OnVideoPlaybackQualityChangedListener;
 import com.bitmovin.player.api.event.listener.OnWarningListener;
 import com.bitmovin.player.config.media.SourceItem;
@@ -184,6 +187,47 @@ public class ConvivaAnalytics {
         }
     }
 
+    public void sendCustomApplicationEvent(String name) {
+        sendCustomApplicationEvent(name, new HashMap<String, Object>());
+    }
+
+    public void sendCustomApplicationEvent(String name, Map<String, Object> attributes) {
+        try {
+            client.sendCustomEvent(Client.NO_SESSION_KEY, name, attributes);
+        } catch (ConvivaException e) {
+            Log.e(TAG, e.getLocalizedMessage());
+        }
+    }
+
+    public void sendCustomPlaybackEvent(String name) {
+        sendCustomPlaybackEvent(name, new HashMap<String, Object>());
+    }
+
+    public void sendCustomPlaybackEvent(String name, Map<String, Object> attributes) {
+        if (!isValidSession()) {
+            Log.e(TAG, "Cannot send playback event, no active monitoring session");
+            return;
+        }
+        try {
+            client.sendCustomEvent(sessionId, name, attributes);
+        } catch (ConvivaException e) {
+            Log.e(TAG, e.getLocalizedMessage());
+        }
+    }
+
+    private void customEvent(BitmovinPlayerEvent event) {
+        customEvent(event, new HashMap<String, Object>());
+    }
+
+    private void customEvent(BitmovinPlayerEvent event, Map<String, Object> attributes) {
+        if (!isValidSession()) {
+            return;
+        }
+
+        String eventName = event.getClass().getSimpleName();
+        sendCustomPlaybackEvent("on" + eventName, attributes);
+    }
+
     private boolean isValidSession() {
         return sessionId != Client.NO_SESSION_KEY;
     }
@@ -192,6 +236,9 @@ public class ConvivaAnalytics {
         bitmovinPlayer.addEventListener(onSourceUnloadedListener);
         bitmovinPlayer.addEventListener(onErrorListener);
         bitmovinPlayer.addEventListener(onWarningListener);
+
+        bitmovinPlayer.addEventListener(onMutedListener);
+        bitmovinPlayer.addEventListener(onUnmutedListener);
 
         // Playback state events
         bitmovinPlayer.addEventListener(onPlayListener);
@@ -216,6 +263,9 @@ public class ConvivaAnalytics {
         bitmovinPlayer.removeEventListener(onSourceUnloadedListener);
         bitmovinPlayer.removeEventListener(onErrorListener);
         bitmovinPlayer.removeEventListener(onWarningListener);
+
+        bitmovinPlayer.removeEventListener(onMutedListener);
+        bitmovinPlayer.removeEventListener(onUnmutedListener);
 
         // Playback state events
         bitmovinPlayer.removeEventListener(onPlayListener);
@@ -287,6 +337,22 @@ public class ConvivaAnalytics {
             } catch (ConvivaException e) {
                 Log.e(TAG, e.getLocalizedMessage());
             }
+        }
+    };
+
+    private OnMutedListener onMutedListener = new OnMutedListener() {
+        @Override
+        public void onMuted(MutedEvent mutedEvent) {
+            Log.d(TAG, "OnMuted");
+            customEvent(mutedEvent);
+        }
+    };
+
+    private OnUnmutedListener onUnmutedListener = new OnUnmutedListener() {
+        @Override
+        public void onUnmuted(UnmutedEvent unmutedEvent) {
+            Log.d(TAG, "OnUnmoted");
+            customEvent(unmutedEvent);
         }
     };
 
