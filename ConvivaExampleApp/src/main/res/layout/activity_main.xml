@@ -4,49 +4,59 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".MainActivity"
-    android:keepScreenOn="true">
+    android:keepScreenOn="true"
+    tools:context=".MainActivity">
 
-    <LinearLayout
+    <com.bitmovin.player.BitmovinPlayerView
+        android:id="@+id/bitmovinPlayerView"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:orientation="vertical">
+        android:layout_height="0dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintDimensionRatio="H,16:9">
 
-        <com.bitmovin.player.BitmovinPlayerView
-            android:layout_width="match_parent"
-            android:layout_height="200dp"
-            android:id="@+id/bitmovinPlayerView">
-        </com.bitmovin.player.BitmovinPlayerView>
+    </com.bitmovin.player.BitmovinPlayerView>
 
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:gravity="center_horizontal"
-            android:padding="10dp">
-            <Button
-                android:id="@+id/release_button"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Release"
-                />
-            <Button
-                android:id="@+id/create_button"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Create"
-                />
-        </LinearLayout>
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:gravity="center_horizontal"
-            android:padding="10dp">
-            <Button
-                android:id="@+id/custom_event_button"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Send custom event"
-                />
-        </LinearLayout>
-    </LinearLayout>
+    <Button
+        android:id="@+id/custom_event_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginLeft="16dp"
+        android:layout_marginTop="16dp"
+        android:layout_marginEnd="16dp"
+        android:layout_marginRight="16dp"
+        android:text="Send custom event"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/release_button" />
+
+    <Button
+        android:id="@+id/release_button"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginLeft="16dp"
+        android:layout_marginTop="16dp"
+        android:layout_marginEnd="16dp"
+        android:layout_marginRight="16dp"
+        android:text="Release"
+        app:layout_constraintEnd_toStartOf="@+id/create_button"
+        app:layout_constraintHorizontal_weight="1"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/bitmovinPlayerView" />
+
+    <Button
+        android:id="@+id/create_button"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="16dp"
+        android:layout_marginRight="16dp"
+        android:text="Create"
+        app:layout_constraintStart_toEndOf="@+id/release_button"
+        app:layout_constraintHorizontal_weight="1"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/release_button" />
+
 </android.support.constraint.ConstraintLayout>
