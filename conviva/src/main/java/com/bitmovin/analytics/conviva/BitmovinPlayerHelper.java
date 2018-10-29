@@ -4,56 +4,34 @@ import com.bitmovin.player.BitmovinPlayer;
 import com.bitmovin.player.BuildConfig;
 import com.bitmovin.player.config.media.SourceItem;
 
-enum StreamType {
-    DASH("DASH"),
-    HLS("HLS"),
-    progressive("progressive"),
-    none("none");
-
-    private final String text;
-
-    StreamType(String text) {
-        this.text = text;
-    }
-
-    @Override
-    public String toString() {
-        return text;
-    }
-}
-
 class BitmovinPlayerHelper {
-    // For now it's more a SourceItemHelper but lets keep the name
-    private SourceItem sourceItem;
+    private BitmovinPlayer player;
 
     BitmovinPlayerHelper(BitmovinPlayer player) {
-        this.sourceItem = player.getConfig().getSourceItem();
+        this.player = player;
     }
 
     String getSdkVersionString() {
         return BuildConfig.VERSION_NAME;
     }
 
-    StreamType getStreamType() {
-        if (sourceItem.getDashSource() != null) {
-            return StreamType.DASH;
-        } else if (sourceItem.getHlsSource() != null) {
-            return StreamType.HLS;
-        } else if (sourceItem.getProgressiveSources() != null &&
-                   !sourceItem.getProgressiveSources().isEmpty()) {
-            return StreamType.progressive;
-        }
-        return StreamType.none;
+    String getStreamType() {
+        SourceItem sourceItem = player.getConfig().getSourceItem();
+        return sourceItem.getType().name();
     }
 
     String getStreamUrl() {
-        switch (getStreamType()) {
+        SourceItem sourceItem = player.getConfig().getSourceItem();
+
+        switch (sourceItem.getType()) {
             case DASH:
                 return sourceItem.getDashSource().getUrl();
             case HLS:
                 return sourceItem.getHlsSource().getUrl();
-            case progressive:
+            case PROGRESSIVE:
                 return sourceItem.getProgressiveSources().get(0).getUrl();
+            case SMOOTH:
+                return sourceItem.getSmoothSource().getUrl();
             default:
                 return "Unknown streamUrl";
         }
