@@ -6,7 +6,7 @@ import android.view.View;
 import android.widget.Button;
 
 import com.bitmovin.analytics.conviva.ConvivaAnalytics;
-import com.bitmovin.analytics.conviva.ConvivaConfig;
+import com.bitmovin.analytics.conviva.ConvivaConfiguration;
 import com.bitmovin.player.BitmovinPlayer;
 import com.bitmovin.player.BitmovinPlayerView;
 import com.bitmovin.player.config.media.SourceConfiguration;
@@ -54,14 +54,14 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         // HLS VOD Stream
         // sourceConfiguration.addSourceItem("https://bitmovin-a.akamaihd.net/content/MI201109210084_1/m3u8s/f08e80da-bf1d-4e3d-8899-f0f6155f6efa.m3u8");
 
-        // Create your ConvivaConfig object
-        ConvivaConfig convivaConfig = new ConvivaConfig(
+        // Create your ConvivaConfiguration object
+        ConvivaConfiguration convivaConfig = new ConvivaConfiguration(
                 "ConvivaExample_BitmovinPlayer",
                 "ViewerId1");
 
         // Set only in debug mode
-        if (this.gatewayUrl != null) {
-            convivaConfig.setGatewayUrl(this.gatewayUrl);
+        if (gatewayUrl != null) {
+            convivaConfig.setGatewayUrl(gatewayUrl);
         }
 
         // Add optional parameters
@@ -70,7 +70,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         // Create ConvivaAnalytics
         convivaAnalytics = new ConvivaAnalytics(
                 bitmovinPlayer,
-                this.customerKey,
+                customerKey,
                 getApplicationContext(),
                 convivaConfig);
 

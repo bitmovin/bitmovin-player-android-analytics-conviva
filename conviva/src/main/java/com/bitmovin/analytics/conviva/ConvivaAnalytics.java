@@ -48,7 +48,7 @@ public class ConvivaAnalytics {
     private Client client;
     private BitmovinPlayer bitmovinPlayer;
     private ContentMetadata contentMetadata;
-    private ConvivaConfig config;
+    private ConvivaConfiguration config;
     private int sessionId = Client.NO_SESSION_KEY;
     private boolean playerStarted = false;
     private PlayerStateManager playerStateManager;
@@ -211,13 +211,13 @@ public class ConvivaAnalytics {
     };
 
     public ConvivaAnalytics(BitmovinPlayer player, String customerKey, Context context) {
-        this(player, customerKey, context, new ConvivaConfig());
+        this(player, customerKey, context, new ConvivaConfiguration());
     }
 
     public ConvivaAnalytics(BitmovinPlayer player,
                             String customerKey,
                             Context context,
-                            ConvivaConfig config) {
+                            ConvivaConfiguration config) {
         this.bitmovinPlayer = player;
         this.config = config;
 

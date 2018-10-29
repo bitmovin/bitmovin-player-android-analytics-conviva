@@ -3,18 +3,18 @@ package com.bitmovin.analytics.conviva;
 import java.util.HashMap;
 import java.util.Map;
 
-public class ConvivaConfig {
+public class ConvivaConfiguration {
     private String gatewayUrl;
     private boolean debugLoggingEnabled;
     private String applicationName;
     private String viewerId;
     private Map<String,String> customData = new HashMap<>();
 
-    public ConvivaConfig() {
+    public ConvivaConfiguration() {
 
     }
 
-    public ConvivaConfig(String applicationName, String viewerId) {
+    public ConvivaConfiguration(String applicationName, String viewerId) {
         this.applicationName = applicationName;
         this.viewerId = viewerId;
     }
