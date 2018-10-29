@@ -46,29 +46,20 @@ The following example create a ConvivaAnalytics object and attaches at Bitmovin 
 SourceConfiguration sourceConfiguration = new SourceConfiguration();
 
 // Add a new source item
-sourceConfiguration.addSourceItem("https://bitmovin-a.akamaihd.net/content/MI201109210084_1/mpds/f08e80da-bf1d-4e3d-8899-f0f6155f6efa.mpd");
+DASHSource dashSource = new DASHSource("STREAM-URL");
+SourceItem sourceItem = new SourceItem(dashSource);
+sourceConfiguration.addSourceItem(sourceItem);
 
-// Create your ConvivaConfig object
-ConvivaConfig convivaConfig = new ConvivaConfig("e94c66c4c6eb1d888077767e5db0d7b12b15f5b6", "https://rtl-nl-xl-test.testonly.conviva.com/","ConvivaExample_BitmovinPlayer","ViewerId1","Asset1");
-
-// Add optional parameters
-convivaConfig.setDebugLoggingEnabled(true);
+// Create your ConvivaConfiguration object
+ConvivaConfiguration convivaConfig = new ConvivaConfiguration(
+    "ConvivaExample_BitmovinPlayer",
+    "ViewerId1");
 
 // Create ConvivaAnalytics
-convivaAnalytics = ConvivaAnalytics.getInstance();
-convivaAnalytics.attachPlayer(convivaConfig, bitmovinPlayer, getApplicationContext());
+convivaAnalytics = new ConvivaAnalytics(bitmovinPlayer, "YOUR-CUSTOMER-KEY", getApplicationContext(), convivaConfig);
 
 // load source using the created source configuration
 bitmovinPlayer.load(sourceConfiguration);
-```
-
-#### Switching to a new video
-Before you switch to a new video, make sure to detach your player from the ConvivaAnalytics object.
-
-```java
-
-convivaAnalytics.detachPlayer();
-
 ```
 
 #### Optional Configuration Parameters
