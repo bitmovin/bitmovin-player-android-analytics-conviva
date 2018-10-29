@@ -9,7 +9,9 @@ import com.bitmovin.analytics.conviva.ConvivaAnalytics;
 import com.bitmovin.analytics.conviva.ConvivaConfiguration;
 import com.bitmovin.player.BitmovinPlayer;
 import com.bitmovin.player.BitmovinPlayerView;
+import com.bitmovin.player.config.media.DASHSource;
 import com.bitmovin.player.config.media.SourceConfiguration;
+import com.bitmovin.player.config.media.SourceItem;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
     // UI
@@ -45,14 +47,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         SourceConfiguration sourceConfiguration = new SourceConfiguration();
 
         // Add a new source item
-        // DASH LIVE STREAM
-        // sourceConfiguration.addSourceItem("http://vm2.dashif.org/livesim/mup_300/tsbd_500/testpic_2s/Manifest.mpd");
-        //
-        // DASH VOD STREAM
-        // sourceConfiguration.addSourceItem("https://bitmovin-a.akamaihd.net/content/MI201109210084_1/mpds/f08e80da-bf1d-4e3d-8899-f0f6155f6efa.mpd");
-        //
-        // HLS VOD Stream
-        // sourceConfiguration.addSourceItem("https://bitmovin-a.akamaihd.net/content/MI201109210084_1/m3u8s/f08e80da-bf1d-4e3d-8899-f0f6155f6efa.m3u8");
+        DASHSource dashSource = new DASHSource("https://bitmovin-a.akamaihd.net/content/MI201109210084_1/mpds/f08e80da-bf1d-4e3d-8899-f0f6155f6efa.mpd");
+        SourceItem sourceItem = new SourceItem(dashSource);
+        sourceConfiguration.addSourceItem(sourceItem);
 
         // Create your ConvivaConfiguration object
         ConvivaConfiguration convivaConfig = new ConvivaConfiguration(
