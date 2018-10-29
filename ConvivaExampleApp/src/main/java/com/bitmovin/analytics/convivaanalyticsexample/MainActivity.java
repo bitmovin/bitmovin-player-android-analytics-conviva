@@ -17,8 +17,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private Button createButton;
 
     // Conviva
-    private String customerKey = "";
-    private String gatewayUrl;
+    private static final String customerKey = "";
+    private static String gatewayUrl; // Set only in debug mode
     private ConvivaAnalytics convivaAnalytics;
 
     // Player
