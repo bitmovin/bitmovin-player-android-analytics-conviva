@@ -8,8 +8,8 @@
         <option name="modules">
           <set>
             <option value="$PROJECT_DIR$" />
+            <option value="$PROJECT_DIR$/ConvivaExampleApp" />
             <option value="$PROJECT_DIR$/conviva" />
-            <option value="$PROJECT_DIR$/exampleapp" />
           </set>
         </option>
         <option name="resolveModulePerSourceSet" value="false" />
