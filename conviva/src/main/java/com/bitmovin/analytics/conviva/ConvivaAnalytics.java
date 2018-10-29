@@ -321,21 +321,23 @@ public class ConvivaAnalytics {
     }
 
     private void removeBitmovinEventListeners() {
-        if (bitmovinPlayer != null) {
-            bitmovinPlayer.removeEventListener(onSourceUnloadedListener);
-            bitmovinPlayer.removeEventListener(onErrorListener);
-            bitmovinPlayer.removeEventListener(onWarningListener);
-            bitmovinPlayer.removeEventListener(onPausedListener);
-            bitmovinPlayer.removeEventListener(onPlayListener);
-            bitmovinPlayer.removeEventListener(onPlayingListener);
-            bitmovinPlayer.removeEventListener(onSeekedListener);
-            bitmovinPlayer.removeEventListener(onSeekListener);
-            bitmovinPlayer.removeEventListener(onStallEndedListener);
-            bitmovinPlayer.removeEventListener(onStallStartedListener);
-            bitmovinPlayer.removeEventListener(onReadyListener);
-            bitmovinPlayer.removeEventListener(onPlaybackFinishedListener);
-            bitmovinPlayer.removeEventListener(onVideoPlaybackQualityChangedListener);
+        if (bitmovinPlayer == null) {
+            return;
         }
+
+        bitmovinPlayer.removeEventListener(onSourceUnloadedListener);
+        bitmovinPlayer.removeEventListener(onErrorListener);
+        bitmovinPlayer.removeEventListener(onWarningListener);
+        bitmovinPlayer.removeEventListener(onPausedListener);
+        bitmovinPlayer.removeEventListener(onPlayListener);
+        bitmovinPlayer.removeEventListener(onPlayingListener);
+        bitmovinPlayer.removeEventListener(onSeekedListener);
+        bitmovinPlayer.removeEventListener(onSeekListener);
+        bitmovinPlayer.removeEventListener(onStallEndedListener);
+        bitmovinPlayer.removeEventListener(onStallStartedListener);
+        bitmovinPlayer.removeEventListener(onReadyListener);
+        bitmovinPlayer.removeEventListener(onPlaybackFinishedListener);
+        bitmovinPlayer.removeEventListener(onVideoPlaybackQualityChangedListener);
     }
 
 
