@@ -151,7 +151,7 @@ public class ConvivaAnalytics {
 
         contentMetadata.streamUrl = playerHelper.getStreamUrl();
 
-        VideoQuality videoQuality = bitmovinPlayer.getVideoQuality();
+        VideoQuality videoQuality = bitmovinPlayer.getPlaybackVideoData();
         if (videoQuality != null) {
             int bitrate = videoQuality.getBitrate() / 1000; // in kbps
             try {
