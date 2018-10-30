@@ -321,7 +321,7 @@ public class ConvivaAnalytics {
 
     private void trackAdEnd() {
         if (!adStarted) {
-            // Do not track adEnd if no ad ever started
+            // Do not track adEnd if no ad is was shown (possible if an error occurred)
             return;
         }
         adStarted = false;
