@@ -127,7 +127,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         // NOTE: AdItems containing more than one AdSource, will be executed as waterfalling ad
         AdItem midRoll = new AdItem("10%", firstAdSource, secondAdSource);
         // Setup a post-roll ad
-        AdItem postRoll = new AdItem("00:01:05.201", fourthAdSource); // TODO: change to post-roll
+        AdItem postRoll = new AdItem("post", fourthAdSource);
 
         // Add the AdItems to the AdvertisingConfiguration
         return new AdvertisingConfiguration(preRoll, midRoll, postRoll);
