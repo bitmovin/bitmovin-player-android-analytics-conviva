@@ -154,7 +154,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private void releasePlayer() {
         if (bitmovinPlayer != null) {
             bitmovinPlayer.unload();
-            bitmovinPlayer = null;
         }
     }
 
@@ -163,9 +162,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         if (v == releaseButton) {
             releasePlayer();
         } else if (v == createButton) {
-            if (bitmovinPlayer != null) {
-                bitmovinPlayer.setup(buildPlayerConfiguration());
-            }
+            bitmovinPlayer.setup(buildPlayerConfiguration());
         } else if (v == sendCustomEventButton) {
             Map<String, Object> eventAttributes = new HashMap<>();
             eventAttributes.put("Some", "Attributes");
