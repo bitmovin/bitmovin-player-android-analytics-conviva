@@ -167,8 +167,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             Map<String, Object> eventAttributes = new HashMap<>();
             eventAttributes.put("Some", "Attributes");
             this.convivaAnalytics.sendCustomPlaybackEvent("Custom Event", eventAttributes);
-
-            this.bitmovinPlayer.play();
         }
     }
 }
