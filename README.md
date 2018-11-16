@@ -12,22 +12,23 @@ Add this to your top level `build.gradle`
 
 ```
 allprojects {
-    repositories {
-		maven {
-			url  'http://bitmovin.bintray.com/maven'
-		}
-	}
+  repositories {
+    maven {
+      url  'http://bitmovin.bintray.com/maven' 
+    }
+  }
 }
 ```
 
-And this line to your main project
+And this lines to your main project
 ```
 dependencies {
-    compile 'com.bitmovin.analytics:conviva:0.2.0'
+  implementation 'com.conviva.sdk:conviva-core-sdk:2.145.1' // <-- conviva sdk
+  implementation 'com.bitmovin.analytics:conviva:0.2.0'
 }
 ```
 
-Add the following permissions 
+Add the following permissions
 
 ```
 <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
@@ -48,6 +49,7 @@ SourceConfiguration sourceConfiguration = new SourceConfiguration();
 // Add a new source item
 DASHSource dashSource = new DASHSource("STREAM-URL");
 SourceItem sourceItem = new SourceItem(dashSource);
+sourceItem.setTitle("Asset Name"); // Important to set the Asset Name as it's required by Conviva
 sourceConfiguration.addSourceItem(sourceItem);
 
 // Create your ConvivaConfiguration object
