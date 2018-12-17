@@ -109,27 +109,17 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     private AdvertisingConfiguration buildAdConfiguration() {
         // These are IMA Sample Tags from https://developers.google.com/interactive-media-ads/docs/sdks/android/tags
-        String AD_SOURCE_1 = "https://pubads.g.doubleclick.net/gampad/ads?sz=640x480&iu=/124319096/external/single_ad_samples&ciu_szs=300x250&impl=s&gdfp_req=1&env=vp&output=vast&unviewed_position_start=1&cust_params=deployment%3Ddevsite%26sample_ct%3Dredirecterror&nofb=1&correlator=";
-        String AD_SOURCE_2 = "https://pubads.g.doubleclick.net/gampad/ads?sz=640x480&iu=/124319096/external/single_ad_samples&ciu_szs=300x250&impl=s&gdfp_req=1&env=vp&output=vast&unviewed_position_start=1&cust_params=deployment%3Ddevsite%26sample_ct%3Dlinear&correlator=";
-        String AD_SOURCE_3 = "https://pubads.g.doubleclick.net/gampad/ads?sz=640x480&iu=/124319096/external/single_ad_samples&ciu_szs=300x250&impl=s&gdfp_req=1&env=vp&output=vast&unviewed_position_start=1&cust_params=deployment%3Ddevsite%26sample_ct%3Dskippablelinear&correlator=";
-        String AD_SOURCE_4 = "https://pubads.g.doubleclick.net/gampad/ads?sz=640x480&iu=/124319096/external/single_ad_samples&ciu_szs=300x250&impl=s&gdfp_req=1&env=vp&output=vast&unviewed_position_start=1&cust_params=deployment%3Ddevsite%26sample_ct%3Dredirectlinear&correlator=";
+
+        String AD_SOURCE_1 = "https://pubads.g.doubleclick.net/gampad/ads?sz=640x480&iu=/124319096/external/ad_rule_samples&ciu_szs=300x250&ad_rule=1&impl=s&gdfp_req=1&env=vp&output=vmap&unviewed_position_start=1&cust_params=deployment%3Ddevsite%26sample_ar%3Dpremidpostpod&cmsid=496&vid=short_onecue&correlator=";
 
         // Create AdSources
         AdSource firstAdSource = new AdSource(AdSourceType.IMA, AD_SOURCE_1);
-        AdSource secondAdSource = new AdSource(AdSourceType.IMA, AD_SOURCE_2);
-        AdSource thirdAdSource = new AdSource(AdSourceType.IMA, AD_SOURCE_3);
-        AdSource fourthAdSource = new AdSource(AdSourceType.IMA, AD_SOURCE_4);
 
         // Setup a pre-roll ad
-        AdItem preRoll = new AdItem("pre", thirdAdSource);
-        // Setup a mid-roll waterfalling ad at 10% of the content duration
-        // NOTE: AdItems containing more than one AdSource, will be executed as waterfalling ad
-        AdItem midRoll = new AdItem("10%", firstAdSource, secondAdSource);
-        // Setup a post-roll ad
-        AdItem postRoll = new AdItem("post", fourthAdSource);
+        AdItem preRoll = new AdItem("pre", firstAdSource);
 
         // Add the AdItems to the AdvertisingConfiguration
-        return new AdvertisingConfiguration(preRoll, midRoll, postRoll);
+        return new AdvertisingConfiguration(preRoll);
     }
 
     @Override
