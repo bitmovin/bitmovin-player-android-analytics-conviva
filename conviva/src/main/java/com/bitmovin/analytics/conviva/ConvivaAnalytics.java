@@ -275,39 +275,6 @@ public class ConvivaAnalytics {
         bitmovinPlayer.addEventListener(onVideoPlaybackQualityChangedListener);
     }
 
-    private void removeBitmovinEventListeners() {
-        if (bitmovinPlayer == null) {
-            return;
-        }
-
-        bitmovinPlayer.removeEventListener(onSourceUnloadedListener);
-        bitmovinPlayer.removeEventListener(onErrorListener);
-        bitmovinPlayer.removeEventListener(onWarningListener);
-
-        bitmovinPlayer.removeEventListener(onMutedListener);
-        bitmovinPlayer.removeEventListener(onUnmutedListener);
-
-        // Playback state events
-        bitmovinPlayer.removeEventListener(onPlayListener);
-        bitmovinPlayer.removeEventListener(onPlayingListener);
-        bitmovinPlayer.removeEventListener(onPausedListener);
-        bitmovinPlayer.removeEventListener(onStallEndedListener);
-        bitmovinPlayer.removeEventListener(onStallStartedListener);
-        bitmovinPlayer.removeEventListener(onPlaybackFinishedListener);
-
-        // Seek events
-        bitmovinPlayer.removeEventListener(onSeekedListener);
-        bitmovinPlayer.removeEventListener(onSeekListener);
-
-        // Ad events
-        bitmovinPlayer.removeEventListener(onAdStartedListener);
-        bitmovinPlayer.removeEventListener(onAdFinishedListener);
-        bitmovinPlayer.removeEventListener(onAdSkippedListener);
-        bitmovinPlayer.removeEventListener(onAdErrorListener);
-
-        bitmovinPlayer.removeEventListener(onVideoPlaybackQualityChangedListener);
-    }
-
     private synchronized void transitionState(PlayerStateManager.PlayerState state) {
         try {
             Log.d(TAG, "Transitioning to :" + state.name());
