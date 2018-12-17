@@ -56,9 +56,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     protected void setupBitmovinPlayer() {
         this.bitmovinPlayer = new BitmovinPlayer(this);
-        this.bitmovinPlayerView = new BitmovinPlayerView(this);
+        this.bitmovinPlayerView = new BitmovinPlayerView(this, this.bitmovinPlayer);
 
-        bitmovinPlayerView.setPlayer(bitmovinPlayer);
         LinearLayout playerUIView = this.findViewById(R.id.bitmovinPlayerUIView);
         playerUIView.addView(bitmovinPlayerView);
 
