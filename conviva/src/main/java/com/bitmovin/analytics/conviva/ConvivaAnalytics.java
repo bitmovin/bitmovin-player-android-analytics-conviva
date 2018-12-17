@@ -5,6 +5,10 @@ import android.os.Handler;
 import android.util.Log;
 
 import com.bitmovin.player.BitmovinPlayer;
+import com.bitmovin.player.api.event.data.AdErrorEvent;
+import com.bitmovin.player.api.event.data.AdFinishedEvent;
+import com.bitmovin.player.api.event.data.AdSkippedEvent;
+import com.bitmovin.player.api.event.data.AdStartedEvent;
 import com.bitmovin.player.api.event.data.BitmovinPlayerEvent;
 import com.bitmovin.player.api.event.data.ErrorEvent;
 import com.bitmovin.player.api.event.data.MutedEvent;
@@ -20,6 +24,10 @@ import com.bitmovin.player.api.event.data.StallStartedEvent;
 import com.bitmovin.player.api.event.data.UnmutedEvent;
 import com.bitmovin.player.api.event.data.VideoPlaybackQualityChangedEvent;
 import com.bitmovin.player.api.event.data.WarningEvent;
+import com.bitmovin.player.api.event.listener.OnAdErrorListener;
+import com.bitmovin.player.api.event.listener.OnAdFinishedListener;
+import com.bitmovin.player.api.event.listener.OnAdSkippedListener;
+import com.bitmovin.player.api.event.listener.OnAdStartedListener;
 import com.bitmovin.player.api.event.listener.OnErrorListener;
 import com.bitmovin.player.api.event.listener.OnMutedListener;
 import com.bitmovin.player.api.event.listener.OnPausedListener;
@@ -62,6 +70,9 @@ public class ConvivaAnalytics {
     // Wrapper to extract bitmovinPlayer helper methods
     private BitmovinPlayerHelper playerHelper;
 
+    // Helper
+    private Boolean adStarted = false;
+
     public ConvivaAnalytics(BitmovinPlayer player, String customerKey, Context context) {
         this(player, customerKey, context, new ConvivaConfiguration());
     }
@@ -99,6 +110,7 @@ public class ConvivaAnalytics {
         }
     }
 
+    // region Session handling
     private void setupPlayerStateManager() {
         try {
             playerStateManager = client.getPlayerStateManager();
@@ -139,7 +151,7 @@ public class ConvivaAnalytics {
 
         contentMetadata.streamUrl = playerHelper.getStreamUrl();
 
-        VideoQuality videoQuality = bitmovinPlayer.getVideoQuality();
+        VideoQuality videoQuality = bitmovinPlayer.getPlaybackVideoData();
         if (videoQuality != null) {
             int bitrate = videoQuality.getBitrate() / 1000; // in kbps
             try {
@@ -173,8 +185,11 @@ public class ConvivaAnalytics {
     }
 
     private void endConvivaSession() {
+        if (!isValidSession()) {
+            return;
+        }
+
         try {
-            removeBitmovinEventListeners();
             client.detachPlayer(sessionId);
             client.cleanupSession(sessionId);
             client.releasePlayerStateManager(playerStateManager);
@@ -186,7 +201,9 @@ public class ConvivaAnalytics {
             Log.e(TAG, "Session ended");
         }
     }
+    // endregion
 
+    // region custom Events
     public void sendCustomApplicationEvent(String name) {
         sendCustomApplicationEvent(name, new HashMap<String, Object>());
     }
@@ -227,10 +244,7 @@ public class ConvivaAnalytics {
         String eventName = event.getClass().getSimpleName();
         sendCustomPlaybackEvent("on" + eventName, attributes);
     }
-
-    private boolean isValidSession() {
-        return sessionId != Client.NO_SESSION_KEY;
-    }
+    // endregion
 
     private void attachBitmovinEventListeners() {
         bitmovinPlayer.addEventListener(onSourceUnloadedListener);
@@ -252,34 +266,13 @@ public class ConvivaAnalytics {
         bitmovinPlayer.addEventListener(onSeekedListener);
         bitmovinPlayer.addEventListener(onSeekListener);
 
+        // Ad events
+        bitmovinPlayer.addEventListener(onAdStartedListener);
+        bitmovinPlayer.addEventListener(onAdFinishedListener);
+        bitmovinPlayer.addEventListener(onAdSkippedListener);
+        bitmovinPlayer.addEventListener(onAdErrorListener);
+
         bitmovinPlayer.addEventListener(onVideoPlaybackQualityChangedListener);
-    }
-
-    private void removeBitmovinEventListeners() {
-        if (bitmovinPlayer == null) {
-            return;
-        }
-
-        bitmovinPlayer.removeEventListener(onSourceUnloadedListener);
-        bitmovinPlayer.removeEventListener(onErrorListener);
-        bitmovinPlayer.removeEventListener(onWarningListener);
-
-        bitmovinPlayer.removeEventListener(onMutedListener);
-        bitmovinPlayer.removeEventListener(onUnmutedListener);
-
-        // Playback state events
-        bitmovinPlayer.removeEventListener(onPlayListener);
-        bitmovinPlayer.removeEventListener(onPlayingListener);
-        bitmovinPlayer.removeEventListener(onPausedListener);
-        bitmovinPlayer.removeEventListener(onStallEndedListener);
-        bitmovinPlayer.removeEventListener(onStallStartedListener);
-        bitmovinPlayer.removeEventListener(onPlaybackFinishedListener);
-
-        // Seek events
-        bitmovinPlayer.removeEventListener(onSeekedListener);
-        bitmovinPlayer.removeEventListener(onSeekListener);
-
-        bitmovinPlayer.removeEventListener(onVideoPlaybackQualityChangedListener);
     }
 
     private synchronized void transitionState(PlayerStateManager.PlayerState state) {
@@ -290,6 +283,26 @@ public class ConvivaAnalytics {
             Log.e(TAG, "Unable to transition state: " + e.getLocalizedMessage());
         }
     }
+
+    // region Helper
+    private boolean isValidSession() {
+        return sessionId != Client.NO_SESSION_KEY;
+    }
+
+    private void trackAdEnd() {
+        if (!adStarted) {
+            // Do not track adEnd if no ad is was shown (possible if an error occurred)
+            return;
+        }
+        adStarted = false;
+
+        try {
+            client.adEnd(sessionId);
+        } catch (ConvivaException e) {
+            Log.e(TAG, e.getLocalizedMessage());
+        }
+    }
+    // endregion
 
     // region Listeners
     private OnSourceUnloadedListener onSourceUnloadedListener = new OnSourceUnloadedListener() {
@@ -443,6 +456,45 @@ public class ConvivaAnalytics {
             } catch (ConvivaException e) {
                 Log.e(TAG, e.getLocalizedMessage());
             }
+        }
+    };
+    // endregion
+
+    // region Ad events
+    private OnAdStartedListener onAdStartedListener = new OnAdStartedListener() {
+        @Override
+        public void onAdStarted(AdStartedEvent adStartedEvent) {
+            Client.AdPosition adPosition = AdEventUtil.parseAdPosition(adStartedEvent, bitmovinPlayer.getDuration());
+            adStarted = true;
+
+            try {
+                client.adStart(sessionId, Client.AdStream.SEPARATE, Client.AdPlayer.CONTENT, adPosition);
+            } catch (ConvivaException e) {
+                Log.e(TAG, e.getLocalizedMessage());
+            }
+        }
+    };
+
+    private OnAdFinishedListener onAdFinishedListener = new OnAdFinishedListener() {
+        @Override
+        public void onAdFinished(AdFinishedEvent adFinishedEvent) {
+            trackAdEnd();
+        }
+    };
+
+    private OnAdSkippedListener onAdSkippedListener = new OnAdSkippedListener() {
+        @Override
+        public void onAdSkipped(AdSkippedEvent adSkippedEvent) {
+            customEvent(adSkippedEvent);
+            trackAdEnd();
+        }
+    };
+
+    private OnAdErrorListener onAdErrorListener = new OnAdErrorListener() {
+        @Override
+        public void onAdError(AdErrorEvent adErrorEvent) {
+            customEvent(adErrorEvent);
+            trackAdEnd();
         }
     };
     // endregion

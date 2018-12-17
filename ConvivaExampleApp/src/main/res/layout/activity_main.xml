@@ -7,16 +7,15 @@
     android:keepScreenOn="true"
     tools:context=".MainActivity">
 
-    <com.bitmovin.player.BitmovinPlayerView
-        android:id="@+id/bitmovinPlayerView"
+    <LinearLayout
+        android:id="@+id/bitmovinPlayerUIView"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintDimensionRatio="H,16:9">
-
-    </com.bitmovin.player.BitmovinPlayerView>
+        app:layout_constraintDimensionRatio="H,16:9"
+        android:orientation="vertical" />
 
     <Button
         android:id="@+id/custom_event_button"
@@ -45,7 +44,7 @@
         app:layout_constraintEnd_toStartOf="@+id/create_button"
         app:layout_constraintHorizontal_weight="1"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/bitmovinPlayerView" />
+        app:layout_constraintTop_toBottomOf="@+id/include_ads_switch" />
 
     <Button
         android:id="@+id/create_button"
@@ -58,5 +57,20 @@
         app:layout_constraintHorizontal_weight="1"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="@+id/release_button" />
+
+    <Switch
+        android:id="@+id/include_ads_switch"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginLeft="16dp"
+        android:layout_marginTop="16dp"
+        android:layout_marginEnd="16dp"
+        android:layout_marginRight="16dp"
+        android:checked="true"
+        android:text="Include Ads"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/bitmovinPlayerUIView" />
 
 </android.support.constraint.ConstraintLayout>
