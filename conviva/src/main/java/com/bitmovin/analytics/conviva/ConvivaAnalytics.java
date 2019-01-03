@@ -276,6 +276,10 @@ public class ConvivaAnalytics {
     }
 
     private synchronized void transitionState(PlayerStateManager.PlayerState state) {
+        if (!isValidSession()) {
+            return;
+        }
+
         try {
             Log.d(TAG, "Transitioning to :" + state.name());
             playerStateManager.setPlayerState(state);
@@ -390,8 +394,18 @@ public class ConvivaAnalytics {
     private OnPausedListener onPausedListener = new OnPausedListener() {
         @Override
         public void onPaused(PausedEvent pausedEvent) {
-            Log.d(TAG, "OnPaused");
-            transitionState(PlayerStateManager.PlayerState.PAUSED);
+            // The default SDK handling is that it triggers the onPaused before the
+            // onError event in case of no internet connectivity. (No onPaused should be triggered)
+            // To ensure that no playback state change will be reported we need to delay the
+            // onPaused event.
+            // TODO: remove this once the event order is fixed on the Android SDK.
+            new Handler().postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    Log.d(TAG, "[Player Event] OnPaused");
+                    transitionState(PlayerStateManager.PlayerState.PAUSED);
+                }
+            }, 100);
         }
     };
 
@@ -415,12 +429,22 @@ public class ConvivaAnalytics {
     private OnStallEndedListener onStallEndedListener = new OnStallEndedListener() {
         @Override
         public void onStallEnded(StallEndedEvent stallEndedEvent) {
-            Log.d(TAG, "OnStallEnded");
-            PlayerStateManager.PlayerState state = PlayerStateManager.PlayerState.PLAYING;
-            if (bitmovinPlayer.isPaused()) {
-                state = PlayerStateManager.PlayerState.PAUSED;
-            }
-            transitionState(state);
+            // The default SDK error handling is that it triggers the onStallEnded before the
+            // onError event in case of no internet connectivity.
+            // To track errors on Conviva we need to delay the onStallEnded to ensure no
+            // playback state change will be reported.
+            // TODO: remove this once the event order is fixed on the Android SDK.
+            new Handler().postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    Log.d(TAG, "[Player Event] OnStallEnded");
+                    PlayerStateManager.PlayerState state = PlayerStateManager.PlayerState.PLAYING;
+                    if (bitmovinPlayer.isPaused()) {
+                        state = PlayerStateManager.PlayerState.PAUSED;
+                    }
+                    transitionState(state);
+                }
+            }, 100);
         }
     };
     // endregion
