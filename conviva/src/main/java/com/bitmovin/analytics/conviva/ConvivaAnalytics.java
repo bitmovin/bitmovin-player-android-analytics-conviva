@@ -127,7 +127,7 @@ public class ConvivaAnalytics {
             createContentMetadata();
             sessionId = client.createSession(contentMetadata);
             setupPlayerStateManager();
-            Log.i(TAG, "[Player Event] Created SessionID - " + sessionId);
+            Log.d(TAG, "[Player Event] Created SessionID - " + sessionId);
             client.attachPlayer(sessionId, playerStateManager);
         } catch (ConvivaException e) {
             Log.e(TAG, e.getLocalizedMessage());
@@ -368,7 +368,7 @@ public class ConvivaAnalytics {
     private OnUnmutedListener onUnmutedListener = new OnUnmutedListener() {
         @Override
         public void onUnmuted(UnmutedEvent unmutedEvent) {
-            Log.d(TAG, "[Player Event] OnUnmoted");
+            Log.d(TAG, "[Player Event] OnUnmuted");
             customEvent(unmutedEvent);
         }
     };
