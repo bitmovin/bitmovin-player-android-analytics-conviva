@@ -176,14 +176,11 @@ public class ConvivaAnalytics {
     }
 
     private void buildDynamicContentMetadata() {
-        if (!bitmovinPlayer.isLive()) {
-            contentMetadata.duration = (int) bitmovinPlayer.getDuration();
-        }
-
         if (bitmovinPlayer.isLive()) {
             contentMetadata.streamType = ContentMetadata.StreamType.LIVE;
         } else {
             contentMetadata.streamType = ContentMetadata.StreamType.VOD;
+            contentMetadata.duration = (int) bitmovinPlayer.getDuration();
         }
 
         contentMetadata.streamUrl = playerHelper.getStreamUrl();
