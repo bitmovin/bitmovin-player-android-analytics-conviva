@@ -138,18 +138,7 @@ public class ConvivaAnalytics {
         if (!isValidSession()) {
             return;
         }
-
-        if (!bitmovinPlayer.isLive()) {
-            contentMetadata.duration = (int) bitmovinPlayer.getDuration();
-        }
-
-        if (bitmovinPlayer.isLive()) {
-            contentMetadata.streamType = ContentMetadata.StreamType.LIVE;
-        } else {
-            contentMetadata.streamType = ContentMetadata.StreamType.VOD;
-        }
-
-        contentMetadata.streamUrl = playerHelper.getStreamUrl();
+        this.buildDynamicContentMetadata();
 
         VideoQuality videoQuality = bitmovinPlayer.getPlaybackVideoData();
         if (videoQuality != null) {
@@ -182,6 +171,19 @@ public class ConvivaAnalytics {
         customInternTags.put("streamType", playerHelper.getStreamType());
         customInternTags.putAll(config.getCustomData());
         contentMetadata.custom = customInternTags;
+
+        this.buildDynamicContentMetadata();
+    }
+
+    private void buildDynamicContentMetadata() {
+        if (bitmovinPlayer.isLive()) {
+            contentMetadata.streamType = ContentMetadata.StreamType.LIVE;
+        } else {
+            contentMetadata.streamType = ContentMetadata.StreamType.VOD;
+            contentMetadata.duration = (int) bitmovinPlayer.getDuration();
+        }
+
+        contentMetadata.streamUrl = playerHelper.getStreamUrl();
     }
 
     private void endConvivaSession() {
