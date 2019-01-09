@@ -127,7 +127,7 @@ public class ConvivaAnalytics {
             createContentMetadata();
             sessionId = client.createSession(contentMetadata);
             setupPlayerStateManager();
-            Log.i(TAG, "Created SessionID - " + sessionId);
+            Log.d(TAG, "[Player Event] Created SessionID - " + sessionId);
             client.attachPlayer(sessionId, playerStateManager);
         } catch (ConvivaException e) {
             Log.e(TAG, e.getLocalizedMessage());
@@ -276,6 +276,10 @@ public class ConvivaAnalytics {
     }
 
     private synchronized void transitionState(PlayerStateManager.PlayerState state) {
+        if (!isValidSession()) {
+            return;
+        }
+
         try {
             Log.d(TAG, "Transitioning to :" + state.name());
             playerStateManager.setPlayerState(state);
@@ -315,7 +319,7 @@ public class ConvivaAnalytics {
             new Handler().postDelayed(new Runnable() {
                 @Override
                 public void run() {
-                    Log.d(TAG, "OnSourceUnloaded");
+                    Log.d(TAG, "[Player Event] OnSourceUnloaded");
                     endConvivaSession();
                 }
             }, 100);
@@ -325,7 +329,7 @@ public class ConvivaAnalytics {
     private OnErrorListener onErrorListener = new OnErrorListener() {
         @Override
         public void onError(ErrorEvent errorEvent) {
-            Log.d(TAG, "OnError");
+            Log.d(TAG, "[Player Event] OnError");
             try {
                 ensureConvivaSessionIsCreatedAndInitialized();
 
@@ -341,7 +345,7 @@ public class ConvivaAnalytics {
     private OnWarningListener onWarningListener = new OnWarningListener() {
         @Override
         public void onWarning(WarningEvent warningEvent) {
-            Log.d(TAG, "OnWarning");
+            Log.d(TAG, "[Player Event] OnWarning");
             try {
                 ensureConvivaSessionIsCreatedAndInitialized();
 
@@ -356,7 +360,7 @@ public class ConvivaAnalytics {
     private OnMutedListener onMutedListener = new OnMutedListener() {
         @Override
         public void onMuted(MutedEvent mutedEvent) {
-            Log.d(TAG, "OnMuted");
+            Log.d(TAG, "[Player Event] OnMuted");
             customEvent(mutedEvent);
         }
     };
@@ -364,7 +368,7 @@ public class ConvivaAnalytics {
     private OnUnmutedListener onUnmutedListener = new OnUnmutedListener() {
         @Override
         public void onUnmuted(UnmutedEvent unmutedEvent) {
-            Log.d(TAG, "OnUnmoted");
+            Log.d(TAG, "[Player Event] OnUnmuted");
             customEvent(unmutedEvent);
         }
     };
@@ -373,7 +377,7 @@ public class ConvivaAnalytics {
     private OnPlayListener onPlayListener = new OnPlayListener() {
         @Override
         public void onPlay(PlayEvent playEvent) {
-            Log.d(TAG, "OnPlay");
+            Log.d(TAG, "[Player Event] OnPlay");
             ensureConvivaSessionIsCreatedAndInitialized();
             updateSession();
         }
@@ -382,7 +386,7 @@ public class ConvivaAnalytics {
     private OnPlayingListener onPlayingListener = new OnPlayingListener() {
         @Override
         public void onPlaying(PlayingEvent playingEvent) {
-            Log.d(TAG, "OnPlaying");
+            Log.d(TAG, "[Player Event] OnPlaying");
             transitionState(PlayerStateManager.PlayerState.PLAYING);
         }
     };
@@ -390,15 +394,25 @@ public class ConvivaAnalytics {
     private OnPausedListener onPausedListener = new OnPausedListener() {
         @Override
         public void onPaused(PausedEvent pausedEvent) {
-            Log.d(TAG, "OnPaused");
-            transitionState(PlayerStateManager.PlayerState.PAUSED);
+            // The default SDK handling is that it triggers the onPaused before the
+            // onError event in case of no internet connectivity. (No onPaused should be triggered)
+            // To ensure that no playback state change will be reported we need to delay the
+            // onPaused event.
+            // TODO: remove this once the event order is fixed on the Android SDK.
+            new Handler().postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    Log.d(TAG, "[Player Event] OnPaused");
+                    transitionState(PlayerStateManager.PlayerState.PAUSED);
+                }
+            }, 100);
         }
     };
 
     private OnPlaybackFinishedListener onPlaybackFinishedListener = new OnPlaybackFinishedListener() {
         @Override
         public void onPlaybackFinished(PlaybackFinishedEvent playbackFinishedEvent) {
-            Log.d(TAG, "OnPlaybackFinished");
+            Log.d(TAG, "[Player Event] OnPlaybackFinished");
             transitionState(PlayerStateManager.PlayerState.STOPPED);
             endConvivaSession();
         }
@@ -407,7 +421,7 @@ public class ConvivaAnalytics {
     private OnStallStartedListener onStallStartedListener = new OnStallStartedListener() {
         @Override
         public void onStallStarted(StallStartedEvent stallStartedEvent) {
-            Log.d(TAG, "OnStallStarted");
+            Log.d(TAG, "[Player Event] OnStallStarted");
             transitionState(PlayerStateManager.PlayerState.BUFFERING);
         }
     };
@@ -415,12 +429,22 @@ public class ConvivaAnalytics {
     private OnStallEndedListener onStallEndedListener = new OnStallEndedListener() {
         @Override
         public void onStallEnded(StallEndedEvent stallEndedEvent) {
-            Log.d(TAG, "OnStallEnded");
-            PlayerStateManager.PlayerState state = PlayerStateManager.PlayerState.PLAYING;
-            if (bitmovinPlayer.isPaused()) {
-                state = PlayerStateManager.PlayerState.PAUSED;
-            }
-            transitionState(state);
+            // The default SDK error handling is that it triggers the onStallEnded before the
+            // onError event in case of no internet connectivity.
+            // To track errors on Conviva we need to delay the onStallEnded to ensure no
+            // playback state change will be reported.
+            // TODO: remove this once the event order is fixed on the Android SDK.
+            new Handler().postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    Log.d(TAG, "[Player Event] OnStallEnded");
+                    PlayerStateManager.PlayerState state = PlayerStateManager.PlayerState.PLAYING;
+                    if (bitmovinPlayer.isPaused()) {
+                        state = PlayerStateManager.PlayerState.PAUSED;
+                    }
+                    transitionState(state);
+                }
+            }, 100);
         }
     };
     // endregion
@@ -434,7 +458,7 @@ public class ConvivaAnalytics {
                 // This also handles startTime feature. The same applies for onTimeShift.
                 return;
             }
-            Log.d(TAG, "OnSeek");
+            Log.d(TAG, "[Player Event] OnSeek");
             try {
                 playerStateManager.setPlayerSeekStart((int) seekEvent.getSeekTarget() * 1000);
             } catch (ConvivaException e) {
@@ -450,7 +474,7 @@ public class ConvivaAnalytics {
                 // See comment in onSeek
                 return;
             }
-            Log.d(TAG, "OnSeeked");
+            Log.d(TAG, "[Player Event] OnSeeked");
             try {
                 playerStateManager.setPlayerSeekEnd();
             } catch (ConvivaException e) {
@@ -502,7 +526,7 @@ public class ConvivaAnalytics {
     private OnVideoPlaybackQualityChangedListener onVideoPlaybackQualityChangedListener = new OnVideoPlaybackQualityChangedListener() {
         @Override
         public void onVideoPlaybackQualityChanged(VideoPlaybackQualityChangedEvent videoPlaybackQualityChangedEvent) {
-            Log.d(TAG, "OnVideoPlaybackQualityChanged");
+            Log.d(TAG, "[Player Event] OnVideoPlaybackQualityChanged");
             updateSession();
         }
     };
