@@ -169,6 +169,7 @@ public class ConvivaAnalytics {
         // Build custom tags
         Map<String, String> customInternTags = new HashMap<>();
         customInternTags.put("streamType", playerHelper.getStreamType());
+        customInternTags.put("integrationVersion", BuildConfig.VERSION_NAME);
         customInternTags.putAll(config.getCustomData());
         contentMetadata.custom = customInternTags;
 
