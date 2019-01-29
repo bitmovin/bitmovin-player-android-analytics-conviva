@@ -1,0 +1,89 @@
+apply plugin: 'com.android.library'
+apply plugin: 'com.jfrog.artifactory'
+apply plugin: 'maven-publish'
+apply from: "../bitmovinpropertiesloader.gradle"
+
+def packageName = 'com.bitmovin.analytics'
+def libraryVersion = '1.0.0'
+
+android {
+    compileSdkVersion 27
+
+    defaultConfig {
+        minSdkVersion 16
+        targetSdkVersion 27
+        versionCode 1
+        versionName libraryVersion
+
+        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+    }
+
+}
+
+dependencies {
+    implementation fileTree(include: ['*.jar'], dir: 'libs')
+    implementation 'com.android.support:appcompat-v7:27.1.1'
+    testImplementation 'junit:junit:4.12'
+    androidTestImplementation 'com.android.support.test:runner:1.0.2'
+    androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.2'
+    implementation 'com.conviva.sdk:conviva-core-sdk:2.145.1'
+    implementation 'com.bitmovin.player:playercore:2.17.0'
+}
+
+publishing {
+    publications {
+        aar(MavenPublication) {
+            groupId packageName
+            version = libraryVersion
+            artifactId project.getName()
+
+            // Tell maven to prepare the generated "*.aar" file for publishing
+            artifact("$buildDir/outputs/aar/${project.getName()}-release.aar")
+
+            pom.withXml {
+                def dependenciesNode = asNode().appendNode('dependencies')
+
+                //Defining configuration names from which dependencies will be taken (debugCompile or releaseCompile and compile)
+                def configurationNames = ['compile']
+
+                configurationNames.each { configurationName ->
+                    configurations[configurationName].allDependencies.each {
+                        def dependencyNode = dependenciesNode.appendNode('dependency')
+                        dependencyNode.appendNode('groupId', it.group)
+                        dependencyNode.appendNode('artifactId', it.name)
+                        dependencyNode.appendNode('version', it.version)
+                    }
+                }
+            }
+        }
+    }
+}
+
+artifactory {
+    contextUrl = 'https://bitmovin.jfrog.io/bitmovin'
+    publish {
+        repository {
+            // The Artifactory repository key to publish to
+            repoKey = libraryVersion.endsWith('SNAPSHOT') ? 'libs-snapshot-local' : 'libs-release-local'
+            username = bitmovinProperties.getProperty('artifactory_user') // The publisher user name
+            password = bitmovinProperties.getProperty('artifactory_password') // The publisher password
+        }
+        defaults {
+            // Tell the Artifactory Plugin which artifacts should be published to Artifactory.
+            publications('aar')
+            publishArtifacts = true
+
+            // Properties to be attached to the published artifacts.
+            properties = ['qa.level': 'basic', 'dev.team': 'core']
+            // Publish generated POM files to Artifactory (true by default)
+            publishPom = true
+        }
+    }
+}
