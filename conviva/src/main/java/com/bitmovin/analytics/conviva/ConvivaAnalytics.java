@@ -110,6 +110,86 @@ public class ConvivaAnalytics {
         }
     }
 
+    // region public methods
+    public void sendCustomApplicationEvent(String name) {
+        sendCustomApplicationEvent(name, new HashMap<String, Object>());
+    }
+
+    public void sendCustomApplicationEvent(String name, Map<String, Object> attributes) {
+        try {
+            client.sendCustomEvent(Client.NO_SESSION_KEY, name, attributes);
+        } catch (ConvivaException e) {
+            Log.e(TAG, e.getLocalizedMessage());
+        }
+    }
+
+    public void sendCustomPlaybackEvent(String name) {
+        sendCustomPlaybackEvent(name, new HashMap<String, Object>());
+    }
+
+    public void sendCustomPlaybackEvent(String name, Map<String, Object> attributes) {
+        if (!isValidSession()) {
+            Log.e(TAG, "Cannot send playback event, no active monitoring session");
+            return;
+        }
+        try {
+            client.sendCustomEvent(sessionId, name, attributes);
+        } catch (ConvivaException e) {
+            Log.e(TAG, e.getLocalizedMessage());
+        }
+    }
+
+    private void customEvent(BitmovinPlayerEvent event) {
+        customEvent(event, new HashMap<String, Object>());
+    }
+
+    private void customEvent(BitmovinPlayerEvent event, Map<String, Object> attributes) {
+        if (!isValidSession()) {
+            return;
+        }
+
+        String eventName = event.getClass().getSimpleName();
+        sendCustomPlaybackEvent("on" + eventName, attributes);
+    }
+
+    /**
+     * Sends a custom deficiency event during playback to Conviva's Player Insight. If no session is active it will NOT
+     * create one.
+     *
+     * @param message Message which will be send to conviva
+     * @param severity One of FATAL or WARNING
+     */
+    public void reportPlaybackDeficiency(String message, Client.ErrorSeverity severity) {
+        reportPlaybackDeficiency(message, severity, true);
+    }
+
+    /**
+     * Sends a custom deficiency event during playback to Conviva's Player Insight. If no session is active it will NOT
+     * create one.
+     *
+     * @param message Message which will be send to conviva
+     * @param severity One of FATAL or WARNING
+     * @param endSession Boolean flag if session should be closed after reporting the deficiency
+    */
+    public void reportPlaybackDeficiency(String message,
+                                         Client.ErrorSeverity severity,
+                                         Boolean endSession) {
+        if (!this.isValidSession()) {
+            return;
+        }
+
+        try {
+            this.client.reportError(this.sessionId, message, severity);
+        } catch (ConvivaException e) {
+            Log.e(TAG, e.getLocalizedMessage());
+        }
+
+        if (endSession) {
+            endConvivaSession();
+        }
+    }
+    // endregion
+
     // region Session handling
     private void setupPlayerStateManager() {
         try {
@@ -203,49 +283,6 @@ public class ConvivaAnalytics {
             playerStateManager = null;
             Log.e(TAG, "Session ended");
         }
-    }
-    // endregion
-
-    // region custom Events
-    public void sendCustomApplicationEvent(String name) {
-        sendCustomApplicationEvent(name, new HashMap<String, Object>());
-    }
-
-    public void sendCustomApplicationEvent(String name, Map<String, Object> attributes) {
-        try {
-            client.sendCustomEvent(Client.NO_SESSION_KEY, name, attributes);
-        } catch (ConvivaException e) {
-            Log.e(TAG, e.getLocalizedMessage());
-        }
-    }
-
-    public void sendCustomPlaybackEvent(String name) {
-        sendCustomPlaybackEvent(name, new HashMap<String, Object>());
-    }
-
-    public void sendCustomPlaybackEvent(String name, Map<String, Object> attributes) {
-        if (!isValidSession()) {
-            Log.e(TAG, "Cannot send playback event, no active monitoring session");
-            return;
-        }
-        try {
-            client.sendCustomEvent(sessionId, name, attributes);
-        } catch (ConvivaException e) {
-            Log.e(TAG, e.getLocalizedMessage());
-        }
-    }
-
-    private void customEvent(BitmovinPlayerEvent event) {
-        customEvent(event, new HashMap<String, Object>());
-    }
-
-    private void customEvent(BitmovinPlayerEvent event, Map<String, Object> attributes) {
-        if (!isValidSession()) {
-            return;
-        }
-
-        String eventName = event.getClass().getSimpleName();
-        sendCustomPlaybackEvent("on" + eventName, attributes);
     }
     // endregion
 
