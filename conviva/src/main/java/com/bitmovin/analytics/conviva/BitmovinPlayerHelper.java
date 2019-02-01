@@ -17,11 +17,18 @@ class BitmovinPlayerHelper {
 
     String getStreamType() {
         SourceItem sourceItem = player.getConfig().getSourceItem();
+        if (sourceItem == null) {
+            return null;
+        }
         return sourceItem.getType().name();
     }
 
     String getStreamUrl() {
         SourceItem sourceItem = player.getConfig().getSourceItem();
+
+        if (sourceItem == null) {
+            return null;
+        }
 
         switch (sourceItem.getType()) {
             case DASH:
