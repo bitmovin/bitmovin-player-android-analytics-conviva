@@ -145,10 +145,32 @@ public class ConvivaAnalytics {
         }
     }
 
+    /**
+     * Initializes a new conviva tracking session.
+     * <p>
+     * Warning: The integration can only be validated without external session managing. So when using this method we can
+     * no longer ensure that the session is managed at the correct time. Additional: Since some metadata attributes
+     * relies on the players source we can't ensure that all metadata attributes are present at session creation.
+     * Therefore it could be that there will be a 'ContentMetadata created late' issue after conviva validation.
+     * <p>
+     * If no source was loaded this method will throw an error.
+     */
     public void initializeSession() throws ConvivaAnalyticsException {
         initializeSession(null);
     }
 
+    /**
+     * Initializes a new conviva tracking session.
+     * <p>
+     * Warning: The integration can only be validated without external session managing. So when using this method we can
+     * no longer ensure that the session is managed at the correct time. Additional: Since some metadata attributes
+     * relies on the players source we can't ensure that all metadata attributes are present at session creation.
+     * Therefore it could be that there will be a 'ContentMetadata created late' issue after conviva validation.
+     *
+     * @param assetName Will be used as contentMetadata.assetName if no source was loaded before. This overrides the
+     *                  source assetName. If no source was loaded and no assetName is present this method will throw an
+     *                  error.
+     */
     public void initializeSession(String assetName) throws ConvivaAnalyticsException {
         if (isSessionActive()) {
             return;
@@ -165,6 +187,13 @@ public class ConvivaAnalytics {
         internalInitializeSession();
     }
 
+    /**
+     * Ends the current conviva tracking session.
+     * Results in a no-opt if there is no active session.
+     * <p>
+     * Warning: The integration can only be validated without external session managing.
+     * So when using this method we can no longer ensure that the session is managed at the correct time.
+     */
     public void endSession() {
         if (!isSessionActive()) {
             return;
@@ -177,7 +206,7 @@ public class ConvivaAnalytics {
      * Sends a custom deficiency event during playback to Conviva's Player Insight. If no session is active it will NOT
      * create one.
      *
-     * @param message Message which will be send to conviva
+     * @param message  Message which will be send to conviva
      * @param severity One of FATAL or WARNING
      */
     public void reportPlaybackDeficiency(String message, Client.ErrorSeverity severity) {
@@ -188,10 +217,10 @@ public class ConvivaAnalytics {
      * Sends a custom deficiency event during playback to Conviva's Player Insight. If no session is active it will NOT
      * create one.
      *
-     * @param message Message which will be send to conviva
-     * @param severity One of FATAL or WARNING
+     * @param message    Message which will be send to conviva
+     * @param severity   One of FATAL or WARNING
      * @param endSession Boolean flag if session should be closed after reporting the deficiency
-    */
+     */
     public void reportPlaybackDeficiency(String message,
                                          Client.ErrorSeverity severity,
                                          Boolean endSession) {
