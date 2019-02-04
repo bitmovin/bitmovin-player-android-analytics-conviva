@@ -345,6 +345,7 @@ public class ConvivaAnalytics {
         } finally {
             sessionId = Client.NO_SESSION_KEY;
             playerStateManager = null;
+            metadataOverrides = new MetadataOverrides();
             Log.e(TAG, "Session ended");
         }
     }
