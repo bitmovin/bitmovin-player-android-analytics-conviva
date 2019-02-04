@@ -168,8 +168,8 @@ public class ConvivaAnalytics {
      * Therefore it could be that there will be a 'ContentMetadata created late' issue after conviva validation.
      *
      * @param assetName Will be used as contentMetadata.assetName if no source was loaded before. This overrides the
-     *                  source assetName. If no source was loaded and no assetName is present this method will throw an
-     *                  error.
+     * source assetName. If no source was loaded and no assetName is present this method will throw an
+     * error.
      */
     public void initializeSession(String assetName) throws ConvivaAnalyticsException {
         if (isSessionActive()) {
