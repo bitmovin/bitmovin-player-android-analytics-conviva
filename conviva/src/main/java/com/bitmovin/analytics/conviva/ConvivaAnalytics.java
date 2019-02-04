@@ -171,9 +171,7 @@ public class ConvivaAnalytics {
      * @param severity One of FATAL or WARNING
      * @param endSession Boolean flag if session should be closed after reporting the deficiency
     */
-    public void reportPlaybackDeficiency(String message,
-                                         Client.ErrorSeverity severity,
-                                         Boolean endSession) {
+    public void reportPlaybackDeficiency(String message, Client.ErrorSeverity severity, Boolean endSession) {
         if (!this.isValidSession()) {
             return;
         }
