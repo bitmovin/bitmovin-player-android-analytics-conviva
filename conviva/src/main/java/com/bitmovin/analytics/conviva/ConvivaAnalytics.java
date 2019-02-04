@@ -206,7 +206,7 @@ public class ConvivaAnalytics {
      * Sends a custom deficiency event during playback to Conviva's Player Insight. If no session is active it will NOT
      * create one.
      *
-     * @param message  Message which will be send to conviva
+     * @param message Message which will be send to conviva
      * @param severity One of FATAL or WARNING
      */
     public void reportPlaybackDeficiency(String message, Client.ErrorSeverity severity) {
@@ -217,8 +217,8 @@ public class ConvivaAnalytics {
      * Sends a custom deficiency event during playback to Conviva's Player Insight. If no session is active it will NOT
      * create one.
      *
-     * @param message    Message which will be send to conviva
-     * @param severity   One of FATAL or WARNING
+     * @param message Message which will be send to conviva
+     * @param severity One of FATAL or WARNING
      * @param endSession Boolean flag if session should be closed after reporting the deficiency
      */
     public void reportPlaybackDeficiency(String message,
