@@ -224,7 +224,7 @@ public class ConvivaAnalytics {
     public void reportPlaybackDeficiency(String message,
                                          Client.ErrorSeverity severity,
                                          Boolean endSession) {
-        if (!this.isSessionActive()) {
+        if (!isSessionActive()) {
             return;
         }
 
