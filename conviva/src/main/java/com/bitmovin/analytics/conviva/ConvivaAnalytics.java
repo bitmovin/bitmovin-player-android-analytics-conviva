@@ -58,8 +58,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class ConvivaAnalytics {
-    class MetadataOverrides {
-        public String assetName;
+    private class MetadataOverrides {
+        String assetName;
     }
 
     private static final String TAG = "ConvivaAnalytics";
