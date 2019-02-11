@@ -236,6 +236,33 @@ public class ConvivaAnalytics {
             internalEndSession();
         }
     }
+
+    /**
+     * Puts the session state in a notMonitored state.
+     */
+    public void pauseTracking() {
+        try {
+            client.adStart(sessionId, Client.AdStream.SEPARATE, Client.AdPlayer.SEPARATE, Client.AdPosition.PREROLL);
+            client.detachPlayer(sessionId);
+            Log.d(TAG, "Tracking paused.");
+        } catch (ConvivaException e) {
+            Log.e(TAG, e.getLocalizedMessage());
+        }
+
+    }
+
+    /**
+     * Puts the session state from a notMonitored state into the last one tracked.
+     */
+    public void resumeTracking() {
+        try {
+            client.attachPlayer(sessionId, playerStateManager);
+            client.adEnd(sessionId);
+            Log.d(TAG, "Tracking resumed.");
+        } catch (ConvivaException e) {
+            Log.e(TAG, e.getLocalizedMessage());
+        }
+    }
     // endregion
 
     private void customEvent(BitmovinPlayerEvent event) {
