@@ -183,7 +183,7 @@ public class ConvivaAnalytics {
      * Will update the contentMetadata which are tracked with conviva.
      *
      * If there is an active session only permitted values will be updated and propagated immediately.
-     * If there is no active session the values will set on session creation.
+     * If there is no active session the values will be set on session creation.
      *
      * Attributes set via this method will override automatic tracked once.
      * @param metadataOverrides MetadataOverrides attributes which will be used to track to conviva.
