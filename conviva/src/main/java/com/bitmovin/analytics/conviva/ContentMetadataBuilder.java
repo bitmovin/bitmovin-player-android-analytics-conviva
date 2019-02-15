@@ -11,7 +11,7 @@ import java.util.Map;
 
 class ContentMetadataBuilder {
 
-    private static final String TAG = "ContentMetadataBuilder";
+    private static final String TAG = ContentMetadataBuilder.class.getSimpleName();
 
     private ContentMetadata contentMetadata;
 
