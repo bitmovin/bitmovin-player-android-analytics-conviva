@@ -72,4 +72,13 @@ convivaConfig.setCustomData(customMapOfKeyValuePairs);
 
 ```
 
+#### Consecutive playback
+	
+If you want to use the same player instance for multiple playback call `player.unload()` before loading a new source.
+	
+```java
+player.unload();
+player.load(…);
+```
+
 A [full example app](https://github.com/bitmovin/bitmovin-player-android-analytics-conviva/tree/master/ConvivaExampleApp) can be seen in the github repo 
