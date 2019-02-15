@@ -58,15 +58,12 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class ConvivaAnalytics {
-    private class MetadataOverrides {
-        String assetName;
-    }
 
     private static final String TAG = "ConvivaAnalytics";
 
     private Client client;
     private BitmovinPlayer bitmovinPlayer;
-    private ContentMetadata contentMetadata = new ContentMetadata();
+    private ContentMetadataBuilder contentMetadataBuilder = new ContentMetadataBuilder();
     private ConvivaConfiguration config;
     private int sessionId = Client.NO_SESSION_KEY;
     private PlayerStateManager playerStateManager;
@@ -76,8 +73,6 @@ public class ConvivaAnalytics {
 
     // Helper
     private Boolean adStarted = false;
-
-    private MetadataOverrides metadataOverrides = new MetadataOverrides();
 
     public ConvivaAnalytics(BitmovinPlayer player, String customerKey, Context context) {
         this(player, customerKey, context, new ConvivaConfiguration());
@@ -156,32 +151,14 @@ public class ConvivaAnalytics {
      * If no source was loaded this method will throw an error.
      */
     public void initializeSession() throws ConvivaAnalyticsException {
-        initializeSession(null);
-    }
-
-    /**
-     * Initializes a new conviva tracking session.
-     * <p>
-     * Warning: The integration can only be validated without external session managing. So when using this method we can
-     * no longer ensure that the session is managed at the correct time. Additional: Since some metadata attributes
-     * relies on the players source we can't ensure that all metadata attributes are present at session creation.
-     * Therefore it could be that there will be a 'ContentMetadata created late' issue after conviva validation.
-     *
-     * @param assetName Will be used as contentMetadata.assetName if no source was loaded before. This overrides the
-     * source assetName. If no source was loaded and no assetName is present this method will throw an
-     * error.
-     */
-    public void initializeSession(String assetName) throws ConvivaAnalyticsException {
         if (isSessionActive()) {
             return;
         }
 
-        if (bitmovinPlayer.getConfig().getSourceItem() == null && assetName == null) {
-            throw new ConvivaAnalyticsException("AssetName is missing. Provide assetName attribute or load player source first");
-        }
-
-        if (assetName != null) {
-            metadataOverrides.assetName = assetName;
+        if (bitmovinPlayer.getConfig().getSourceItem() == null && this.contentMetadataBuilder.getAssetName() == null) {
+            throw new ConvivaAnalyticsException(
+                    "AssetName is missing. Load player source first or set assetName via updateContentMetadata"
+            );
         }
 
         internalInitializeSession();
@@ -200,6 +177,28 @@ public class ConvivaAnalytics {
         }
 
         internalEndSession();
+    }
+
+    /**
+     * Will update the contentMetadata which are tracked with conviva.
+     *
+     * If there is an active session only permitted values will be updated and propagated immediately.
+     * If there is no active session the values will be set on session creation.
+     *
+     * Attributes set via this method will override automatic tracked once.
+     * @param metadataOverrides MetadataOverrides attributes which will be used to track to conviva.
+     * @see ContentMetadataBuilder for more information about permitted attributes
+     */
+    public void updateContentMetadata(MetadataOverrides metadataOverrides) {
+        this.contentMetadataBuilder.setOverrides(metadataOverrides);
+
+        if (!this.isSessionActive()) {
+            Log.i(TAG, "[ ConvivaAnalytics ] no active session; Don't propagate content metadata to conviva.");
+            return;
+        }
+
+        this.createContentMetadata();
+        this.updateSession();
     }
 
     /**
@@ -266,7 +265,7 @@ public class ConvivaAnalytics {
     private void internalInitializeSession() {
         try {
             createContentMetadata();
-            sessionId = client.createSession(contentMetadata);
+            sessionId = client.createSession(contentMetadataBuilder.build());
             setupPlayerStateManager();
             Log.d(TAG, "[Player Event] Created SessionID - " + sessionId);
             client.attachPlayer(sessionId, playerStateManager);
@@ -294,7 +293,7 @@ public class ConvivaAnalytics {
         }
 
         try {
-            client.updateContentMetadata(sessionId, contentMetadata);
+            client.updateContentMetadata(sessionId, contentMetadataBuilder.build());
         } catch (ConvivaException e) {
             Log.e(TAG, e.getLocalizedMessage());
         }
@@ -303,30 +302,29 @@ public class ConvivaAnalytics {
     private void createContentMetadata() {
         SourceItem sourceItem = bitmovinPlayer.getConfig().getSourceItem();
 
-        contentMetadata.applicationName = config.getApplicationName();
-        String assetName = metadataOverrides.assetName != null ? metadataOverrides.assetName : sourceItem.getTitle();
-        contentMetadata.assetName = assetName;
-        contentMetadata.viewerId = config.getViewerId();
+        contentMetadataBuilder.setApplicationName(config.getApplicationName());
+        if (sourceItem != null) {
+            contentMetadataBuilder.setAssetName(sourceItem.getTitle());
+        }
 
         // Build custom tags
         Map<String, String> customInternTags = new HashMap<>();
         customInternTags.put("streamType", playerHelper.getStreamType());
         customInternTags.put("integrationVersion", BuildConfig.VERSION_NAME);
-        customInternTags.putAll(config.getCustomData());
-        contentMetadata.custom = customInternTags;
+        contentMetadataBuilder.setCustom(customInternTags);
 
         this.buildDynamicContentMetadata();
     }
 
     private void buildDynamicContentMetadata() {
         if (bitmovinPlayer.isLive()) {
-            contentMetadata.streamType = ContentMetadata.StreamType.LIVE;
+            contentMetadataBuilder.setStreamType(ContentMetadata.StreamType.LIVE);
         } else {
-            contentMetadata.streamType = ContentMetadata.StreamType.VOD;
-            contentMetadata.duration = (int) bitmovinPlayer.getDuration();
+            contentMetadataBuilder.setStreamType(ContentMetadata.StreamType.VOD);
+            contentMetadataBuilder.setDuration((int) bitmovinPlayer.getDuration());
         }
 
-        contentMetadata.streamUrl = playerHelper.getStreamUrl();
+        contentMetadataBuilder.setStreamUrl(playerHelper.getStreamUrl());
     }
 
     private void internalEndSession() {
@@ -343,7 +341,7 @@ public class ConvivaAnalytics {
         } finally {
             sessionId = Client.NO_SESSION_KEY;
             playerStateManager = null;
-            metadataOverrides = new MetadataOverrides();
+            contentMetadataBuilder.reset();
             Log.e(TAG, "Session ended");
         }
     }
@@ -490,6 +488,7 @@ public class ConvivaAnalytics {
         @Override
         public void onPlaying(PlayingEvent playingEvent) {
             Log.d(TAG, "[Player Event] OnPlaying");
+            contentMetadataBuilder.setPlaybackStarted(true);
             transitionState(PlayerStateManager.PlayerState.PLAYING);
         }
     };
