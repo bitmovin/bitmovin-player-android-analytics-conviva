@@ -62,9 +62,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         playerUIView.addView(bitmovinPlayerView);
 
         // Create your ConvivaConfiguration object
-        ConvivaConfiguration convivaConfig = new ConvivaConfiguration(
-                "ConvivaExample_BitmovinPlayer",
-                "ViewerId1");
+        ConvivaConfiguration convivaConfig = new ConvivaConfiguration();
 
         // Set only in debug mode
         if (gatewayUrl != null) {

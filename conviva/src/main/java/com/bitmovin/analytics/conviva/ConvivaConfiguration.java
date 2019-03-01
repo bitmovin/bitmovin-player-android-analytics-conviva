@@ -1,30 +1,11 @@
 package com.bitmovin.analytics.conviva;
 
-import java.util.HashMap;
-import java.util.Map;
-
 public class ConvivaConfiguration {
     private String gatewayUrl;
     private boolean debugLoggingEnabled;
-    private String applicationName = "Unknown (no config.applicationName set)";
-    private String viewerId;
-    private Map<String,String> customData = new HashMap<>();
 
     public ConvivaConfiguration() {
 
-    }
-
-    public ConvivaConfiguration(String applicationName, String viewerId) {
-        this.applicationName = applicationName;
-        this.viewerId = viewerId;
-    }
-
-    public Map<String, String> getCustomData() {
-        return customData;
-    }
-
-    public void setCustomData(Map<String, String> customData) {
-        this.customData = customData;
     }
 
     public String getGatewayUrl() {
@@ -41,21 +22,5 @@ public class ConvivaConfiguration {
 
     public void setDebugLoggingEnabled(boolean debugLoggingEnabled) {
         this.debugLoggingEnabled = debugLoggingEnabled;
-    }
-
-    public String getApplicationName() {
-        return applicationName;
-    }
-
-    public void setApplicationName(String applicationName) {
-        this.applicationName = applicationName;
-    }
-
-    public String getViewerId() {
-        return viewerId;
-    }
-
-    public void setViewerId(String viewerId) {
-        this.viewerId = viewerId;
     }
 }
