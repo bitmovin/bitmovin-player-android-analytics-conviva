@@ -72,12 +72,32 @@ convivaConfig.setCustomData(customMapOfKeyValuePairs);
 
 ```
 
+#### Content Metadata handling
+
+If you want to override some content metadata attributes you can do so by adding the following:
+
+```java
+MetadataOverrides metadata = MetadataOverrides();
+metadata.setApplicationName("Bitmovin Android Conviva integration example app");
+metadata.setViewerId("awesomeViewerId");
+Map<String, String> customInternTags = new HashMap<>();
+customInternTags.put("contentType", "Episode");
+metadata.setCustom(customInternTags);
+
+// …
+// Initialize ConvivaAnalytics
+// …
+
+convivaAnalytics.updateContentMetadata(metadata);
+```
+
+Those values will be cleaned up after the session is closed.
+
 #### Consecutive playback
 	
-If you want to use the same player instance for multiple playback call `player.unload()` before loading a new source.
+If you want to use the same player instance for multiple playback, just load a new source with player.load(…). The integration will close the active session.
 	
 ```java
-player.unload();
 player.load(…);
 ```
 
