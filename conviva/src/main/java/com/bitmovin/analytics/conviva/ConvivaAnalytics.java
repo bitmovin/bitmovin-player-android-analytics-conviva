@@ -89,8 +89,11 @@ public class ConvivaAnalytics {
         SystemInterface androidSystemInterface = AndroidSystemInterfaceFactory.buildSecure(context);
         if (androidSystemInterface.isInitialized()) {
             SystemSettings systemSettings = new SystemSettings();
-            systemSettings.logLevel = SystemSettings.LogLevel.DEBUG;
             systemSettings.allowUncaughtExceptions = false;
+
+            if (config.isDebugLoggingEnabled()) {
+                systemSettings.logLevel = SystemSettings.LogLevel.DEBUG;
+            }
 
             SystemFactory androidSystemFactory = new SystemFactory(androidSystemInterface, systemSettings);
             ClientSettings clientSettings = new ClientSettings(customerKey);
@@ -155,9 +158,11 @@ public class ConvivaAnalytics {
             return;
         }
 
-        if (bitmovinPlayer.getConfig().getSourceItem() == null && this.contentMetadataBuilder.getAssetName() == null) {
+        if ((bitmovinPlayer.getConfig().getSourceItem() == null
+                || bitmovinPlayer.getConfig().getSourceItem().getTitle() == null)
+                && this.contentMetadataBuilder.getAssetName() == null) {
             throw new ConvivaAnalyticsException(
-                    "AssetName is missing. Load player source first or set assetName via updateContentMetadata"
+                    "AssetName is missing. Load player source (with Title) first or set assetName via updateContentMetadata"
             );
         }
 
@@ -181,11 +186,12 @@ public class ConvivaAnalytics {
 
     /**
      * Will update the contentMetadata which are tracked with conviva.
-     *
+     * <p>
      * If there is an active session only permitted values will be updated and propagated immediately.
      * If there is no active session the values will be set on session creation.
-     *
+     * <p>
      * Attributes set via this method will override automatic tracked once.
+     *
      * @param metadataOverrides MetadataOverrides attributes which will be used to track to conviva.
      * @see ContentMetadataBuilder for more information about permitted attributes
      */
@@ -329,7 +335,6 @@ public class ConvivaAnalytics {
     private void createContentMetadata() {
         SourceItem sourceItem = bitmovinPlayer.getConfig().getSourceItem();
 
-        contentMetadataBuilder.setApplicationName(config.getApplicationName());
         if (sourceItem != null) {
             contentMetadataBuilder.setAssetName(sourceItem.getTitle());
         }
