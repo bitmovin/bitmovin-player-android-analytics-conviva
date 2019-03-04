@@ -158,8 +158,8 @@ public class ConvivaAnalytics {
             return;
         }
 
-        if (bitmovinPlayer.getConfig().getSourceItem() == null
-                && bitmovinPlayer.getConfig().getSourceItem().getTitle() == null
+        if ((bitmovinPlayer.getConfig().getSourceItem() == null
+                || bitmovinPlayer.getConfig().getSourceItem().getTitle() == null)
                 && this.contentMetadataBuilder.getAssetName() == null) {
             throw new ConvivaAnalyticsException(
                     "AssetName is missing. Load player source (with Title) first or set assetName via updateContentMetadata"
