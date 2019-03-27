@@ -4,7 +4,7 @@ apply plugin: 'maven-publish'
 apply from: "../bitmovinpropertiesloader.gradle"
 
 def packageName = 'com.bitmovin.analytics'
-def libraryVersion = '1.0.0'
+def libraryVersion = '1.1.0'
 
 android {
     compileSdkVersion 27
@@ -33,7 +33,7 @@ dependencies {
     testImplementation 'junit:junit:4.12'
     androidTestImplementation 'com.android.support.test:runner:1.0.2'
     androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.2'
-    implementation 'com.conviva.sdk:conviva-core-sdk:2.145.1'
+    api 'com.conviva.sdk:conviva-core-sdk:2.145.1'
     implementation 'com.bitmovin.player:playercore:2.17.0'
 }
 
