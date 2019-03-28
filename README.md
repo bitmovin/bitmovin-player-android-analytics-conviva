@@ -72,4 +72,13 @@ convivaConfig.setCustomData(customMapOfKeyValuePairs);
 
 ```
 
+#### Background handling
+
+If your app stops playback when entering background conviva suggests to end the active session. Since the integration can't know if your app supports background playback this can't be done automatically.
+
+A session can be ended using following method call:
+
+`convivaAnalytics.endSession()`
+Since the `BitmovinPlayer` automatically pauses the video if no background playback is configured the session creation after the app is in foreground again is handled automatically.
+
 A [full example app](https://github.com/bitmovin/bitmovin-player-android-analytics-conviva/tree/master/ConvivaExampleApp) can be seen in the github repo 
