@@ -1,7 +1,7 @@
 package com.bitmovin.analytics.convivaanalyticsexample;
 
 import android.os.Bundle;
-import android.support.v7.app.AppCompatActivity;
+import androidx.appcompat.app.AppCompatActivity;
 import android.view.View;
 import android.widget.Button;
 import android.widget.LinearLayout;
@@ -31,8 +31,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private Switch includeAdsSwitch;
 
     // Conviva
-    private static final String customerKey = "";
-    private static String gatewayUrl; // Set only in debug mode
+    private static final String customerKey = "250a04a88b97e5e54ff3edd2929b847e10c009c3";
+    private static String gatewayUrl = "https://bitmovin-test.testonly.conviva.com/";
     private ConvivaAnalytics convivaAnalytics;
 
     // Player
