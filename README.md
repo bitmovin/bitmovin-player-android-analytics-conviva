@@ -79,7 +79,7 @@ convivaConfig.setCustomData(customMapOfKeyValuePairs);
 If you want to override some content metadata attributes you can do so by adding the following:
 
 ```java
-MetadataOverrides metadata = MetadataOverrides();
+MetadataOverrides metadata = new MetadataOverrides();
 metadata.setApplicationName("Bitmovin Android Conviva integration example app");
 metadata.setViewerId("awesomeViewerId");
 Map<String, String> customInternTags = new HashMap<>();
