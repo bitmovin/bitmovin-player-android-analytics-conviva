@@ -9,6 +9,7 @@ import android.widget.Switch;
 
 import com.bitmovin.analytics.conviva.ConvivaAnalytics;
 import com.bitmovin.analytics.conviva.ConvivaConfiguration;
+import com.bitmovin.analytics.conviva.MetadataOverrides;
 import com.bitmovin.player.BitmovinPlayer;
 import com.bitmovin.player.BitmovinPlayerView;
 import com.bitmovin.player.config.media.DASHSource;
@@ -79,8 +80,18 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 getApplicationContext(),
                 convivaConfig);
 
+
+        MetadataOverrides metadata = new MetadataOverrides();
+        metadata.setApplicationName("Bitmovin Android Conviva integration example app");
+        metadata.setViewerId("awesomeViewerId");
+        Map<String, String> customInternTags = new HashMap<>();
+        customInternTags.put("contentType", "Episode");
+        metadata.setCustom(customInternTags);
+        convivaAnalytics.updateContentMetadata(metadata);
+
         // load source using the created source configuration
         bitmovinPlayer.setup(buildPlayerConfiguration());
+
     }
 
     private PlayerConfiguration buildPlayerConfiguration() {
