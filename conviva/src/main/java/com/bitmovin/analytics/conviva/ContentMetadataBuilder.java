@@ -112,9 +112,14 @@ class ContentMetadataBuilder {
     }
 
     public Map<String, String> getCustom() {
+        // merge internal and override metadata key-value pairs
+        // with override values having higher precedence
+        Map<String, String> customInternals = metadata.getCustom();
+        Map<String, String> customs = customInternals != null ? customInternals : new HashMap<String, String>();
         Map<String, String> customOverrides = metadataOverrides.getCustom();
-        Map<String, String> customs = customOverrides != null ? customOverrides : new HashMap<String, String>();
-        customs.putAll(metadata.getCustom());
+        if (customOverrides != null) {
+            customs.putAll(customOverrides);
+        }
         return customs;
     }
 
