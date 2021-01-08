@@ -8,6 +8,7 @@ import android.widget.LinearLayout;
 import android.widget.Switch;
 
 import com.bitmovin.analytics.conviva.ConvivaAnalytics;
+import com.bitmovin.analytics.conviva.ConvivaAnalyticsException;
 import com.bitmovin.analytics.conviva.ConvivaConfiguration;
 import com.bitmovin.analytics.conviva.MetadataOverrides;
 import com.bitmovin.player.BitmovinPlayer;
@@ -135,11 +136,17 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     protected void onResume() {
         super.onResume();
         bitmovinPlayerView.onResume();
+        try {
+            convivaAnalytics.initializeSession();
+        } catch (ConvivaAnalyticsException e) {
+            e.printStackTrace();
+        }
     }
 
     @Override
     protected void onPause() {
-        bitmovinPlayerView.onPause();
+        bitmovinPlayerView.onStop();
+        convivaAnalytics.endSession();
         super.onPause();
     }
 
@@ -168,3 +175,4 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
     }
 }
+

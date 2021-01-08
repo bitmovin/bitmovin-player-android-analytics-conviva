@@ -67,6 +67,7 @@ public class ConvivaAnalytics {
     private ConvivaConfiguration config;
     private int sessionId = Client.NO_SESSION_KEY;
     private PlayerStateManager playerStateManager;
+    private MetadataOverrides metadataOverrides;
 
     // Wrapper to extract bitmovinPlayer helper methods
     private BitmovinPlayerHelper playerHelper;
@@ -197,6 +198,7 @@ public class ConvivaAnalytics {
      */
     public void updateContentMetadata(MetadataOverrides metadataOverrides) {
         this.contentMetadataBuilder.setOverrides(metadataOverrides);
+        this.metadataOverrides = metadataOverrides;
 
         if (!this.isSessionActive()) {
             Log.i(TAG, "[ ConvivaAnalytics ] no active session; Don't propagate content metadata to conviva.");
@@ -300,6 +302,9 @@ public class ConvivaAnalytics {
             createContentMetadata();
             sessionId = client.createSession(contentMetadataBuilder.build());
             setupPlayerStateManager();
+            if (metadataOverrides != null) {
+                updateContentMetadata(metadataOverrides);
+            }
             Log.d(TAG, "[Player Event] Created SessionID - " + sessionId);
             client.attachPlayer(sessionId, playerStateManager);
         } catch (ConvivaException e) {
