@@ -21,6 +21,8 @@ import com.bitmovin.player.api.event.data.SeekedEvent;
 import com.bitmovin.player.api.event.data.SourceUnloadedEvent;
 import com.bitmovin.player.api.event.data.StallEndedEvent;
 import com.bitmovin.player.api.event.data.StallStartedEvent;
+import com.bitmovin.player.api.event.data.TimeShiftEvent;
+import com.bitmovin.player.api.event.data.TimeShiftedEvent;
 import com.bitmovin.player.api.event.data.UnmutedEvent;
 import com.bitmovin.player.api.event.data.VideoPlaybackQualityChangedEvent;
 import com.bitmovin.player.api.event.data.WarningEvent;
@@ -39,6 +41,8 @@ import com.bitmovin.player.api.event.listener.OnSeekedListener;
 import com.bitmovin.player.api.event.listener.OnSourceUnloadedListener;
 import com.bitmovin.player.api.event.listener.OnStallEndedListener;
 import com.bitmovin.player.api.event.listener.OnStallStartedListener;
+import com.bitmovin.player.api.event.listener.OnTimeShiftListener;
+import com.bitmovin.player.api.event.listener.OnTimeShiftedListener;
 import com.bitmovin.player.api.event.listener.OnUnmutedListener;
 import com.bitmovin.player.api.event.listener.OnVideoPlaybackQualityChangedListener;
 import com.bitmovin.player.api.event.listener.OnWarningListener;
@@ -404,6 +408,10 @@ public class ConvivaAnalytics {
         bitmovinPlayer.addEventListener(onSeekedListener);
         bitmovinPlayer.addEventListener(onSeekListener);
 
+        // Seek events
+        bitmovinPlayer.addEventListener(onTimeShiftListener);
+        bitmovinPlayer.addEventListener(onTimeShiftedListener);
+
         // Ad events
         bitmovinPlayer.addEventListener(onAdStartedListener);
         bitmovinPlayer.addEventListener(onAdFinishedListener);
@@ -614,6 +622,41 @@ public class ConvivaAnalytics {
                 return;
             }
             Log.d(TAG, "[Player Event] OnSeeked");
+            try {
+                playerStateManager.setPlayerSeekEnd();
+            } catch (ConvivaException e) {
+                Log.e(TAG, e.getLocalizedMessage());
+            }
+        }
+    };
+    // endregion
+
+    // region timeshift events
+    private OnTimeShiftListener onTimeShiftListener = new OnTimeShiftListener() {
+        @Override
+        public void onTimeShift(TimeShiftEvent timeShiftEvent) {
+            if (!isSessionActive()) {
+                // See comment in onSeek
+                return;
+            }
+            Log.d(TAG, "[Player Event] OnTimeShift");
+            try {
+                // According to conviva it is valid to pass -1 for seeking in live streams
+                playerStateManager.setPlayerSeekStart(-1);
+            } catch (ConvivaException e) {
+                Log.e(TAG, e.getLocalizedMessage());
+            }
+        }
+    };
+
+    private OnTimeShiftedListener onTimeShiftedListener = new OnTimeShiftedListener() {
+        @Override
+        public void onTimeShifted(TimeShiftedEvent timeShiftedEvent) {
+            if (!isSessionActive()) {
+                // See comment in onSeek
+                return;
+            }
+            Log.d(TAG, "[Player Event] OnTimeShifted");
             try {
                 playerStateManager.setPlayerSeekEnd();
             } catch (ConvivaException e) {
