@@ -15,5 +15,3 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Fixed
 - App loses custom metadata when backgrounded.
 
-[1.1.4]: https://github.com/bitmovin/bitmovin-player-android-analytics-conviva/releases/tag/v1.1.4
-
