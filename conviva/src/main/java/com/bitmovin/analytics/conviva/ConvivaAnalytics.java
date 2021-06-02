@@ -21,6 +21,8 @@ import com.bitmovin.player.api.event.data.SeekedEvent;
 import com.bitmovin.player.api.event.data.SourceUnloadedEvent;
 import com.bitmovin.player.api.event.data.StallEndedEvent;
 import com.bitmovin.player.api.event.data.StallStartedEvent;
+import com.bitmovin.player.api.event.data.TimeShiftEvent;
+import com.bitmovin.player.api.event.data.TimeShiftedEvent;
 import com.bitmovin.player.api.event.data.UnmutedEvent;
 import com.bitmovin.player.api.event.data.VideoPlaybackQualityChangedEvent;
 import com.bitmovin.player.api.event.data.WarningEvent;
@@ -39,6 +41,8 @@ import com.bitmovin.player.api.event.listener.OnSeekedListener;
 import com.bitmovin.player.api.event.listener.OnSourceUnloadedListener;
 import com.bitmovin.player.api.event.listener.OnStallEndedListener;
 import com.bitmovin.player.api.event.listener.OnStallStartedListener;
+import com.bitmovin.player.api.event.listener.OnTimeShiftListener;
+import com.bitmovin.player.api.event.listener.OnTimeShiftedListener;
 import com.bitmovin.player.api.event.listener.OnUnmutedListener;
 import com.bitmovin.player.api.event.listener.OnVideoPlaybackQualityChangedListener;
 import com.bitmovin.player.api.event.listener.OnWarningListener;
@@ -404,6 +408,10 @@ public class ConvivaAnalytics {
         bitmovinPlayer.addEventListener(onSeekedListener);
         bitmovinPlayer.addEventListener(onSeekListener);
 
+        // Timeshift events
+        bitmovinPlayer.addEventListener(onTimeShiftListener);
+        bitmovinPlayer.addEventListener(onTimeShiftedListener);
+
         // Ad events
         bitmovinPlayer.addEventListener(onAdStartedListener);
         bitmovinPlayer.addEventListener(onAdFinishedListener);
@@ -588,39 +596,66 @@ public class ConvivaAnalytics {
     };
     // endregion
 
-    // region Seek events
+    // region Seek and Timeshift events
     private OnSeekListener onSeekListener = new OnSeekListener() {
         @Override
         public void onSeek(SeekEvent seekEvent) {
-            if (!isSessionActive()) {
-                // Handle the case that the User seeks on the UI before play was triggered.
-                // This also handles startTime feature. The same applies for onTimeShift.
-                return;
-            }
             Log.d(TAG, "[Player Event] OnSeek");
-            try {
-                playerStateManager.setPlayerSeekStart((int) seekEvent.getSeekTarget() * 1000);
-            } catch (ConvivaException e) {
-                Log.e(TAG, e.getLocalizedMessage());
-            }
+            setSeekStart((int) seekEvent.getSeekTarget() * 1000);
         }
     };
 
     private OnSeekedListener onSeekedListener = new OnSeekedListener() {
         @Override
         public void onSeeked(SeekedEvent seekedEvent) {
-            if (!isSessionActive()) {
-                // See comment in onSeek
-                return;
-            }
             Log.d(TAG, "[Player Event] OnSeeked");
-            try {
-                playerStateManager.setPlayerSeekEnd();
-            } catch (ConvivaException e) {
-                Log.e(TAG, e.getLocalizedMessage());
-            }
+            setSeekEnd();
         }
     };
+
+    private OnTimeShiftListener onTimeShiftListener = new OnTimeShiftListener() {
+        @Override
+        public void onTimeShift(TimeShiftEvent timeShiftEvent) {
+            Log.d(TAG, "[Player Event] OnTimeShift");
+            // According to conviva it is valid to pass -1 for seeking in live streams
+            setSeekStart(-1);
+        }
+    };
+
+    private OnTimeShiftedListener onTimeShiftedListener = new OnTimeShiftedListener() {
+        @Override
+        public void onTimeShifted(TimeShiftedEvent timeShiftedEvent) {
+            Log.d(TAG, "[Player Event] OnTimeShifted");
+            setSeekEnd();
+        }
+    };
+
+    private void setSeekStart(int seekTarget) {
+        if (!isSessionActive()) {
+            // Handle the case that the User seeks on the UI before play was triggered.
+            // This also handles startTime feature. The same applies for onTimeShift.
+            return;
+        }
+        Log.d(TAG, "Sending seek start event");
+        try {
+            playerStateManager.setPlayerSeekStart(seekTarget);
+        } catch (ConvivaException e) {
+            Log.e(TAG, e.getLocalizedMessage());
+        }
+    };
+
+    public void setSeekEnd() {
+        if (!isSessionActive()) {
+            // See comment in setSeekStart
+            return;
+        }
+        Log.d(TAG, "Sending seek end event");
+        try {
+            playerStateManager.setPlayerSeekEnd();
+        } catch (ConvivaException e) {
+            Log.e(TAG, e.getLocalizedMessage());
+        }
+    }
     // endregion
 
     // region Ad events
