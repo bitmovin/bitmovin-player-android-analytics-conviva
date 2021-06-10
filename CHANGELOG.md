@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ## [Unreleased]
 ### Added
 - Support for reporting seek events for live content playback.
+- Updated Conviva API.
+- Reporting of Average FPS.
 
 ## [1.1.4] (2021-01-08) : First changelog entry. Consider this as baseline.
 ### Added
