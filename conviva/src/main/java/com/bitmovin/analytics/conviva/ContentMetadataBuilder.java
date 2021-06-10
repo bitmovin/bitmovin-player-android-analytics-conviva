@@ -3,6 +3,7 @@ package com.bitmovin.analytics.conviva;
 import android.util.Log;
 
 import com.conviva.api.ContentMetadata;
+import com.conviva.sdk.ConvivaSdkConstants;
 
 import org.apache.commons.lang3.ObjectUtils;
 
@@ -13,7 +14,7 @@ class ContentMetadataBuilder {
 
     private static final String TAG = ContentMetadataBuilder.class.getSimpleName();
 
-    private ContentMetadata contentMetadata;
+    private Map<String, Object> contentMetadata;
 
     // internal metadata fields to enable merging / overriding
     private MetadataOverrides metadataOverrides;
@@ -21,7 +22,7 @@ class ContentMetadataBuilder {
     private boolean playbackStarted;
 
     ContentMetadataBuilder() {
-        contentMetadata = new ContentMetadata();
+        contentMetadata = new HashMap<>();
         metadata = new MetadataOverrides();
         metadataOverrides = new MetadataOverrides();
     }
@@ -43,42 +44,35 @@ class ContentMetadataBuilder {
         playbackStarted = value;
     }
 
-    public ContentMetadata build() {
+    public Map<String, Object> build() {
         if (!playbackStarted) {
             // Asset name is only allowed to be set once
-            if (contentMetadata.assetName == null) {
-                contentMetadata.assetName = getAssetName();
+            if (!contentMetadata.containsKey(ConvivaSdkConstants.ASSET_NAME)) {
+                contentMetadata.put(ConvivaSdkConstants.ASSET_NAME, getAssetName());
             }
 
-            contentMetadata.viewerId = getViewerId();
-            contentMetadata.streamType = ObjectUtils.defaultIfNull(
-                    metadataOverrides.getStreamType(),
-                    metadata.getStreamType());
-
-            contentMetadata.applicationName = ObjectUtils.defaultIfNull(
-                    metadataOverrides.getApplicationName(),
-                    metadata.getApplicationName());
+            contentMetadata.put(ConvivaSdkConstants.VIEWER_ID, getViewerId());
 
             Integer duration = ObjectUtils.defaultIfNull(
                     metadataOverrides.getDuration(),
                     metadata.getDuration());
-            contentMetadata.duration = duration != null ? duration : -1;
+            contentMetadata.put(ConvivaSdkConstants.DURATION, duration != null ? duration : -1);
 
-            contentMetadata.custom = getCustom();
+            setCustom();
         }
 
         Integer frameRate = ObjectUtils.defaultIfNull(
                 metadataOverrides.getEncodedFrameRate(),
                 metadata.getEncodedFrameRate());
-        contentMetadata.encodedFrameRate = frameRate != null ? frameRate : -1;
+        contentMetadata.put(ConvivaSdkConstants.ENCODED_FRAMERATE, frameRate != null ? frameRate : -1);
 
-        contentMetadata.defaultResource = ObjectUtils.defaultIfNull(
+        contentMetadata.put(ConvivaSdkConstants.DEFAULT_RESOURCE, ObjectUtils.defaultIfNull(
                 metadataOverrides.getDefaultResource(),
-                metadata.getDefaultResource());
+                metadata.getDefaultResource()));
 
-        contentMetadata.streamUrl = ObjectUtils.defaultIfNull(
+        contentMetadata.put(ConvivaSdkConstants.STREAM_URL, ObjectUtils.defaultIfNull(
                 metadataOverrides.getStreamUrl(),
-                metadata.getStreamUrl());
+                metadata.getStreamUrl()));
 
         return contentMetadata;
     }
@@ -99,8 +93,20 @@ class ContentMetadataBuilder {
         return ObjectUtils.defaultIfNull(metadataOverrides.getViewerId(), metadata.getViewerId());
     }
 
-    public void setStreamType(ContentMetadata.StreamType newValue) {
+    public ConvivaSdkConstants.StreamType getStreamType() {
+        return ObjectUtils.defaultIfNull(
+                metadataOverrides.getStreamType(),
+                metadata.getStreamType());
+    }
+
+    public void setStreamType(ConvivaSdkConstants.StreamType newValue) {
         metadata.setStreamType(newValue);
+    }
+
+    public String getApplicationName() {
+        return ObjectUtils.defaultIfNull(
+                metadataOverrides.getApplicationName(),
+                metadata.getApplicationName());
     }
 
     public void setApplicationName(String newValue) {
@@ -111,16 +117,17 @@ class ContentMetadataBuilder {
         metadata.setCustom(newValue);
     }
 
-    public Map<String, String> getCustom() {
+    public void setCustom() {
         // merge internal and override metadata key-value pairs
         // with override values having higher precedence
         Map<String, String> customInternals = metadata.getCustom();
-        Map<String, String> customs = customInternals != null ? customInternals : new HashMap<String, String>();
+        if (customInternals != null) {
+            contentMetadata.putAll(customInternals);
+        }
         Map<String, String> customOverrides = metadataOverrides.getCustom();
         if (customOverrides != null) {
-            customs.putAll(customOverrides);
+            contentMetadata.putAll(customOverrides);
         }
-        return customs;
     }
 
     public void setDuration(Integer newValue) {
@@ -143,6 +150,6 @@ class ContentMetadataBuilder {
         metadataOverrides = new MetadataOverrides();
         metadata = new MetadataOverrides();
         playbackStarted = false;
-        contentMetadata = new ContentMetadata();
+        contentMetadata.clear();
     }
 }
