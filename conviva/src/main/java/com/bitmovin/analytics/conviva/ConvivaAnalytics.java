@@ -71,6 +71,7 @@ public class ConvivaAnalytics {
     private ConvivaConfiguration config;
     private int sessionId = Client.NO_SESSION_KEY;
     private PlayerStateManager playerStateManager;
+    private ClientMeasureInterface clientMeasureInterface;
     private MetadataOverrides metadataOverrides;
 
     // Wrapper to extract bitmovinPlayer helper methods
@@ -296,6 +297,8 @@ public class ConvivaAnalytics {
             playerStateManager.setPlayerState(PlayerStateManager.PlayerState.STOPPED);
             playerStateManager.setPlayerType("Bitmovin Player Android");
             playerStateManager.setPlayerVersion(playerHelper.getSdkVersionString());
+            clientMeasureInterface = new ClientMeasureInterface();
+            playerStateManager.setClientMeasureInterface(clientMeasureInterface);
         } catch (ConvivaException e) {
             Log.e(TAG, e.getLocalizedMessage());
         }
@@ -329,6 +332,7 @@ public class ConvivaAnalytics {
                 playerStateManager.setBitrateKbps(bitrate);
                 playerStateManager.setVideoHeight(videoQuality.getHeight());
                 playerStateManager.setVideoWidth(videoQuality.getWidth());
+                clientMeasureInterface.setFrameRate(videoQuality.getFrameRate());
             } catch (ConvivaException e) {
                 Log.e(TAG, e.getLocalizedMessage());
             }
