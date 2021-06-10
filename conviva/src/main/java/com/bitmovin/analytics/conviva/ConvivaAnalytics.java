@@ -48,13 +48,10 @@ import com.bitmovin.player.api.event.listener.OnVideoPlaybackQualityChangedListe
 import com.bitmovin.player.api.event.listener.OnWarningListener;
 import com.bitmovin.player.config.media.SourceItem;
 import com.bitmovin.player.config.quality.VideoQuality;
-import com.conviva.api.ContentMetadata;
 import com.conviva.api.player.PlayerStateManager;
 import com.conviva.sdk.ConvivaExperienceAnalytics;
 import com.conviva.sdk.ConvivaSdkConstants;
 import com.conviva.sdk.ConvivaVideoAnalytics;
-
-import org.apache.commons.lang3.EnumUtils;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -264,12 +261,19 @@ public class ConvivaAnalytics {
     private void setupPlayerStateManager() {
         convivaVideoAnalytics = com.conviva.sdk.ConvivaAnalytics.buildVideoAnalytics(context);
         convivaVideoAnalytics.setCallback(videoAnalyticsCallback);
-        Map<String, Object> playerInfo = new HashMap<>();
-        playerInfo.put(ConvivaSdkConstants.PLAYER_NAME, contentMetadataBuilder.getApplicationName());
-        playerInfo.put(ConvivaSdkConstants.FRAMEWORK_NAME, "Bitmovin Player Android");
-        playerInfo.put(ConvivaSdkConstants.FRAMEWORK_VERSION, playerHelper.getSdkVersionString());
-        playerInfo.put(ConvivaSdkConstants.IS_LIVE, contentMetadataBuilder.getStreamType() == ConvivaSdkConstants.StreamType.LIVE);
-        convivaVideoAnalytics.setPlayerInfo(playerInfo);
+        setPlayerInfo();
+    }
+
+    private void setPlayerInfo() {
+        if (convivaVideoAnalytics != null) {
+            Map<String, Object> playerInfo = new HashMap<>();
+            playerInfo.put(ConvivaSdkConstants.PLAYER_NAME, contentMetadataBuilder.getApplicationName());
+            playerInfo.put(ConvivaSdkConstants.FRAMEWORK_NAME, "Bitmovin Player Android");
+            playerInfo.put(ConvivaSdkConstants.FRAMEWORK_VERSION, playerHelper.getSdkVersionString());
+            boolean isLive = contentMetadataBuilder.getStreamType() == ConvivaSdkConstants.StreamType.LIVE;
+            playerInfo.put(ConvivaSdkConstants.IS_LIVE, isLive);
+            convivaVideoAnalytics.setPlayerInfo(playerInfo);
+        }
     }
 
     private ConvivaExperienceAnalytics.ICallback videoAnalyticsCallback = new ConvivaExperienceAnalytics.ICallback() {
@@ -328,16 +332,15 @@ public class ConvivaAnalytics {
     }
 
     private void buildDynamicContentMetadata() {
-        if (convivaVideoAnalytics != null) {
-            if (bitmovinPlayer.isLive()) {
-                contentMetadataBuilder.setStreamType(ConvivaSdkConstants.StreamType.LIVE);
-            } else {
-                contentMetadataBuilder.setStreamType(ConvivaSdkConstants.StreamType.VOD);
-                contentMetadataBuilder.setDuration((int) bitmovinPlayer.getDuration());
-            }
+        if (bitmovinPlayer.isLive()) {
+            contentMetadataBuilder.setStreamType(ConvivaSdkConstants.StreamType.LIVE);
+        } else {
+            contentMetadataBuilder.setStreamType(ConvivaSdkConstants.StreamType.VOD);
+            contentMetadataBuilder.setDuration((int) bitmovinPlayer.getDuration());
         }
-
         contentMetadataBuilder.setStreamUrl(playerHelper.getStreamUrl());
+
+        setPlayerInfo();
     }
 
     private void internalEndSession() {
