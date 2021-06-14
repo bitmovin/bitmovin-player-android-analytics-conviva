@@ -49,7 +49,6 @@ import com.bitmovin.player.api.event.listener.OnWarningListener;
 import com.bitmovin.player.config.media.SourceItem;
 import com.bitmovin.player.config.quality.VideoQuality;
 import com.conviva.api.player.PlayerStateManager;
-import com.conviva.sdk.ConvivaExperienceAnalytics;
 import com.conviva.sdk.ConvivaSdkConstants;
 import com.conviva.sdk.ConvivaVideoAnalytics;
 
@@ -260,7 +259,6 @@ public class ConvivaAnalytics {
     // region Session handling
     private void setupPlayerStateManager() {
         convivaVideoAnalytics = com.conviva.sdk.ConvivaAnalytics.buildVideoAnalytics(context);
-        convivaVideoAnalytics.setCallback(videoAnalyticsCallback);
         setPlayerInfo();
     }
 
@@ -275,16 +273,6 @@ public class ConvivaAnalytics {
             convivaVideoAnalytics.setPlayerInfo(playerInfo);
         }
     }
-
-    private ConvivaExperienceAnalytics.ICallback videoAnalyticsCallback = new ConvivaExperienceAnalytics.ICallback() {
-        @Override
-        public void update() {
-        }
-
-        @Override
-        public void update(String s) {
-        }
-    };
 
     private void internalInitializeSession() {
         createContentMetadata();
@@ -311,7 +299,6 @@ public class ConvivaAnalytics {
             convivaVideoAnalytics.reportPlaybackMetric(ConvivaSdkConstants.PLAYBACK.RENDERED_FRAMERATE, Math.round(videoQuality.getFrameRate()));
         }
 
-//        convivaVideoAnalytics.reportPlaybackMetric(contentMetadataBuilder.getStreamType().toString());
         convivaVideoAnalytics.setContentInfo(contentMetadataBuilder.build());
     }
 
@@ -599,8 +586,6 @@ public class ConvivaAnalytics {
         Log.d(TAG, "Sending seek start event");
         convivaVideoAnalytics.reportPlaybackMetric(ConvivaSdkConstants.PLAYBACK.SEEK_STARTED, seekTarget);
     }
-
-    ;
 
     public void setSeekEnd() {
         if (!isSessionActive() || convivaVideoAnalytics == null) {

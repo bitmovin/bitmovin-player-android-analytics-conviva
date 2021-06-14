@@ -2,7 +2,6 @@ package com.bitmovin.analytics.conviva;
 
 import android.util.Log;
 
-import com.conviva.api.ContentMetadata;
 import com.conviva.sdk.ConvivaSdkConstants;
 
 import org.apache.commons.lang3.ObjectUtils;
@@ -94,9 +93,7 @@ class ContentMetadataBuilder {
     }
 
     public ConvivaSdkConstants.StreamType getStreamType() {
-        return ObjectUtils.defaultIfNull(
-                metadataOverrides.getStreamType(),
-                metadata.getStreamType());
+        return ObjectUtils.defaultIfNull(metadataOverrides.getStreamType(), metadata.getStreamType());
     }
 
     public void setStreamType(ConvivaSdkConstants.StreamType newValue) {
@@ -104,9 +101,7 @@ class ContentMetadataBuilder {
     }
 
     public String getApplicationName() {
-        return ObjectUtils.defaultIfNull(
-                metadataOverrides.getApplicationName(),
-                metadata.getApplicationName());
+        return ObjectUtils.defaultIfNull(metadataOverrides.getApplicationName(), metadata.getApplicationName());
     }
 
     public void setApplicationName(String newValue) {
