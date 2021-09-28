@@ -9,18 +9,18 @@ import android.widget.Switch;
 
 import com.bitmovin.analytics.conviva.ConvivaAnalytics;
 import com.bitmovin.analytics.conviva.ConvivaAnalyticsException;
-import com.bitmovin.analytics.conviva.ConvivaConfiguration;
+import com.bitmovin.analytics.conviva.ConvivaConfig;
 import com.bitmovin.analytics.conviva.MetadataOverrides;
-import com.bitmovin.player.BitmovinPlayer;
-import com.bitmovin.player.BitmovinPlayerView;
-import com.bitmovin.player.config.media.DASHSource;
-import com.bitmovin.player.config.PlayerConfiguration;
-import com.bitmovin.player.config.advertising.AdItem;
-import com.bitmovin.player.config.advertising.AdSource;
-import com.bitmovin.player.config.advertising.AdSourceType;
-import com.bitmovin.player.config.advertising.AdvertisingConfiguration;
-import com.bitmovin.player.config.media.SourceConfiguration;
-import com.bitmovin.player.config.media.SourceItem;
+import com.bitmovin.player.api.Player;
+import com.bitmovin.player.PlayerView;
+import com.bitmovin.player.api.source.Source;
+import com.bitmovin.player.api.source.SourceConfig;
+import com.bitmovin.player.api.PlayerConfig;
+import com.bitmovin.player.api.advertising.AdItem;
+import com.bitmovin.player.api.advertising.AdSource;
+import com.bitmovin.player.api.advertising.AdSourceType;
+import com.bitmovin.player.api.advertising.AdvertisingConfig;
+import com.bitmovin.player.api.source.SourceType;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -38,8 +38,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private ConvivaAnalytics convivaAnalytics;
 
     // Player
-    private BitmovinPlayer bitmovinPlayer;
-    private BitmovinPlayerView bitmovinPlayerView;
+    private Player bitmovinPlayer;
+    private PlayerView bitmovinPlayerView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -57,14 +57,14 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     protected void setupBitmovinPlayer() {
-        this.bitmovinPlayer = new BitmovinPlayer(this);
-        this.bitmovinPlayerView = new BitmovinPlayerView(this, this.bitmovinPlayer);
+        this.bitmovinPlayer = Player.create(this, buildPlayerConfiguration());
+        this.bitmovinPlayerView = new PlayerView(this, this.bitmovinPlayer);
 
         LinearLayout playerUIView = this.findViewById(R.id.bitmovinPlayerUIView);
         playerUIView.addView(bitmovinPlayerView);
 
-        // Create your ConvivaConfiguration object
-        ConvivaConfiguration convivaConfig = new ConvivaConfiguration();
+        // Create your ConvivaConfig object
+        ConvivaConfig convivaConfig = new ConvivaConfig();
 
         // Set only in debug mode
         if (gatewayUrl != null) {
@@ -88,48 +88,42 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         Map<String, String> customInternTags = new HashMap<>();
         customInternTags.put("contentType", "Episode");
         metadata.setCustom(customInternTags);
-        convivaAnalytics?.updateContentMetadata(metadata);
+        convivaAnalytics.updateContentMetadata(metadata);
 
         // load source using the created source configuration
-        bitmovinPlayer.setup(buildPlayerConfiguration());
+        bitmovinPlayer.load(buildSourceConfiguration());
 
     }
 
-    private PlayerConfiguration buildPlayerConfiguration() {
-        PlayerConfiguration playerConfiguration = new PlayerConfiguration();
-
-        // Create a new source configuration
-        SourceConfiguration sourceConfiguration = new SourceConfiguration();
-        DASHSource source = new DASHSource("https://bitmovin-a.akamaihd.net/content/MI201109210084_1/mpds/f08e80da-bf1d-4e3d-8899-f0f6155f6efa.mpd");
-        SourceItem sourceItem = new SourceItem(source);
-        sourceItem.setTitle("Art of motion");
-
-        // Add a new source item
-        sourceConfiguration.addSourceItem(sourceItem);
-
-        // Add sourceConfiguration to playerConfiguration
-        playerConfiguration.setSourceConfiguration(sourceConfiguration);
+    private PlayerConfig buildPlayerConfiguration() {
+        PlayerConfig playerConfiguration = new PlayerConfig();
 
         if (includeAdsSwitch.isChecked()) {
-            playerConfiguration.setAdvertisingConfiguration(buildAdConfiguration());
+            playerConfiguration.setAdvertisingConfig(buildAdConfiguration());
         }
 
         return playerConfiguration;
     }
 
-    private AdvertisingConfiguration buildAdConfiguration() {
+    private SourceConfig buildSourceConfiguration() {
+        SourceConfig sourceConfig = new SourceConfig("https://bitmovin-a.akamaihd.net/content/MI201109210084_1/mpds/f08e80da-bf1d-4e3d-8899-f0f6155f6efa.mpd", SourceType.Dash);
+        sourceConfig.setTitle("Art of motion");
+        return sourceConfig;
+    }
+
+    private AdvertisingConfig buildAdConfiguration() {
         // These are IMA Sample Tags from https://developers.google.com/interactive-media-ads/docs/sdks/android/tags
 
         String AD_SOURCE_1 = "https://pubads.g.doubleclick.net/gampad/ads?sz=640x480&iu=/124319096/external/ad_rule_samples&ciu_szs=300x250&ad_rule=1&impl=s&gdfp_req=1&env=vp&output=vmap&unviewed_position_start=1&cust_params=deployment%3Ddevsite%26sample_ar%3Dpremidpostpod&cmsid=496&vid=short_onecue&correlator=";
 
         // Create AdSources
-        AdSource firstAdSource = new AdSource(AdSourceType.IMA, AD_SOURCE_1);
+        AdSource firstAdSource = new AdSource(AdSourceType.Ima, AD_SOURCE_1);
 
         // Setup a pre-roll ad
         AdItem preRoll = new AdItem("pre", firstAdSource);
 
         // Add the AdItems to the AdvertisingConfiguration
-        return new AdvertisingConfiguration(preRoll);
+        return new AdvertisingConfig(preRoll);
     }
 
     @Override
@@ -137,7 +131,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         super.onResume();
         bitmovinPlayerView.onResume();
         try {
-            convivaAnalytics?.initializeSession();
+            convivaAnalytics.initializeSession();
         } catch (ConvivaAnalyticsException e) {
             e.printStackTrace();
         }
@@ -146,7 +140,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     @Override
     protected void onPause() {
         bitmovinPlayerView.onStop();
-        convivaAnalytics?.endSession();
+        convivaAnalytics.endSession();
         super.onPause();
     }
 
@@ -156,22 +150,28 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         super.onDestroy();
     }
 
-    private void releasePlayer() {
+    private void unloadPlayer() {
         if (bitmovinPlayer != null) {
             bitmovinPlayer.unload();
+        }
+    }
+
+    private void loadPlayer(SourceConfig sourceConfig) {
+        if (bitmovinPlayer != null) {
+            bitmovinPlayer.load(sourceConfig);
         }
     }
 
     @Override
     public void onClick(View v) {
         if (v == releaseButton) {
-            releasePlayer();
+            unloadPlayer();
         } else if (v == createButton) {
-            bitmovinPlayer.setup(buildPlayerConfiguration());
+            loadPlayer(buildSourceConfiguration());
         } else if (v == sendCustomEventButton) {
             Map<String, Object> eventAttributes = new HashMap<>();
             eventAttributes.put("Some", "Attributes");
-            this.convivaAnalytics?.sendCustomPlaybackEvent("Custom Event", eventAttributes);
+            this.convivaAnalytics.sendCustomPlaybackEvent("Custom Event", eventAttributes);
         }
     }
 }

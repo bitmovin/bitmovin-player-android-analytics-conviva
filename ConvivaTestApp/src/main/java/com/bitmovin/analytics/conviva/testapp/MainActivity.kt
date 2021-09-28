@@ -4,21 +4,21 @@ import android.os.Bundle
 import android.view.View
 import android.widget.LinearLayout
 import androidx.appcompat.app.AppCompatActivity
-import com.bitmovin.player.BitmovinPlayer
-import com.bitmovin.player.BitmovinPlayerView
-import com.bitmovin.player.config.PlaybackConfiguration
-import com.bitmovin.player.config.PlayerConfiguration
-import com.bitmovin.player.config.advertising.AdItem
-import com.bitmovin.player.config.advertising.AdSource
-import com.bitmovin.player.config.advertising.AdSourceType
-import com.bitmovin.player.config.advertising.AdvertisingConfiguration
+import com.bitmovin.player.PlayerView
+import com.bitmovin.player.api.PlaybackConfig
+import com.bitmovin.player.api.Player
+import com.bitmovin.player.api.PlayerConfig
+import com.bitmovin.player.api.advertising.AdItem
+import com.bitmovin.player.api.advertising.AdSource
+import com.bitmovin.player.api.advertising.AdSourceType
+import com.bitmovin.player.api.advertising.AdvertisingConfig
 
 class MainActivity : AppCompatActivity() {
-    lateinit var bitmovinPlayerView: BitmovinPlayerView
-    lateinit var bitmovinPlaybackConfiguration: PlaybackConfiguration
-    lateinit var bitmovinAdConfiguration: AdvertisingConfiguration
-    lateinit var bitmovinPlayerConfiguration: PlayerConfiguration
-    lateinit var bitmovinPlayer: BitmovinPlayer
+    lateinit var bitmovinPlayerView: PlayerView
+    lateinit var bitmovinPlaybackConfig: PlaybackConfig
+    lateinit var bitmovinAdConfig: AdvertisingConfig
+    lateinit var bitmovinPlayerConfig: PlayerConfig
+    lateinit var bitmovinPlayer: Player
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
@@ -27,31 +27,31 @@ class MainActivity : AppCompatActivity() {
         val intent = intent
         val autoPlay = intent.getBooleanExtra(AUTOPLAY_KEY, false)
         var vmapTagUrl = intent.getStringExtra(VMAP_KEY)
-        bitmovinPlaybackConfiguration = PlaybackConfiguration()
-        bitmovinPlaybackConfiguration.isAutoplayEnabled = autoPlay
+        bitmovinPlaybackConfig = PlaybackConfig()
+        bitmovinPlaybackConfig!!.isAutoplayEnabled = autoPlay
 
         // Creating a new PlayerConfiguration
-        bitmovinPlayerConfiguration = PlayerConfiguration()
-        // Assign created SourceConfiguration to the PlayerConfiguration
-        bitmovinPlayerConfiguration.playbackConfiguration = bitmovinPlaybackConfiguration
+        bitmovinPlayerConfig = PlayerConfig()
+        bitmovinPlayerConfig!!.playbackConfig = bitmovinPlaybackConfig!!
 
         // Create AdSources
         if (vmapTagUrl != null) {
-            val vmapAdSource = AdSource(AdSourceType.IMA, vmapTagUrl)
+            val vmapAdSource = AdSource(AdSourceType.Ima, vmapTagUrl)
 
             // Setup ad
             val vmapAdRoll = AdItem("", vmapAdSource)
 
             // Add the AdItems to the AdvertisingConfiguration
-            bitmovinAdConfiguration = AdvertisingConfiguration(vmapAdRoll)
+            bitmovinAdConfig = AdvertisingConfig(vmapAdRoll)
             // Assing the AdvertisingConfiguration to the PlayerConfiguration
             // All ads in the AdvertisingConfiguration will be scheduled automatically
-            bitmovinPlayerConfiguration.advertisingConfiguration = bitmovinAdConfiguration
+            bitmovinPlayerConfig!!.advertisingConfig = bitmovinAdConfig!!
         }
 
         // Create new BitmovinPlayerView with our PlayerConfiguration
-        bitmovinPlayerView = BitmovinPlayerView(this, bitmovinPlayerConfiguration)
-        bitmovinPlayerView.layoutParams = LinearLayout.LayoutParams(
+        bitmovinPlayer = Player.create(this, bitmovinPlayerConfig!!)
+        bitmovinPlayerView = PlayerView(this, bitmovinPlayer)
+        bitmovinPlayerView!!.layoutParams = LinearLayout.LayoutParams(
             LinearLayout.LayoutParams.MATCH_PARENT,
             LinearLayout.LayoutParams.MATCH_PARENT
         )

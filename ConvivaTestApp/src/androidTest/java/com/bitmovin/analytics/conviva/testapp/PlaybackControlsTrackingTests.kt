@@ -1,9 +1,9 @@
 package com.bitmovin.analytics.conviva.testapp
 
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import com.bitmovin.player.api.event.data.MutedEvent
-import com.bitmovin.player.api.event.data.UnmutedEvent
-import com.bitmovin.player.config.quality.VideoQuality
+import com.bitmovin.player.api.event.PlayerEvent.Muted
+import com.bitmovin.player.api.event.PlayerEvent.Unmuted
+import com.bitmovin.player.api.media.video.quality.VideoQuality
 import com.conviva.api.player.PlayerStateManager
 import io.mockk.*
 import org.junit.Test
@@ -25,16 +25,15 @@ class PlaybackContorlsTrackingTests: TestBase() {
 
         // load source and verify
         loadSource(activityScenario, DEFAULT_DASH_VOD_SOURCE)
-
+        Thread.sleep(2000)
         verifyPlaying(activityScenario = activityScenario)
 
         // pause playback
         activityScenario.onActivity { activity: MainActivity ->
             clearMocks(playerStateManagerMock!!)
             activity.bitmovinPlayer.pause()
-            Thread.sleep(2000)
         }
-
+        Thread.sleep(2000)
         // verify pause tracking
         activityScenario.onActivity { activity: MainActivity ->
             verify(atLeast=1) {
@@ -46,9 +45,8 @@ class PlaybackContorlsTrackingTests: TestBase() {
         activityScenario.onActivity { activity: MainActivity ->
             clearMocks(playerStateManagerMock!!)
             activity.bitmovinPlayer.play()
-            Thread.sleep(2000)
         }
-
+        Thread.sleep(2000)
         // verify resume tracking
         activityScenario.onActivity { activity: MainActivity ->
             verify(exactly=1) {
@@ -71,7 +69,7 @@ class PlaybackContorlsTrackingTests: TestBase() {
 
         // load source and verify
         loadSource(activityScenario, DEFAULT_DASH_VOD_SOURCE)
-
+        Thread.sleep(2000)
         verifyPlaying(activityScenario = activityScenario)
 
         // seek
@@ -79,9 +77,8 @@ class PlaybackContorlsTrackingTests: TestBase() {
             // Seek playback
             clearMocks(playerStateManagerMock!!)
             activity.bitmovinPlayer.seek(120.0)
-            Thread.sleep(2000)
         }
-
+        Thread.sleep(2000)
         // verify seek tracking
         activityScenario.onActivity { activity: MainActivity ->
             verifyOrder {
@@ -107,16 +104,15 @@ class PlaybackContorlsTrackingTests: TestBase() {
 
         // load source and verify
         loadSource(activityScenario, DEFAULT_DASH_LIVE_SOURCE)
-
+        Thread.sleep(2000)
         verifyPlaying(activityScenario = activityScenario)
 
         // timeshift
         activityScenario.onActivity { activity: MainActivity ->
             clearMocks(playerStateManagerMock!!)
             activity.bitmovinPlayer.timeShift(30.0)
-            Thread.sleep(2000)
         }
-
+        Thread.sleep(2000)
         // verify timeshift tracking
         activityScenario.onActivity { activity: MainActivity ->
             verifyOrder {
@@ -140,20 +136,19 @@ class PlaybackContorlsTrackingTests: TestBase() {
 
         // load source and verify
         loadSource(activityScenario, DEFAULT_DASH_VOD_SOURCE)
-
+        Thread.sleep(2000)
         verifyPlaying(activityScenario = activityScenario)
 
         // mute playback
         activityScenario.onActivity { activity: MainActivity ->
             clearMocks(clientMock!!)
             activity.bitmovinPlayer.mute()
-            Thread.sleep(1000)
         }
-
+        Thread.sleep(1000)
         // verify mute tracking
         activityScenario.onActivity { activity: MainActivity ->
             verify {
-                val eventName: String? = MutedEvent::class.simpleName
+                val eventName: String? = Muted::class.simpleName
                 clientMock?.sendCustomEvent(CONVIVA_SESSION_ID, "on$eventName", any())
             }
         }
@@ -162,13 +157,13 @@ class PlaybackContorlsTrackingTests: TestBase() {
         activityScenario.onActivity { activity: MainActivity ->
             clearMocks(clientMock!!)
             activity.bitmovinPlayer.unmute()
-            Thread.sleep(1000)
         }
+        Thread.sleep(1000)
 
         // verify unmute tracking
         activityScenario.onActivity { activity: MainActivity ->
             verify {
-                val eventName: String? = UnmutedEvent::class.simpleName
+                val eventName: String? = Unmuted::class.simpleName
                 clientMock?.sendCustomEvent(CONVIVA_SESSION_ID, "on$eventName", any())
             }
         }
@@ -188,7 +183,7 @@ class PlaybackContorlsTrackingTests: TestBase() {
 
         // load source and verify
         loadSource(activityScenario, DEFAULT_DASH_VOD_SOURCE)
-
+        Thread.sleep(2000)
         verifyPlaying(activityScenario = activityScenario)
 
         // switch video quality
@@ -204,9 +199,9 @@ class PlaybackContorlsTrackingTests: TestBase() {
                     switchToVideoQuality = quality
                 }
             }
-            activity.bitmovinPlayer.setVideoQuality(switchToVideoQuality?.id)
-            Thread.sleep(2000)
+            activity.bitmovinPlayer.setVideoQuality(switchToVideoQuality?.id!!)
         }
+        Thread.sleep(2000)
 
         // verify quality tracking
         activityScenario.onActivity { activity: MainActivity ->

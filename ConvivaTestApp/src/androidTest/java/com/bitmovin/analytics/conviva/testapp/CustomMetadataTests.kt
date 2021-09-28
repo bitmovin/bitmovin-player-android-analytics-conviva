@@ -30,7 +30,7 @@ class CustomMetadataTests : TestBase() {
 
         // load source and verify
         loadSource(activityScenario, DEFAULT_DASH_VOD_SOURCE)
-
+        Thread.sleep(2000)
         verifyPlayingWithMetadata(
             activityScenario = activityScenario,
             source = DEFAULT_DASH_VOD_SOURCE,
@@ -62,7 +62,7 @@ class CustomMetadataTests : TestBase() {
 
         // load source and verify
         loadSource(activityScenario, DEFAULT_DASH_LIVE_SOURCE)
-
+        Thread.sleep(2000)
         verifyPlayingWithMetadata(
             activityScenario = activityScenario,
             source = DEFAULT_DASH_LIVE_SOURCE,
@@ -97,7 +97,7 @@ class CustomMetadataTests : TestBase() {
 
         // load source and verify
         loadSource(activityScenario, DEFAULT_DASH_VOD_SOURCE)
-
+        Thread.sleep(2000)
         verifyPlayingWithMetadata(
             activityScenario = activityScenario,
             source = DEFAULT_DASH_VOD_SOURCE,

@@ -22,6 +22,7 @@ class AdsTrackingTests : TestBase() {
 
         // load source and verify
         loadSource(activityScenario, DEFAULT_DASH_VOD_SOURCE)
+        Thread.sleep(2000)
         verifyPlaying(activityScenario = activityScenario)
 
         // verify Ad start

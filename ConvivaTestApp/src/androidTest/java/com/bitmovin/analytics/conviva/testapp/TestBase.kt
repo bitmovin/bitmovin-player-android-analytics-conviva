@@ -5,10 +5,11 @@ import android.content.Intent
 import androidx.test.core.app.ActivityScenario
 import androidx.test.core.app.ApplicationProvider
 import com.bitmovin.analytics.conviva.ConvivaAnalytics
-import com.bitmovin.analytics.conviva.ConvivaConfiguration
+import com.bitmovin.analytics.conviva.ConvivaConfig
 import com.bitmovin.analytics.conviva.MetadataOverrides
-import com.bitmovin.player.config.media.DASHSource
-import com.bitmovin.player.config.media.SourceItem
+import com.bitmovin.player.api.source.Source
+import com.bitmovin.player.api.source.SourceConfig
+import com.bitmovin.player.api.source.SourceType
 import com.conviva.api.*
 import com.conviva.api.player.PlayerStateManager
 import io.mockk.*
@@ -19,7 +20,7 @@ import java.security.SecureRandom
 import java.util.HashMap
 
 open class TestBase {
-    lateinit var convivaConfig: ConvivaConfiguration
+    lateinit var convivaConfig: ConvivaConfig
     var convivaAnalytics: ConvivaAnalytics? = null
     var clientSettingsMock: ClientSettings? = null
     var clientMock: Client? = null
@@ -33,11 +34,11 @@ open class TestBase {
     ) as HashMap<String, Any>
     val CUSTOM_ERROR_MESSAGE = "CUSTOM_ERROR_MESSAGE"
 
-    val DEFAULT_DASH_VOD_SOURCE = SourceItem(DASHSource("https://bitmovin-a.akamaihd.net/content/MI201109210084_1/mpds/f08e80da-bf1d-4e3d-8899-f0f6155f6efa.mpd"))
+    val DEFAULT_DASH_VOD_SOURCE = Source.create(SourceConfig("https://bitmovin-a.akamaihd.net/content/MI201109210084_1/mpds/f08e80da-bf1d-4e3d-8899-f0f6155f6efa.mpd", SourceType.Dash))
     val DEFAULT_DASH_VOD_SOURCE_DURATION = 210
-    val DEFAULT_DASH_LIVE_SOURCE = SourceItem(DASHSource("https://livesim.dashif.org/livesim/testpic_2s/Manifest.mpd"))
+    val DEFAULT_DASH_LIVE_SOURCE = Source.create(SourceConfig("https://livesim.dashif.org/livesim/testpic_2s/Manifest.mpd", SourceType.Dash))
     val DEFAULT_DASH_LIVE_SOURCE_DURATION = 0
-    val INVALID_DASH_VOD_SOURCE = SourceItem(DASHSource("https://bitmovin.com"))
+    val INVALID_DASH_VOD_SOURCE = Source.create(SourceConfig("https://bitmovin.com", SourceType.Dash))
 
     val PLAYER_TYPE = "Bitmovin Player Android"
     val PLAYER_VERSION = com.bitmovin.player.BuildConfig.VERSION_NAME
@@ -45,7 +46,7 @@ open class TestBase {
     @Before
     fun setup() {
         // Create your ConvivaConfiguration object
-        convivaConfig = ConvivaConfiguration()
+        convivaConfig = ConvivaConfig()
         convivaConfig.isDebugLoggingEnabled = true
     }
 
@@ -130,7 +131,7 @@ open class TestBase {
     }
 
     fun customMetadataOverrides(
-        source: SourceItem? = null,
+        source: Source? = null,
         streamType: ContentMetadata.StreamType? = null,
         duration: Int? = null,
         customTags: Map<String, String>? = null
@@ -145,7 +146,7 @@ open class TestBase {
                 metadata.custom[s] = s2
             }
         }
-        source?.let { metadata.streamUrl = it.dashSource.url }
+        source?.let { metadata.streamUrl = it.config.url }
         streamType?.let { metadata.streamType = streamType }
         streamType?.let { metadata.duration = duration }
 
@@ -153,7 +154,7 @@ open class TestBase {
     }
 
     fun expectedContentMetadata(
-        source: SourceItem,
+        source: Source,
         streamType: ContentMetadata.StreamType,
         duration: Int,
         overrideMetadata: MetadataOverrides,
@@ -169,19 +170,19 @@ open class TestBase {
         contentMetadata.isOfflinePlayback = false
         contentMetadata.custom = HashMap()
         if (overrideCustom) {
-            contentMetadata.streamUrl = overrideMetadata.streamUrl ?: source.dashSource.url
+            contentMetadata.streamUrl = overrideMetadata.streamUrl ?: source.config.url
             contentMetadata.streamType = overrideMetadata.streamType ?: streamType
             contentMetadata.duration = overrideMetadata.duration ?: duration
             overrideMetadata.custom.forEach { s, s2 ->
                 contentMetadata.custom[s] = s2
             }
-            contentMetadata.custom["streamType"] = overrideMetadata.custom["streamType"] ?: source.type.name
+            contentMetadata.custom["streamType"] = overrideMetadata.custom["streamType"] ?: source.config.type.toString()
             contentMetadata.custom["integrationVersion"] = overrideMetadata.custom["integrationVersion"] ?: com.bitmovin.analytics.conviva.BuildConfig.VERSION_NAME
         } else {
-            contentMetadata.streamUrl = source.dashSource.url
+            contentMetadata.streamUrl = source.config.url
             contentMetadata.streamType = streamType
             contentMetadata.duration = duration
-            contentMetadata.custom["streamType"] = source.type.name
+            contentMetadata.custom["streamType"] = source.config.type.toString()
             contentMetadata.custom["integrationVersion"] = com.bitmovin.analytics.conviva.BuildConfig.VERSION_NAME
         }
         return contentMetadata
@@ -257,10 +258,9 @@ open class TestBase {
         }
     }
 
-    fun loadSource(activityScenario: ActivityScenario<MainActivity>, source: SourceItem) {
+    fun loadSource(activityScenario: ActivityScenario<MainActivity>, source: Source) {
         activityScenario.onActivity { activity: MainActivity ->
             activity.bitmovinPlayer.load(source)
-            Thread.sleep(2000)
         }
     }
 
@@ -280,7 +280,7 @@ open class TestBase {
 
     fun verifyPlayingWithMetadata(
         activityScenario: ActivityScenario<MainActivity>,
-        source: SourceItem,
+        source: Source,
         streamType: ContentMetadata.StreamType,
         streamDuration: Int,
         metadata: MetadataOverrides,
