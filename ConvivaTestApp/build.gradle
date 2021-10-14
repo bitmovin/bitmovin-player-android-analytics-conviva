@@ -4,24 +4,23 @@ plugins {
 }
 
 android {
-    compileSdkVersion 30
+    compileSdkVersion 28
     buildToolsVersion "30.0.3"
 
     defaultConfig {
         applicationId "com.bitmovin.analytics.conviva.testapp"
         minSdkVersion 28
-        targetSdkVersion 30
+        targetSdkVersion 28
         versionCode 1
         versionName "1.0"
-        //multiDexEnabled true
-        //testInstrumentationRunner "com.example.dexopener.DexOpeningTestRunner"
+        multiDexEnabled true
 
         // Default test runner
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
     buildTypes {
         debug {
-            //multiDexEnabled true
+            multiDexEnabled true
             debuggable true
         }
         release {
@@ -51,8 +50,5 @@ dependencies {
     testImplementation 'junit:junit:4.12'
     androidTestImplementation 'androidx.test.ext:junit:1.1.1'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.2.0'
-    //androidTestImplementation 'androidx.test:core:1.2.0'
-    //androidTestImplementation 'androidx.test:runner:1.2.0'
-    //androidTestImplementation 'androidx.test:rules:1.2.0'
     androidTestImplementation "io.mockk:mockk-android:1.12.0"
 }

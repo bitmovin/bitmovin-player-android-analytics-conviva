@@ -65,7 +65,7 @@ public class ConvivaAnalytics {
 
     private static final String TAG = "ConvivaAnalytics";
 
-    private Client client;
+    private Client client = null;
     private BitmovinPlayer bitmovinPlayer;
     private ContentMetadataBuilder contentMetadataBuilder = new ContentMetadataBuilder();
     private ConvivaConfiguration config;
@@ -88,6 +88,14 @@ public class ConvivaAnalytics {
                             String customerKey,
                             Context context,
                             ConvivaConfiguration config) {
+        this(player, customerKey, context, new ConvivaConfiguration(), null);
+    }
+
+    public ConvivaAnalytics(BitmovinPlayer player,
+                            String customerKey,
+                            Context context,
+                            ConvivaConfiguration config,
+                            Client client) {
         this.bitmovinPlayer = player;
         this.playerHelper = new BitmovinPlayerHelper(player);
         this.config = config;
@@ -108,7 +116,11 @@ public class ConvivaAnalytics {
                 clientSettings.gatewayUrl = config.getGatewayUrl();
             }
 
-            this.client = new Client(clientSettings, androidSystemFactory);
+            if (client != null) {
+                this.client = client;
+            } else {
+                this.client = new Client(clientSettings, androidSystemFactory);
+            }
 
             attachBitmovinEventListeners();
         }
