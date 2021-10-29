@@ -12,11 +12,9 @@ import com.bitmovin.player.config.advertising.AdItem
 import com.bitmovin.player.config.advertising.AdSource
 import com.bitmovin.player.config.advertising.AdSourceType
 import com.bitmovin.player.config.advertising.AdvertisingConfiguration
-import com.bitmovin.player.config.media.SourceConfiguration
 
 class MainActivity : AppCompatActivity() {
     var bitmovinPlayerView: BitmovinPlayerView? = null
-    var bitmovinSourceConfiguration: SourceConfiguration? = null
     var bitmovinPlaybackConfiguration: PlaybackConfiguration? = null
     var bitmovinAdConfiguration: AdvertisingConfiguration? = null
     var bitmovinPlayerConfiguration: PlayerConfiguration? = null
@@ -35,7 +33,6 @@ class MainActivity : AppCompatActivity() {
         // Creating a new PlayerConfiguration
         bitmovinPlayerConfiguration = PlayerConfiguration()
         // Assign created SourceConfiguration to the PlayerConfiguration
-        bitmovinPlayerConfiguration!!.sourceConfiguration = bitmovinSourceConfiguration
         bitmovinPlayerConfiguration!!.playbackConfiguration = bitmovinPlaybackConfiguration
 
         // Create AdSources
