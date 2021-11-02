@@ -16,7 +16,7 @@ class PlaybackErrorTrackingTests: TestBase() {
 
         // load invalid asset without initializing Conviva session explicitly
         activityScenario.onActivity { activity: MainActivity ->
-            activity.bitmovinPlayer!!.load(INVALID_DASH_VOD_SOURCE)
+            activity.bitmovinPlayer.load(INVALID_DASH_VOD_SOURCE)
             Thread.sleep(2000)
         }
 
@@ -68,7 +68,7 @@ class PlaybackErrorTrackingTests: TestBase() {
         activityScenario.onActivity { activity: MainActivity ->
             clearMocks(clientMock!!)
             clearMocks(playerStateManagerMock!!)
-            activity.bitmovinPlayer!!.load(INVALID_DASH_VOD_SOURCE)
+            activity.bitmovinPlayer.load(INVALID_DASH_VOD_SOURCE)
             Thread.sleep(2000)
         }
 

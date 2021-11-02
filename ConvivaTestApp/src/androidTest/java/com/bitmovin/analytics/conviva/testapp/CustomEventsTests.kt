@@ -22,11 +22,11 @@ class CustomEventsTests: TestBase() {
                 clientMock?.sendCustomEvent(
                     Client.NO_SESSION_KEY, CUSTOM_EVENT_NAME,
                     HashMap()
-                );
+                )
                 clientMock?.sendCustomEvent(
                     Client.NO_SESSION_KEY, CUSTOM_EVENT_NAME,
                     CUSTOM_EVENT_ATTRIBUTES
-                );
+                )
             }
         }
 
@@ -42,11 +42,11 @@ class CustomEventsTests: TestBase() {
                 clientMock?.sendCustomEvent(
                     Client.NO_SESSION_KEY,
                     CUSTOM_EVENT_NAME,
-                    HashMap());
+                    HashMap())
                 clientMock?.sendCustomEvent(
                     Client.NO_SESSION_KEY,
                     CUSTOM_EVENT_NAME,
-                    CUSTOM_EVENT_ATTRIBUTES);
+                    CUSTOM_EVENT_ATTRIBUTES)
             }
         }
 
@@ -67,12 +67,12 @@ class CustomEventsTests: TestBase() {
                     CONVIVA_SESSION_ID,
                     CUSTOM_EVENT_NAME,
                     HashMap()
-                );
+                )
                 clientMock?.sendCustomEvent(
                     CONVIVA_SESSION_ID,
                     CUSTOM_EVENT_NAME,
                     CUSTOM_EVENT_ATTRIBUTES
-                );
+                )
             }
         }
 
@@ -88,11 +88,11 @@ class CustomEventsTests: TestBase() {
                 clientMock?.sendCustomEvent(
                     CONVIVA_SESSION_ID,
                     CUSTOM_EVENT_NAME,
-                    HashMap());
+                    HashMap())
                 clientMock?.sendCustomEvent(
                     CONVIVA_SESSION_ID,
                     CUSTOM_EVENT_NAME,
-                    CUSTOM_EVENT_ATTRIBUTES);
+                    CUSTOM_EVENT_ATTRIBUTES)
             }
         }
         activityScenario.close()
@@ -111,7 +111,7 @@ class CustomEventsTests: TestBase() {
                 false
             )
             verify(inverse = true) {
-                clientMock?.reportError(any(), any(), any());
+                clientMock?.reportError(any(), any(), any())
             }
             convivaAnalytics?.reportPlaybackDeficiency(
                 CUSTOM_ERROR_MESSAGE,
@@ -119,7 +119,7 @@ class CustomEventsTests: TestBase() {
                 true
             )
             verify(inverse = true) {
-                clientMock?.reportError(any(), any(), any());
+                clientMock?.reportError(any(), any(), any())
             }
         }
 
@@ -141,7 +141,7 @@ class CustomEventsTests: TestBase() {
                     CONVIVA_SESSION_ID,
                     CUSTOM_ERROR_MESSAGE,
                     Client.ErrorSeverity.WARNING
-                );
+                )
             }
             verifyAll(inverse = true) {
                 clientMock?.detachPlayer(CONVIVA_SESSION_ID)
@@ -157,7 +157,7 @@ class CustomEventsTests: TestBase() {
             clearMocks(playerStateManagerMock!!)
             convivaAnalytics?.reportPlaybackDeficiency(CUSTOM_ERROR_MESSAGE, Client.ErrorSeverity.FATAL, true)
             verifyOrder() {
-                clientMock?.reportError(CONVIVA_SESSION_ID, CUSTOM_ERROR_MESSAGE, Client.ErrorSeverity.FATAL);
+                clientMock?.reportError(CONVIVA_SESSION_ID, CUSTOM_ERROR_MESSAGE, Client.ErrorSeverity.FATAL)
                 clientMock?.detachPlayer(CONVIVA_SESSION_ID)
                 clientMock?.cleanupSession(CONVIVA_SESSION_ID)
                 clientMock?.releasePlayerStateManager(playerStateManagerMock)

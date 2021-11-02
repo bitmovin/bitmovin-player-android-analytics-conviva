@@ -32,7 +32,7 @@ class SessionTerminationTests : TestBase() {
             // Seek close to end to finish playback
             clearMocks(playerStateManagerMock!!)
             clearMocks(clientMock!!)
-            activity.bitmovinPlayer!!.seek(activity.bitmovinPlayer!!.duration - 1)
+            activity.bitmovinPlayer.seek(activity.bitmovinPlayer.duration - 1)
             Thread.sleep(4000)
         }
 
@@ -74,7 +74,7 @@ class SessionTerminationTests : TestBase() {
             try {
                 clearMocks(playerStateManagerMock!!)
                 clearMocks(clientMock!!)
-                activity.bitmovinPlayer!!.unload()
+                activity.bitmovinPlayer.unload()
                 Thread.sleep(2000)
             } catch (e: Exception) {
                 // Expectation is to not receive any exception
@@ -159,7 +159,7 @@ class SessionTerminationTests : TestBase() {
             try {
                 clearMocks(playerStateManagerMock!!)
                 clearMocks(clientMock!!)
-                activity.bitmovinPlayer!!.unload()
+                activity.bitmovinPlayer.unload()
                 Thread.sleep(2000)
             } catch (e: Exception) {
                 // Expectation is to not receive any exception

@@ -18,7 +18,7 @@ import java.security.SecureRandom
 import java.util.HashMap
 
 open class TestBase {
-    var convivaConfig: ConvivaConfiguration? = null
+    lateinit var convivaConfig: ConvivaConfiguration
     var convivaAnalytics: ConvivaAnalytics? = null
     var clientSettingsMock: ClientSettings? = null
     var clientMock: Client? = null
@@ -44,13 +44,12 @@ open class TestBase {
     fun setup() {
         // Create your ConvivaConfiguration object
         convivaConfig = ConvivaConfiguration()
-        convivaConfig!!.isDebugLoggingEnabled = true
+        convivaConfig.isDebugLoggingEnabled = true
     }
 
     @Before
     fun tearDown() {
         convivaAnalytics?.let { it.endSession() }
-        convivaAnalytics = null
 
         // Unmock mocked objects
         tearDownMocks()
@@ -58,26 +57,29 @@ open class TestBase {
 
     fun mockClientSettingsObject() : ClientSettings {
         var clientSettings = ClientSettings("customerKey")
-        if (convivaConfig?.getGatewayUrl() != null) {
-            clientSettings?.gatewayUrl = convivaConfig?.getGatewayUrl()
+        if (convivaConfig.getGatewayUrl() != null) {
+            clientSettings.gatewayUrl = convivaConfig.getGatewayUrl()
         }
         mockkObject(clientSettings)
-        return clientSettings;
+        return clientSettings
     }
 
-    fun mockClientObject(context: Context, clientSettings: ClientSettings) : Client {
+    fun mockClientObject(
+        context: Context,
+        clientSettings: ClientSettings
+    ) : Client {
         val androidSystemInterface = AndroidSystemInterfaceFactory.buildSecure(context)
         val systemSettings = SystemSettings()
         systemSettings.allowUncaughtExceptions = false
 
-        if (convivaConfig?.isDebugLoggingEnabled() == true) {
+        if (convivaConfig.isDebugLoggingEnabled() == true) {
             systemSettings.logLevel = SystemSettings.LogLevel.DEBUG
         }
 
         val androidSystemFactory = SystemFactory(androidSystemInterface, systemSettings)
         var client = Client(clientSettings, androidSystemFactory)
         mockkObject(client)
-        return client;
+        return client
     }
 
     fun mockPlayerStateManagerObject(client: Client) : PlayerStateManager {
@@ -93,10 +95,10 @@ open class TestBase {
 
         // Stub method return values
         CONVIVA_SESSION_ID = Math.abs(SecureRandom().nextInt())
-        every { clientSettingsMock!!.isInitialized } returns true
-        every { clientMock!!.isInitialized } returns true
-        every { clientMock!!.createSession(any()) } returns CONVIVA_SESSION_ID
-        every { clientMock!!.playerStateManager } returns playerStateManagerMock
+        every { clientSettingsMock?.isInitialized } returns true
+        every { clientMock?.isInitialized } returns true
+        every { clientMock?.createSession(any()) } returns CONVIVA_SESSION_ID
+        every { clientMock?.playerStateManager } returns playerStateManagerMock
     }
 
     fun tearDownMocks () {
@@ -109,7 +111,7 @@ open class TestBase {
         // Setup mocks and create ConvivaAnalytics using mock objects
         setupMocks(activity.applicationContext)
         return ConvivaAnalytics(
-            activity.bitmovinPlayer!!,
+            activity.bitmovinPlayer,
             "test",
             activity.applicationContext,
             convivaConfig,
@@ -124,10 +126,12 @@ open class TestBase {
         return metadata
     }
 
-    fun customMetadataOverrides(source: SourceItem? = null,
-                          streamType: ContentMetadata.StreamType? = null,
-                          duration: Int? = null,
-                          customTags: Map<String, String>? = null) : MetadataOverrides {
+    fun customMetadataOverrides(
+        source: SourceItem? = null,
+        streamType: ContentMetadata.StreamType? = null,
+        duration: Int? = null,
+        customTags: Map<String, String>? = null
+    ) : MetadataOverrides {
         val metadata = MetadataOverrides()
         metadata.applicationName = "Bitmovin Android Conviva test app"
         metadata.viewerId = "awesomeViewerId"
@@ -145,11 +149,13 @@ open class TestBase {
         return metadata
     }
 
-    fun expectedContentMetadata(source: SourceItem,
-                                streamType: ContentMetadata.StreamType,
-                                duration: Int,
-                                overrideMetadata: MetadataOverrides,
-                                overrideCustom: Boolean = false) : ContentMetadata {
+    fun expectedContentMetadata(
+        source: SourceItem,
+        streamType: ContentMetadata.StreamType,
+        duration: Int,
+        overrideMetadata: MetadataOverrides,
+        overrideCustom: Boolean = false
+    ) : ContentMetadata {
         val contentMetadata = ContentMetadata()
         contentMetadata.applicationName = overrideMetadata.applicationName
         contentMetadata.viewerId = overrideMetadata.viewerId
@@ -194,7 +200,11 @@ open class TestBase {
         }
     }
 
-    fun setupPlayerActivityForTest(autoPlay: Boolean, metadataOverrides: MetadataOverrides, adTag: String = "") : ActivityScenario<MainActivity> {
+    fun setupPlayerActivityForTest(
+        autoPlay: Boolean,
+        metadataOverrides: MetadataOverrides,
+        adTag: String = ""
+    ) : ActivityScenario<MainActivity> {
         val launchIntent = Intent(
             ApplicationProvider.getApplicationContext(),
             MainActivity::class.java
@@ -222,7 +232,7 @@ open class TestBase {
 
     fun initializeSession(activityScenario: ActivityScenario<MainActivity>) {
         activityScenario.onActivity { activity: MainActivity ->
-            convivaAnalytics!!.initializeSession()
+            convivaAnalytics?.initializeSession()
             Thread.sleep(1000)
         }
     }
@@ -246,14 +256,14 @@ open class TestBase {
 
     fun loadSource(activityScenario: ActivityScenario<MainActivity>, source: SourceItem) {
         activityScenario.onActivity { activity: MainActivity ->
-            activity.bitmovinPlayer!!.load(source)
+            activity.bitmovinPlayer.load(source)
             Thread.sleep(2000)
         }
     }
 
     fun playSource(activityScenario: ActivityScenario<MainActivity>) {
         activityScenario.onActivity { activity: MainActivity ->
-            activity.bitmovinPlayer!!.play()
+            activity.bitmovinPlayer.play()
         }
     }
 
@@ -265,7 +275,14 @@ open class TestBase {
         }
     }
 
-    fun verifyPlayingWithMetadata(activityScenario: ActivityScenario<MainActivity>, source: SourceItem, streamType: ContentMetadata.StreamType, streamDuration: Int, metadata: MetadataOverrides, overrideCustom: Boolean = false) {
+    fun verifyPlayingWithMetadata(
+        activityScenario: ActivityScenario<MainActivity>,
+        source: SourceItem,
+        streamType: ContentMetadata.StreamType,
+        streamDuration: Int,
+        metadata: MetadataOverrides,
+        overrideCustom: Boolean = false
+    ) {
         activityScenario.onActivity { activity: MainActivity ->
             verify {
                 clientMock?.updateContentMetadata(CONVIVA_SESSION_ID,

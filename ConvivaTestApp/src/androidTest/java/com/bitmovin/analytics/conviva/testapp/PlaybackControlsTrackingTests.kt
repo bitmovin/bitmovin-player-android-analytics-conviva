@@ -31,7 +31,7 @@ class PlaybackContorlsTrackingTests: TestBase() {
         // pause playback
         activityScenario.onActivity { activity: MainActivity ->
             clearMocks(playerStateManagerMock!!)
-            activity.bitmovinPlayer!!.pause()
+            activity.bitmovinPlayer.pause()
             Thread.sleep(2000)
         }
 
@@ -45,7 +45,7 @@ class PlaybackContorlsTrackingTests: TestBase() {
         // resume playback
         activityScenario.onActivity { activity: MainActivity ->
             clearMocks(playerStateManagerMock!!)
-            activity.bitmovinPlayer!!.play()
+            activity.bitmovinPlayer.play()
             Thread.sleep(2000)
         }
 
@@ -80,7 +80,7 @@ class PlaybackContorlsTrackingTests: TestBase() {
         activityScenario.onActivity { activity: MainActivity ->
             // Seek playback
             clearMocks(playerStateManagerMock!!)
-            activity.bitmovinPlayer!!.seek(120.0)
+            activity.bitmovinPlayer.seek(120.0)
             Thread.sleep(2000)
         }
 
@@ -117,7 +117,7 @@ class PlaybackContorlsTrackingTests: TestBase() {
         // timeshift
         activityScenario.onActivity { activity: MainActivity ->
             clearMocks(playerStateManagerMock!!)
-            activity.bitmovinPlayer!!.timeShift(30.0)
+            activity.bitmovinPlayer.timeShift(30.0)
             Thread.sleep(2000)
         }
 
@@ -152,7 +152,7 @@ class PlaybackContorlsTrackingTests: TestBase() {
         // mute playback
         activityScenario.onActivity { activity: MainActivity ->
             clearMocks(clientMock!!)
-            activity.bitmovinPlayer!!.mute()
+            activity.bitmovinPlayer.mute()
             Thread.sleep(1000)
         }
 
@@ -167,7 +167,7 @@ class PlaybackContorlsTrackingTests: TestBase() {
         // unmute playback
         activityScenario.onActivity { activity: MainActivity ->
             clearMocks(clientMock!!)
-            activity.bitmovinPlayer!!.unmute()
+            activity.bitmovinPlayer.unmute()
             Thread.sleep(1000)
         }
 
@@ -204,15 +204,15 @@ class PlaybackContorlsTrackingTests: TestBase() {
         activityScenario.onActivity { activity: MainActivity ->
             clearMocks(playerStateManagerMock!!)
             clearMocks(clientMock!!)
-            val videoQualityArr = activity.bitmovinPlayer!!.availableVideoQualities
-            val currVideoQuality = activity.bitmovinPlayer!!.videoQuality
+            val videoQualityArr = activity.bitmovinPlayer.availableVideoQualities
+            val currVideoQuality = activity.bitmovinPlayer.videoQuality
             switchToVideoQuality = videoQualityArr[0]
             for (quality in videoQualityArr) {
                 if (quality.bitrate < switchToVideoQuality!!.bitrate && quality.id !== currVideoQuality!!.id) {
                     switchToVideoQuality = quality
                 }
             }
-            activity.bitmovinPlayer!!.setVideoQuality(switchToVideoQuality?.id)
+            activity.bitmovinPlayer.setVideoQuality(switchToVideoQuality?.id)
             Thread.sleep(2000)
         }
 

@@ -14,11 +14,11 @@ import com.bitmovin.player.config.advertising.AdSourceType
 import com.bitmovin.player.config.advertising.AdvertisingConfiguration
 
 class MainActivity : AppCompatActivity() {
-    var bitmovinPlayerView: BitmovinPlayerView? = null
-    var bitmovinPlaybackConfiguration: PlaybackConfiguration? = null
-    var bitmovinAdConfiguration: AdvertisingConfiguration? = null
-    var bitmovinPlayerConfiguration: PlayerConfiguration? = null
-    var bitmovinPlayer: BitmovinPlayer? = null
+    lateinit var bitmovinPlayerView: BitmovinPlayerView
+    lateinit var bitmovinPlaybackConfiguration: PlaybackConfiguration
+    lateinit var bitmovinAdConfiguration: AdvertisingConfiguration
+    lateinit var bitmovinPlayerConfiguration: PlayerConfiguration
+    lateinit var bitmovinPlayer: BitmovinPlayer
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
@@ -28,12 +28,12 @@ class MainActivity : AppCompatActivity() {
         val autoPlay = intent.getBooleanExtra(AUTOPLAY_KEY, false)
         var vmapTagUrl = intent.getStringExtra(VMAP_KEY)
         bitmovinPlaybackConfiguration = PlaybackConfiguration()
-        bitmovinPlaybackConfiguration!!.isAutoplayEnabled = autoPlay
+        bitmovinPlaybackConfiguration.isAutoplayEnabled = autoPlay
 
         // Creating a new PlayerConfiguration
         bitmovinPlayerConfiguration = PlayerConfiguration()
         // Assign created SourceConfiguration to the PlayerConfiguration
-        bitmovinPlayerConfiguration!!.playbackConfiguration = bitmovinPlaybackConfiguration
+        bitmovinPlayerConfiguration.playbackConfiguration = bitmovinPlaybackConfiguration
 
         // Create AdSources
         if (vmapTagUrl != null) {
@@ -46,12 +46,12 @@ class MainActivity : AppCompatActivity() {
             bitmovinAdConfiguration = AdvertisingConfiguration(vmapAdRoll)
             // Assing the AdvertisingConfiguration to the PlayerConfiguration
             // All ads in the AdvertisingConfiguration will be scheduled automatically
-            bitmovinPlayerConfiguration!!.advertisingConfiguration = bitmovinAdConfiguration
+            bitmovinPlayerConfiguration.advertisingConfiguration = bitmovinAdConfiguration
         }
 
         // Create new BitmovinPlayerView with our PlayerConfiguration
         bitmovinPlayerView = BitmovinPlayerView(this, bitmovinPlayerConfiguration)
-        bitmovinPlayerView!!.layoutParams = LinearLayout.LayoutParams(
+        bitmovinPlayerView.layoutParams = LinearLayout.LayoutParams(
             LinearLayout.LayoutParams.MATCH_PARENT,
             LinearLayout.LayoutParams.MATCH_PARENT
         )
@@ -59,31 +59,31 @@ class MainActivity : AppCompatActivity() {
 
         // Add BitmovinPlayerView to the layout
         rootView.addView(bitmovinPlayerView, 0)
-        bitmovinPlayer = bitmovinPlayerView!!.player
+        bitmovinPlayer = bitmovinPlayerView?.player!!
     }
 
     override fun onStart() {
         super.onStart()
-        bitmovinPlayerView!!.onStart()
+        bitmovinPlayerView.onStart()
     }
 
     override fun onResume() {
         super.onResume()
-        bitmovinPlayerView!!.onResume()
+        bitmovinPlayerView.onResume()
     }
 
     override fun onPause() {
-        bitmovinPlayerView!!.onPause()
+        bitmovinPlayerView.onPause()
         super.onPause()
     }
 
     override fun onStop() {
-        bitmovinPlayerView!!.onStop()
+        bitmovinPlayerView.onStop()
         super.onStop()
     }
 
     override fun onDestroy() {
-        bitmovinPlayerView!!.onDestroy()
+        bitmovinPlayerView.onDestroy()
         super.onDestroy()
     }
 
