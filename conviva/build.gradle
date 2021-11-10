@@ -16,6 +16,7 @@ android {
         versionName libraryVersion
         multiDexEnabled true
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+        buildConfigField 'String', 'VERSION_NAME', "\"${libraryVersion}\""
     }
 
     buildTypes {

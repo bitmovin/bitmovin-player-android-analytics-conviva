@@ -1,0 +1,54 @@
+plugins {
+    id 'com.android.application'
+    id 'kotlin-android'
+}
+
+android {
+    compileSdkVersion 28
+    buildToolsVersion "30.0.3"
+
+    defaultConfig {
+        applicationId "com.bitmovin.analytics.conviva.testapp"
+        minSdkVersion 28
+        targetSdkVersion 28
+        versionCode 1
+        versionName "1.0"
+        multiDexEnabled true
+
+        // Default test runner
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+    }
+    buildTypes {
+        debug {
+            multiDexEnabled true
+            debuggable true
+        }
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+    }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+    kotlinOptions {
+        jvmTarget = '1.8'
+    }
+}
+
+dependencies {
+    implementation 'androidx.appcompat:appcompat:1.0.0'
+    implementation "com.bitmovin.player:playercore:2.67.0"
+
+    implementation "com.google.ads.interactivemedia.v3:interactivemedia:3.19.4" // Needed for Ad Support
+    implementation "com.google.android.gms:play-services-ads:19.3.0" // Needed for Ad Support
+    implementation 'androidx.legacy:legacy-support-v4:1.0.0' // Needed for Ad Support
+
+    implementation project(path: ':conviva')
+
+    testImplementation 'junit:junit:4.12'
+    androidTestImplementation 'androidx.test.ext:junit:1.1.1'
+    androidTestImplementation 'androidx.test.espresso:espresso-core:3.2.0'
+    androidTestImplementation "io.mockk:mockk-android:1.12.0"
+}

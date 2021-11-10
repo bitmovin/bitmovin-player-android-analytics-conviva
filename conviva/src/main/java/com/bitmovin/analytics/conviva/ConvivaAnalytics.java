@@ -65,7 +65,7 @@ public class ConvivaAnalytics {
 
     private static final String TAG = "ConvivaAnalytics";
 
-    private Client client;
+    private Client client = null;
     private BitmovinPlayer bitmovinPlayer;
     private ContentMetadataBuilder contentMetadataBuilder = new ContentMetadataBuilder();
     private ConvivaConfiguration config;
@@ -88,6 +88,14 @@ public class ConvivaAnalytics {
                             String customerKey,
                             Context context,
                             ConvivaConfiguration config) {
+        this(player, customerKey, context, new ConvivaConfiguration(), null);
+    }
+
+    public ConvivaAnalytics(BitmovinPlayer player,
+                            String customerKey,
+                            Context context,
+                            ConvivaConfiguration config,
+                            Client client) {
         this.bitmovinPlayer = player;
         this.playerHelper = new BitmovinPlayerHelper(player);
         this.config = config;
@@ -108,7 +116,11 @@ public class ConvivaAnalytics {
                 clientSettings.gatewayUrl = config.getGatewayUrl();
             }
 
-            this.client = new Client(clientSettings, androidSystemFactory);
+            if (client != null) {
+                this.client = client;
+            } else {
+                this.client = new Client(clientSettings, androidSystemFactory);
+            }
 
             attachBitmovinEventListeners();
         }
@@ -347,21 +359,22 @@ public class ConvivaAnalytics {
 
     private void createContentMetadata() {
         SourceItem sourceItem = bitmovinPlayer.getConfig().getSourceItem();
-
         if (sourceItem != null) {
             contentMetadataBuilder.setAssetName(sourceItem.getTitle());
         }
-
-        // Build custom tags
-        Map<String, String> customInternTags = new HashMap<>();
-        customInternTags.put("streamType", playerHelper.getStreamType());
-        customInternTags.put("integrationVersion", BuildConfig.VERSION_NAME);
-        contentMetadataBuilder.setCustom(customInternTags);
 
         this.buildDynamicContentMetadata();
     }
 
     private void buildDynamicContentMetadata() {
+        // Build custom tags here, though this is static metadata but
+        // streamType could be missing at time of session initialization
+        // as source information could be unavailable at that time
+        Map<String, String> customInternTags = new HashMap<>();
+        customInternTags.put("streamType", playerHelper.getStreamType());
+        customInternTags.put("integrationVersion", BuildConfig.VERSION_NAME);
+        contentMetadataBuilder.setCustom(customInternTags);
+
         if (bitmovinPlayer.isLive()) {
             contentMetadataBuilder.setStreamType(ContentMetadata.StreamType.LIVE);
         } else {

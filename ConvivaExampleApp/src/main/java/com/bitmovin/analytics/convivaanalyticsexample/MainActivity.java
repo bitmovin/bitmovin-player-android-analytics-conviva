@@ -88,7 +88,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         Map<String, String> customInternTags = new HashMap<>();
         customInternTags.put("contentType", "Episode");
         metadata.setCustom(customInternTags);
-        convivaAnalytics.updateContentMetadata(metadata);
+        convivaAnalytics?.updateContentMetadata(metadata);
 
         // load source using the created source configuration
         bitmovinPlayer.setup(buildPlayerConfiguration());
@@ -137,7 +137,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         super.onResume();
         bitmovinPlayerView.onResume();
         try {
-            convivaAnalytics.initializeSession();
+            convivaAnalytics?.initializeSession();
         } catch (ConvivaAnalyticsException e) {
             e.printStackTrace();
         }
@@ -146,7 +146,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     @Override
     protected void onPause() {
         bitmovinPlayerView.onStop();
-        convivaAnalytics.endSession();
+        convivaAnalytics?.endSession();
         super.onPause();
     }
 
@@ -171,7 +171,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         } else if (v == sendCustomEventButton) {
             Map<String, Object> eventAttributes = new HashMap<>();
             eventAttributes.put("Some", "Attributes");
-            this.convivaAnalytics.sendCustomPlaybackEvent("Custom Event", eventAttributes);
+            this.convivaAnalytics?.sendCustomPlaybackEvent("Custom Event", eventAttributes);
         }
     }
 }

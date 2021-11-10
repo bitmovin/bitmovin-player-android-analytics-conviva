@@ -1,1 +1,4 @@
-include ':ConvivaExampleApp', ':conviva'
+rootProject.name = "bitmovin-player-android-analytics-conviva"
+include ':ConvivaExampleApp'
+include ':ConvivaTestApp'
+include ':conviva'
