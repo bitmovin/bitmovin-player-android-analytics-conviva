@@ -12,7 +12,7 @@ class PlaybackErrorTrackingTests: TestBase() {
     @Test
     fun errorBeforeSessionStart() {
         // launch player with autoPlay enabled
-        val activityScenario = setupPlayerActivityForTest(autoPlay = true, defaultMetadataOverrides())
+        activityScenario = setupPlayerActivityForTest(autoPlay = true, defaultMetadataOverrides())
 
         // load invalid asset without initializing Conviva session explicitly
         activityScenario.onActivity { activity: MainActivity ->
@@ -49,14 +49,12 @@ class PlaybackErrorTrackingTests: TestBase() {
                 clientMock?.releasePlayerStateManager(playerStateManagerMock)
             }
         }
-
-        activityScenario.close()
     }
 
     @Test
     fun errorAfterSessionStart() {
         // launch player with autoPlay enabled without initializing session
-        val activityScenario = setupPlayerActivityForTest(autoPlay = true, defaultMetadataOverrides())
+        activityScenario = setupPlayerActivityForTest(autoPlay = true, defaultMetadataOverrides())
 
         // initialize session and verify
         initializeSession(activityScenario)
@@ -95,7 +93,5 @@ class PlaybackErrorTrackingTests: TestBase() {
                 clientMock?.releasePlayerStateManager(playerStateManagerMock)
             }
         }
-
-        activityScenario.close()
     }
 }

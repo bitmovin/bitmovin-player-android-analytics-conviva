@@ -14,7 +14,7 @@ class AdsTrackingTests : TestBase() {
     fun test_adEventsVmapPrerollSingleAd() {
         // launch player with autoPlay enabled
         val metadata = defaultMetadataOverrides()
-        val activityScenario = setupPlayerActivityForTest(autoPlay = true, metadata, VMAP_PREROLL_SINGLE_TAG)
+        activityScenario = setupPlayerActivityForTest(autoPlay = true, metadata, VMAP_PREROLL_SINGLE_TAG)
 
         // initialize session and verify
         initializeSession(activityScenario)
@@ -36,7 +36,5 @@ class AdsTrackingTests : TestBase() {
                 )
             }
         }
-
-        activityScenario.close()
     }
 }

@@ -14,6 +14,7 @@ import com.conviva.api.player.PlayerStateManager
 import io.mockk.*
 import org.junit.Assert
 import org.junit.Before
+import org.junit.After
 import java.security.SecureRandom
 import java.util.HashMap
 
@@ -23,6 +24,7 @@ open class TestBase {
     var clientSettingsMock: ClientSettings? = null
     var clientMock: Client? = null
     var playerStateManagerMock: PlayerStateManager? = null
+    lateinit var activityScenario: ActivityScenario<MainActivity>
 
     var CONVIVA_SESSION_ID = 1
     val CUSTOM_EVENT_NAME = "CUSTOM_APPLICATION_EVENT"
@@ -47,12 +49,13 @@ open class TestBase {
         convivaConfig.isDebugLoggingEnabled = true
     }
 
-    @Before
+    @After
     fun tearDown() {
         convivaAnalytics?.let { it.endSession() }
 
         // Unmock mocked objects
         tearDownMocks()
+        activityScenario.close()
     }
 
     fun mockClientSettingsObject() : ClientSettings {

@@ -12,7 +12,7 @@ class SessionInitiazationTests : TestBase() {
         val metadata = customMetadataOverrides()
 
         // launch player without autoPlay enabled
-        val activityScenario = setupPlayerActivityForTest(autoPlay = false, metadata)
+        activityScenario = setupPlayerActivityForTest(autoPlay = false, metadata)
 
         // load and play source
         loadSource(activityScenario = activityScenario, source = DEFAULT_DASH_VOD_SOURCE)
@@ -21,8 +21,6 @@ class SessionInitiazationTests : TestBase() {
         // verify session initialization and playing state
         verifySessionIntialization(activityScenario)
         verifyPlaying(activityScenario = activityScenario)
-
-        activityScenario.close()
     }
 
     @Test
@@ -30,7 +28,7 @@ class SessionInitiazationTests : TestBase() {
         val metadata = customMetadataOverrides()
 
         // launch player with autoPlay enabled
-        val activityScenario = setupPlayerActivityForTest(autoPlay = true, metadata)
+        activityScenario = setupPlayerActivityForTest(autoPlay = true, metadata)
 
         // load and play source
         loadSource(activityScenario = activityScenario, source = DEFAULT_DASH_VOD_SOURCE)
@@ -39,8 +37,6 @@ class SessionInitiazationTests : TestBase() {
         // verify session initialization and playing state
         verifySessionIntialization(activityScenario)
         verifyPlaying(activityScenario = activityScenario)
-
-        activityScenario.close()
     }
 
     @Test
@@ -48,7 +44,7 @@ class SessionInitiazationTests : TestBase() {
         val metadata = customMetadataOverrides()
 
         // launch player without autoPlay enabled
-        val activityScenario = setupPlayerActivityForTest(autoPlay = false, metadata)
+        activityScenario = setupPlayerActivityForTest(autoPlay = false, metadata)
 
         // initialize and verify session
         initializeSession(activityScenario)
@@ -58,8 +54,6 @@ class SessionInitiazationTests : TestBase() {
         loadSource(activityScenario = activityScenario, source = DEFAULT_DASH_VOD_SOURCE)
         playSource(activityScenario = activityScenario)
         verifyPlaying(activityScenario = activityScenario)
-
-        activityScenario.close()
     }
 
     @Test
@@ -67,7 +61,7 @@ class SessionInitiazationTests : TestBase() {
         val metadata = customMetadataOverrides()
 
         // launch player with autoPlay enabled
-        val activityScenario = setupPlayerActivityForTest(autoPlay = true, metadata)
+        activityScenario = setupPlayerActivityForTest(autoPlay = true, metadata)
 
         // initialize and verify session
         initializeSession(activityScenario)
@@ -78,8 +72,6 @@ class SessionInitiazationTests : TestBase() {
 
         // verify playing tracking
         verifyPlaying(activityScenario = activityScenario)
-
-        activityScenario.close()
     }
 
     @Test
@@ -87,7 +79,7 @@ class SessionInitiazationTests : TestBase() {
         val metadata = customMetadataOverrides()
 
         // launch player without autoPlay enabled
-        val activityScenario = setupPlayerActivityForTest(autoPlay = false, metadata)
+        activityScenario = setupPlayerActivityForTest(autoPlay = false, metadata)
 
         // load and play source
         loadSource(activityScenario = activityScenario, source = DEFAULT_DASH_LIVE_SOURCE)
@@ -98,7 +90,6 @@ class SessionInitiazationTests : TestBase() {
 
         // verify playing tracking
         verifyPlaying(activityScenario = activityScenario)
-        activityScenario.close()
     }
 
     @Test
@@ -106,7 +97,7 @@ class SessionInitiazationTests : TestBase() {
         val metadata = customMetadataOverrides()
 
         // launch player with autoPlay enabled
-        val activityScenario = setupPlayerActivityForTest(autoPlay = true, metadata)
+        activityScenario = setupPlayerActivityForTest(autoPlay = true, metadata)
 
         // load and play source
         loadSource(activityScenario = activityScenario, source = DEFAULT_DASH_LIVE_SOURCE)
@@ -117,7 +108,6 @@ class SessionInitiazationTests : TestBase() {
 
         // verify playing tracking
         verifyPlaying(activityScenario = activityScenario)
-        activityScenario.close()
     }
 
     @Test
@@ -125,7 +115,7 @@ class SessionInitiazationTests : TestBase() {
         val metadata = customMetadataOverrides()
 
         // launch player without autoPlay enabled
-        val activityScenario = setupPlayerActivityForTest(autoPlay = false, metadata)
+        activityScenario = setupPlayerActivityForTest(autoPlay = false, metadata)
 
         // initialize session
         initializeSession(activityScenario)
@@ -139,8 +129,6 @@ class SessionInitiazationTests : TestBase() {
 
         // verify playing tracking
         verifyPlaying(activityScenario = activityScenario)
-
-        activityScenario.close()
     }
 
     @Test
@@ -148,7 +136,7 @@ class SessionInitiazationTests : TestBase() {
         val metadata = customMetadataOverrides()
 
         // launch player with autoPlay enabled
-        val activityScenario = setupPlayerActivityForTest(autoPlay = true, metadata)
+        activityScenario = setupPlayerActivityForTest(autoPlay = true, metadata)
 
         // initialize session
         initializeSession(activityScenario)
@@ -161,7 +149,5 @@ class SessionInitiazationTests : TestBase() {
 
         // verify playing tracking
         verifyPlaying(activityScenario = activityScenario)
-
-        activityScenario.close()
     }
 }

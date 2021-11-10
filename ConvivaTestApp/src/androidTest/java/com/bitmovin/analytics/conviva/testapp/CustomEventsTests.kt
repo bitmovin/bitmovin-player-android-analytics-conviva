@@ -12,7 +12,7 @@ class CustomEventsTests: TestBase() {
     @Test
     fun customApplicationEvent() {
         // launch player with autoPlay enabled
-        val activityScenario = setupPlayerActivityForTest(autoPlay = true, defaultMetadataOverrides())
+        activityScenario = setupPlayerActivityForTest(autoPlay = true, defaultMetadataOverrides())
 
         // verify that custom events are not sent before Conviva session is initialized
         activityScenario.onActivity { activity: MainActivity ->
@@ -49,14 +49,12 @@ class CustomEventsTests: TestBase() {
                     CUSTOM_EVENT_ATTRIBUTES)
             }
         }
-
-        activityScenario.close()
     }
 
     @Test
     fun customPlaybackEvent() {
         // launch player with autoPlay enabled
-        val activityScenario = setupPlayerActivityForTest(autoPlay = true, defaultMetadataOverrides())
+        activityScenario = setupPlayerActivityForTest(autoPlay = true, defaultMetadataOverrides())
 
         // Verify that custom events are not sent before Conviva session is initialized
         activityScenario.onActivity { activity: MainActivity ->
@@ -95,13 +93,12 @@ class CustomEventsTests: TestBase() {
                     CUSTOM_EVENT_ATTRIBUTES)
             }
         }
-        activityScenario.close()
     }
 
     @Test
     fun customErrorEvent() {
         // launch player with autoPlay enabled
-        val activityScenario = setupPlayerActivityForTest(autoPlay = true, defaultMetadataOverrides())
+        activityScenario = setupPlayerActivityForTest(autoPlay = true, defaultMetadataOverrides())
 
         // verify that custom error events are not sent before Conviva session is initialized
         activityScenario.onActivity { activity: MainActivity ->
@@ -163,6 +160,5 @@ class CustomEventsTests: TestBase() {
                 clientMock?.releasePlayerStateManager(playerStateManagerMock)
             }
         }
-        activityScenario.close()
     }
 }

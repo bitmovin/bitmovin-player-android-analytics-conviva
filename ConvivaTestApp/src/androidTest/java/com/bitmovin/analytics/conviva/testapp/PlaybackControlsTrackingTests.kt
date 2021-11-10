@@ -15,7 +15,7 @@ class PlaybackContorlsTrackingTests: TestBase() {
     fun pauseResume() {
         // launch player with autoPlay enabled
         val metadata = defaultMetadataOverrides()
-        val activityScenario = setupPlayerActivityForTest(autoPlay = true, metadata)
+        activityScenario = setupPlayerActivityForTest(autoPlay = true, metadata)
 
         // initialize session and verify
         initializeSession(activityScenario)
@@ -55,15 +55,13 @@ class PlaybackContorlsTrackingTests: TestBase() {
                 playerStateManagerMock?.setPlayerState(PlayerStateManager.PlayerState.PLAYING)
             }
         }
-
-        activityScenario.close()
     }
 
     @Test
     fun vodSeek() {
         // launch player with autoPlay enabled and initialize session
         val metadata = defaultMetadataOverrides()
-        val activityScenario = setupPlayerActivityForTest(autoPlay = true, metadata)
+        activityScenario = setupPlayerActivityForTest(autoPlay = true, metadata)
 
         // initialize session and verify
         initializeSession(activityScenario)
@@ -93,15 +91,13 @@ class PlaybackContorlsTrackingTests: TestBase() {
                 playerStateManagerMock?.setPlayerState(PlayerStateManager.PlayerState.PLAYING)
             }
         }
-
-        activityScenario.close()
     }
 
     @Test
     fun liveTimeshift() {
         // launch player with autoPlay enabled and initialize session
         val metadata = defaultMetadataOverrides()
-        val activityScenario = setupPlayerActivityForTest(autoPlay = true, metadata)
+        activityScenario = setupPlayerActivityForTest(autoPlay = true, metadata)
 
         // initialize session and verify
         initializeSession(activityScenario)
@@ -128,15 +124,13 @@ class PlaybackContorlsTrackingTests: TestBase() {
                 playerStateManagerMock?.setPlayerSeekEnd()
             }
         }
-
-        activityScenario.close()
     }
 
     @Test
     fun muteUnmute() {
         // launch player with autoPlay enabled and initialize session
         val metadata = defaultMetadataOverrides()
-        val activityScenario = setupPlayerActivityForTest(autoPlay = true, metadata)
+        activityScenario = setupPlayerActivityForTest(autoPlay = true, metadata)
 
         // initialize session and verify
         initializeSession(activityScenario)
@@ -178,15 +172,13 @@ class PlaybackContorlsTrackingTests: TestBase() {
                 clientMock?.sendCustomEvent(CONVIVA_SESSION_ID, "on$eventName", any())
             }
         }
-
-        activityScenario.close()
     }
 
     @Test
     fun qualitySwitch() {
         // launch player with autoPlay enabled and initialize session
         val metadata = defaultMetadataOverrides()
-        val activityScenario = setupPlayerActivityForTest(autoPlay = true, metadata)
+        activityScenario = setupPlayerActivityForTest(autoPlay = true, metadata)
 
         // initialize session and verify
         initializeSession(activityScenario)
@@ -227,7 +219,5 @@ class PlaybackContorlsTrackingTests: TestBase() {
                 clientMock?.updateContentMetadata(CONVIVA_SESSION_ID, any())
             }
         }
-
-        activityScenario.close()
     }
 }

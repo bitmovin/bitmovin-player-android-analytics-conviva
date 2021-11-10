@@ -20,7 +20,7 @@ class CustomMetadataTests : TestBase() {
             customTags = customInternTags)
 
         // launch player with autoPlay enabled
-        val activityScenario = setupPlayerActivityForTest(autoPlay = true, customMetadata)
+        activityScenario = setupPlayerActivityForTest(autoPlay = true, customMetadata)
 
         // initialize session and verify
         initializeSession(activityScenario)
@@ -39,8 +39,6 @@ class CustomMetadataTests : TestBase() {
             metadata = customMetadata,
             overrideCustom = true
         )
-
-        activityScenario.close()
     }
 
     @Test
@@ -54,7 +52,7 @@ class CustomMetadataTests : TestBase() {
             customTags = customInternTags)
 
         // launch player with autoPlay enabled
-        val activityScenario = setupPlayerActivityForTest(autoPlay = true, customMetadata)
+        activityScenario = setupPlayerActivityForTest(autoPlay = true, customMetadata)
 
         // initialize session and verify
         initializeSession(activityScenario)
@@ -73,8 +71,6 @@ class CustomMetadataTests : TestBase() {
             metadata = customMetadata,
             overrideCustom = true
         )
-
-        activityScenario.close()
     }
 
     @Test
@@ -91,7 +87,7 @@ class CustomMetadataTests : TestBase() {
             customTags = customInternTags)
 
         // launch player with autoPlay enabled
-        val activityScenario = setupPlayerActivityForTest(autoPlay = true, customMetadata)
+        activityScenario = setupPlayerActivityForTest(autoPlay = true, customMetadata)
 
         // initialize session and verify
         initializeSession(activityScenario)
@@ -124,7 +120,5 @@ class CustomMetadataTests : TestBase() {
                 )
             }
         }
-
-        activityScenario.close()
     }
 }

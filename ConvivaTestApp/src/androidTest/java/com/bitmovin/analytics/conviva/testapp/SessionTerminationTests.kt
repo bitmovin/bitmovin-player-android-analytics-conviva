@@ -14,7 +14,7 @@ class SessionTerminationTests : TestBase() {
     fun sessionEndOnPlaybackFinishedVod() {
         // launch player with autoPlay enabled
         val metadata = defaultMetadataOverrides()
-        val activityScenario = setupPlayerActivityForTest(autoPlay = true, metadata)
+        activityScenario = setupPlayerActivityForTest(autoPlay = true, metadata)
 
         // initialize session and verify
         initializeSession(activityScenario)
@@ -48,15 +48,13 @@ class SessionTerminationTests : TestBase() {
                 clientMock?.releasePlayerStateManager(playerStateManagerMock)
             }
         }
-
-        activityScenario.close()
     }
 
     @Test
     fun sessionEndOnSourceUnloadedVod() {
         // launch player with autoPlay enabled
         val metadata = defaultMetadataOverrides()
-        val activityScenario = setupPlayerActivityForTest(autoPlay = true, metadata)
+        activityScenario = setupPlayerActivityForTest(autoPlay = true, metadata)
 
         // initialize session and verify
         initializeSession(activityScenario)
@@ -93,15 +91,13 @@ class SessionTerminationTests : TestBase() {
                 clientMock?.releasePlayerStateManager(playerStateManagerMock)
             }
         }
-
-        activityScenario.close()
     }
 
     @Test
     fun explicitSessionEndVod() {
         // launch player with autoPlay enabled
         val metadata = defaultMetadataOverrides()
-        val activityScenario = setupPlayerActivityForTest(autoPlay = true, metadata)
+        activityScenario = setupPlayerActivityForTest(autoPlay = true, metadata)
 
         // initialize session and verify
         initializeSession(activityScenario)
@@ -133,15 +129,13 @@ class SessionTerminationTests : TestBase() {
                 clientMock?.releasePlayerStateManager(playerStateManagerMock)
             }
         }
-
-        activityScenario.close()
     }
 
     @Test
     fun sessionEndOnSourceUnloadedLive() {
         // launch player with autoPlay enabled
         val metadata = defaultMetadataOverrides()
-        val activityScenario = setupPlayerActivityForTest(autoPlay = true, metadata)
+        activityScenario = setupPlayerActivityForTest(autoPlay = true, metadata)
 
         // initialize session and verify
         initializeSession(activityScenario)
@@ -178,15 +172,13 @@ class SessionTerminationTests : TestBase() {
                 clientMock?.releasePlayerStateManager(playerStateManagerMock)
             }
         }
-
-        activityScenario.close()
     }
 
     @Test
     fun explicitSessionEndLive() {
         // launch player with autoPlay enabled
         val metadata = defaultMetadataOverrides()
-        val activityScenario = setupPlayerActivityForTest(autoPlay = true, metadata)
+        activityScenario = setupPlayerActivityForTest(autoPlay = true, metadata)
 
         // initialize session and verify
         initializeSession(activityScenario)
@@ -218,7 +210,5 @@ class SessionTerminationTests : TestBase() {
                 clientMock?.releasePlayerStateManager(playerStateManagerMock)
             }
         }
-
-        activityScenario.close()
     }
 }
