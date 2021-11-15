@@ -25,7 +25,6 @@ class PlaybackContorlsTrackingTests: TestBase() {
 
         // load source and verify
         loadSource(activityScenario, DEFAULT_DASH_VOD_SOURCE)
-        Thread.sleep(2000)
         verifyPlaying(activityScenario = activityScenario)
 
         // pause playback
@@ -69,7 +68,6 @@ class PlaybackContorlsTrackingTests: TestBase() {
 
         // load source and verify
         loadSource(activityScenario, DEFAULT_DASH_VOD_SOURCE)
-        Thread.sleep(2000)
         verifyPlaying(activityScenario = activityScenario)
 
         // seek
@@ -104,7 +102,6 @@ class PlaybackContorlsTrackingTests: TestBase() {
 
         // load source and verify
         loadSource(activityScenario, DEFAULT_DASH_LIVE_SOURCE)
-        Thread.sleep(2000)
         verifyPlaying(activityScenario = activityScenario)
 
         // timeshift
@@ -136,7 +133,6 @@ class PlaybackContorlsTrackingTests: TestBase() {
 
         // load source and verify
         loadSource(activityScenario, DEFAULT_DASH_VOD_SOURCE)
-        Thread.sleep(2000)
         verifyPlaying(activityScenario = activityScenario)
 
         // mute playback
@@ -183,7 +179,6 @@ class PlaybackContorlsTrackingTests: TestBase() {
 
         // load source and verify
         loadSource(activityScenario, DEFAULT_DASH_VOD_SOURCE)
-        Thread.sleep(2000)
         verifyPlaying(activityScenario = activityScenario)
 
         // switch video quality

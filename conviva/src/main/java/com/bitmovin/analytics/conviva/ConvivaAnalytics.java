@@ -5,6 +5,7 @@ import android.os.Handler;
 import android.util.Log;
 
 import com.bitmovin.player.api.Player;
+import com.bitmovin.player.api.event.Event;
 import com.bitmovin.player.api.event.EventListener;
 import com.bitmovin.player.api.event.PlayerEvent;
 import com.bitmovin.player.api.event.SourceEvent;
@@ -253,24 +254,11 @@ public class ConvivaAnalytics {
     }
     // endregion
 
-    private void customEvent(PlayerEvent event) {
+    private void customEvent(Event event) {
         customEvent(event, new HashMap<String, Object>());
     }
 
-    private void customEvent(PlayerEvent event, Map<String, Object> attributes) {
-        if (!isSessionActive()) {
-            return;
-        }
-
-        String eventName = event.getClass().getSimpleName();
-        sendCustomPlaybackEvent("on" + eventName, attributes);
-    }
-
-    private void customEvent(SourceEvent event) {
-        customEvent(event, new HashMap<String, Object>());
-    }
-
-    private void customEvent(SourceEvent event, Map<String, Object> attributes) {
+    private void customEvent(Event event, Map<String, Object> attributes) {
         if (!isSessionActive()) {
             return;
         }

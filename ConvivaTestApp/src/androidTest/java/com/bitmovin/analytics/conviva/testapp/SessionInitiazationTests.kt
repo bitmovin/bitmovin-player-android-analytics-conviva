@@ -16,7 +16,6 @@ class SessionInitiazationTests : TestBase() {
 
         // load and play source
         loadSource(activityScenario = activityScenario, source = DEFAULT_DASH_VOD_SOURCE)
-        Thread.sleep(2000)
         playSource(activityScenario = activityScenario)
 
         // verify session initialization and playing state
@@ -53,7 +52,6 @@ class SessionInitiazationTests : TestBase() {
 
         // load + play source and verify playing state
         loadSource(activityScenario = activityScenario, source = DEFAULT_DASH_VOD_SOURCE)
-        Thread.sleep(2000)
         playSource(activityScenario = activityScenario)
         verifyPlaying(activityScenario = activityScenario)
     }
@@ -71,7 +69,6 @@ class SessionInitiazationTests : TestBase() {
 
         // load source and playback should auto start
         loadSource(activityScenario = activityScenario, source = DEFAULT_DASH_VOD_SOURCE)
-        Thread.sleep(2000)
         // verify playing tracking
         verifyPlaying(activityScenario = activityScenario)
     }
@@ -85,7 +82,6 @@ class SessionInitiazationTests : TestBase() {
 
         // load and play source
         loadSource(activityScenario = activityScenario, source = DEFAULT_DASH_LIVE_SOURCE)
-        Thread.sleep(2000)
         playSource(activityScenario = activityScenario)
 
         // verify session initialization
@@ -104,7 +100,6 @@ class SessionInitiazationTests : TestBase() {
 
         // load and play source
         loadSource(activityScenario = activityScenario, source = DEFAULT_DASH_LIVE_SOURCE)
-        Thread.sleep(2000)
         playSource(activityScenario = activityScenario)
 
         // verify session initialization
@@ -129,7 +124,6 @@ class SessionInitiazationTests : TestBase() {
 
         // load and play source
         loadSource(activityScenario = activityScenario, source = DEFAULT_DASH_LIVE_SOURCE)
-        Thread.sleep(2000)
         playSource(activityScenario = activityScenario)
 
         // verify playing tracking
@@ -151,7 +145,6 @@ class SessionInitiazationTests : TestBase() {
 
         // load source and playback should auto start
         loadSource(activityScenario = activityScenario, source = DEFAULT_DASH_LIVE_SOURCE)
-        Thread.sleep(2000)
         // verify playing tracking
         verifyPlaying(activityScenario = activityScenario)
     }

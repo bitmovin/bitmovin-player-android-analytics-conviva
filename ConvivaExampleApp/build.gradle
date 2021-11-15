@@ -35,7 +35,7 @@ dependencies {
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.1.0'
 
     implementation 'androidx.appcompat:appcompat:1.2.0'
-    implementation 'com.bitmovin.player:player:3.8.1'
+    implementation 'com.bitmovin.player:player:3.9.0'
     implementation 'androidx.legacy:legacy-support-v4:1.0.0'
 
     implementation project(':conviva')

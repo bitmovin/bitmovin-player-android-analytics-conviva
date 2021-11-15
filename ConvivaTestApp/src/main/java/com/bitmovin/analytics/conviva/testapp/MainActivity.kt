@@ -16,7 +16,6 @@ import com.bitmovin.player.api.advertising.AdvertisingConfig
 class MainActivity : AppCompatActivity() {
     lateinit var bitmovinPlayerView: PlayerView
     lateinit var bitmovinPlaybackConfig: PlaybackConfig
-    lateinit var bitmovinAdConfig: AdvertisingConfig
     lateinit var bitmovinPlayerConfig: PlayerConfig
     lateinit var bitmovinPlayer: Player
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -27,34 +26,33 @@ class MainActivity : AppCompatActivity() {
         val intent = intent
         val autoPlay = intent.getBooleanExtra(AUTOPLAY_KEY, false)
         var vmapTagUrl = intent.getStringExtra(VMAP_KEY)
-        bitmovinPlaybackConfig = PlaybackConfig()
-        bitmovinPlaybackConfig!!.isAutoplayEnabled = autoPlay
+        bitmovinPlaybackConfig = PlaybackConfig().apply {
+            isAutoplayEnabled = autoPlay
+        }
 
         // Creating a new PlayerConfiguration
-        bitmovinPlayerConfig = PlayerConfig()
-        bitmovinPlayerConfig!!.playbackConfig = bitmovinPlaybackConfig!!
+        bitmovinPlayerConfig = PlayerConfig().apply {
+            playbackConfig = bitmovinPlaybackConfig
+        }
 
-        // Create AdSources
+        // Create Ad configuration and adding to player configuration
         if (vmapTagUrl != null) {
-            val vmapAdSource = AdSource(AdSourceType.Ima, vmapTagUrl)
-
             // Setup ad
+            val vmapAdSource = AdSource(AdSourceType.Ima, vmapTagUrl)
             val vmapAdRoll = AdItem("", vmapAdSource)
 
             // Add the AdItems to the AdvertisingConfiguration
-            bitmovinAdConfig = AdvertisingConfig(vmapAdRoll)
-            // Assing the AdvertisingConfiguration to the PlayerConfiguration
-            // All ads in the AdvertisingConfiguration will be scheduled automatically
-            bitmovinPlayerConfig!!.advertisingConfig = bitmovinAdConfig!!
+            bitmovinPlayerConfig.advertisingConfig = AdvertisingConfig(vmapAdRoll)
         }
 
         // Create new BitmovinPlayerView with our PlayerConfiguration
         bitmovinPlayer = Player.create(this, bitmovinPlayerConfig!!)
-        bitmovinPlayerView = PlayerView(this, bitmovinPlayer)
-        bitmovinPlayerView!!.layoutParams = LinearLayout.LayoutParams(
-            LinearLayout.LayoutParams.MATCH_PARENT,
-            LinearLayout.LayoutParams.MATCH_PARENT
-        )
+        bitmovinPlayerView = PlayerView(this, bitmovinPlayer).apply {
+            layoutParams = LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT,
+                LinearLayout.LayoutParams.MATCH_PARENT
+            )
+        }
         val rootView = findViewById<View>(R.id.activity_main) as LinearLayout
 
         // Add BitmovinPlayerView to the layout

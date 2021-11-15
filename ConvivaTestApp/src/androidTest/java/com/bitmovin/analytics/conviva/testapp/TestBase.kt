@@ -262,6 +262,7 @@ open class TestBase {
         activityScenario.onActivity { activity: MainActivity ->
             activity.bitmovinPlayer.load(source)
         }
+        Thread.sleep(2000)
     }
 
     fun playSource(activityScenario: ActivityScenario<MainActivity>) {
