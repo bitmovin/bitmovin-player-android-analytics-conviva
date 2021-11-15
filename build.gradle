@@ -21,7 +21,7 @@ allprojects {
         google()
         jcenter()
         maven {
-            url 'https://bitmovin.jfrog.io/artifactory/public-releases'
+            url 'https://artifacts.bitmovin.com/artifactory/public-releases'
         }
     }
 }

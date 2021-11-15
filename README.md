@@ -14,7 +14,7 @@ Add this to your top level `build.gradle`
 allprojects {
   repositories {
     maven {
-      url  'https://bitmovin.jfrog.io/artifactory/public-releases'
+      url  'https://artifacts.bitmovin.com/artifactory/public-releases'
     }
   }
 }
