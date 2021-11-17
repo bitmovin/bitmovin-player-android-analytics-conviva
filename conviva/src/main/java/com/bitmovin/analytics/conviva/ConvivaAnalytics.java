@@ -464,11 +464,11 @@ public class ConvivaAnalytics {
         public void onEvent(PlayerEvent.Error event) {
             Log.d(TAG, "[Player Event] Error");
             try {
-                ConvivaAnalytics.this.ensureConvivaSessionIsCreatedAndInitialized();
+                ensureConvivaSessionIsCreatedAndInitialized();
 
                 String message = String.format("%s - %s", event.getCode(), event.getMessage());
                 client.reportError(sessionId, message, Client.ErrorSeverity.FATAL);
-                ConvivaAnalytics.this.internalEndSession();
+                internalEndSession();
             } catch (ConvivaException e) {
                 Log.e(TAG, e.getLocalizedMessage());
             }
@@ -480,11 +480,11 @@ public class ConvivaAnalytics {
         public void onEvent(SourceEvent.Error event) {
             Log.d(TAG, "[Source Event] Error");
             try {
-                ConvivaAnalytics.this.ensureConvivaSessionIsCreatedAndInitialized();
+                ensureConvivaSessionIsCreatedAndInitialized();
 
                 String message = String.format("%s - %s", event.getCode(), event.getMessage());
                 client.reportError(sessionId, message, Client.ErrorSeverity.FATAL);
-                ConvivaAnalytics.this.internalEndSession();
+                internalEndSession();
             } catch (ConvivaException e) {
                 Log.e(TAG, e.getLocalizedMessage());
             }
