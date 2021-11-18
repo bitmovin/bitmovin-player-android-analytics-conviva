@@ -12,7 +12,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - `ConvivaConfiguration` is renamed to `ConvivaConfig`
 
 ### Known Issues
-- Playlist API available in V3 player SDK is not supported.
+- Playlist API available in V3 player SDK is not supported yet.
 
 ### [1.1.5]
 ### Added
