@@ -2,7 +2,7 @@
 Integration of the Bitmovin Android Player SDK with the Conviva Analytics
 
 ## Limitations
-- Tracking multiple sources within a Playlist, and related use cases, introduced in Player iOS SDK version `v3` are not supported.
+- Tracking multiple sources within a Playlist, and related use cases, introduced in Player Android SDK version `v3` are not supported.
 
 ## Compatibility
 
