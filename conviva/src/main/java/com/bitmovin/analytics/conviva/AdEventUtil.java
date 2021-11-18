@@ -1,13 +1,13 @@
 package com.bitmovin.analytics.conviva;
 
-import com.bitmovin.player.api.event.data.AdStartedEvent;
+import com.bitmovin.player.api.event.PlayerEvent.AdStarted;
 import com.conviva.api.Client;
 
 class AdEventUtil {
     static final String positionRegexPattern = "pre|post|[0-9]+%|([0-9]+:)?([0-9]+:)?[0-9]+(\\.[0-9]+)?";
     private static final int[] TO_SECONDS_FACTOR = {1, 60, 60 * 60, 60 * 60 * 24};
 
-    static Client.AdPosition parseAdPosition(AdStartedEvent event, double contentDuration) {
+    static Client.AdPosition parseAdPosition(AdStarted event, double contentDuration) {
         String position = event.getPosition();
 
         if (position == null) {
