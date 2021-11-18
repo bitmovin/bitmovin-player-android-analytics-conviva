@@ -1,10 +1,10 @@
 package com.bitmovin.analytics.conviva;
 
-public class ConvivaConfiguration {
+public class ConvivaConfig {
     private String gatewayUrl;
     private boolean debugLoggingEnabled;
 
-    public ConvivaConfiguration() {
+    public ConvivaConfig() {
 
     }
 

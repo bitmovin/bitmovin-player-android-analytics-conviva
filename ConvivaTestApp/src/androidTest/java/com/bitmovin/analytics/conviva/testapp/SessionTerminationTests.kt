@@ -24,7 +24,6 @@ class SessionTerminationTests : TestBase() {
 
         // load source and verify
         loadSource(activityScenario, DEFAULT_DASH_VOD_SOURCE)
-
         verifyPlaying(activityScenario = activityScenario)
 
         // seek near to end to finish playback
@@ -33,8 +32,8 @@ class SessionTerminationTests : TestBase() {
             clearMocks(playerStateManagerMock!!)
             clearMocks(clientMock!!)
             activity.bitmovinPlayer.seek(activity.bitmovinPlayer.duration - 1)
-            Thread.sleep(4000)
         }
+        Thread.sleep(4000)
 
         // verify session termination
         activityScenario.onActivity { activity: MainActivity ->
@@ -64,7 +63,6 @@ class SessionTerminationTests : TestBase() {
 
         // load source and verify
         loadSource(activityScenario, DEFAULT_DASH_VOD_SOURCE)
-
         verifyPlaying(activityScenario = activityScenario)
 
         // Unload source
@@ -73,13 +71,12 @@ class SessionTerminationTests : TestBase() {
                 clearMocks(playerStateManagerMock!!)
                 clearMocks(clientMock!!)
                 activity.bitmovinPlayer.unload()
-                Thread.sleep(2000)
             } catch (e: Exception) {
                 // Expectation is to not receive any exception
                 Assert.assertTrue("Received unexpected exception: $e", false)
             }
         }
-
+        Thread.sleep(2000)
         // verify session termination
         activityScenario.onActivity { activity: MainActivity ->
             verify(inverse = true) {
@@ -107,7 +104,6 @@ class SessionTerminationTests : TestBase() {
 
         // load source and verify
         loadSource(activityScenario, DEFAULT_DASH_VOD_SOURCE)
-
         verifyPlaying(activityScenario = activityScenario)
 
         // end session explicitly
@@ -115,8 +111,8 @@ class SessionTerminationTests : TestBase() {
             clearMocks(playerStateManagerMock!!)
             clearMocks(clientMock!!)
             convivaAnalytics?.endSession()
-            Thread.sleep(2000)
         }
+        Thread.sleep(2000)
 
         // verify session termination
         activityScenario.onActivity { activity: MainActivity ->
@@ -145,7 +141,6 @@ class SessionTerminationTests : TestBase() {
 
         // load source and verify
         loadSource(activityScenario, DEFAULT_DASH_LIVE_SOURCE)
-
         verifyPlaying(activityScenario = activityScenario)
 
         // Unload source
@@ -154,13 +149,13 @@ class SessionTerminationTests : TestBase() {
                 clearMocks(playerStateManagerMock!!)
                 clearMocks(clientMock!!)
                 activity.bitmovinPlayer.unload()
-                Thread.sleep(2000)
             } catch (e: Exception) {
                 // Expectation is to not receive any exception
                 Assert.assertTrue("Received unexpected exception: $e", false)
             }
         }
 
+        Thread.sleep(2000)
         // verify session termination
         activityScenario.onActivity { activity: MainActivity ->
             verify(inverse = true) {
@@ -188,7 +183,6 @@ class SessionTerminationTests : TestBase() {
 
         // load source and verify
         loadSource(activityScenario, DEFAULT_DASH_LIVE_SOURCE)
-
         verifyPlaying(activityScenario = activityScenario)
 
         // end session explicitly
@@ -196,9 +190,8 @@ class SessionTerminationTests : TestBase() {
             clearMocks(playerStateManagerMock!!)
             clearMocks(clientMock!!)
             convivaAnalytics?.endSession()
-            Thread.sleep(2000)
         }
-
+        Thread.sleep(2000)
         // verify session termination
         activityScenario.onActivity { activity: MainActivity ->
             verify(inverse = true) {

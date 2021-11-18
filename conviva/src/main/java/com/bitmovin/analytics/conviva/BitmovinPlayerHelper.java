@@ -1,13 +1,13 @@
 package com.bitmovin.analytics.conviva;
 
-import com.bitmovin.player.BitmovinPlayer;
+import com.bitmovin.player.api.Player;
 import com.bitmovin.player.BuildConfig;
-import com.bitmovin.player.config.media.SourceItem;
+import com.bitmovin.player.api.source.SourceConfig;
 
 class BitmovinPlayerHelper {
-    private BitmovinPlayer player;
+    private Player player;
 
-    BitmovinPlayerHelper(BitmovinPlayer player) {
+    BitmovinPlayerHelper(Player player) {
         this.player = player;
     }
 
@@ -16,31 +16,18 @@ class BitmovinPlayerHelper {
     }
 
     String getStreamType() {
-        SourceItem sourceItem = player.getConfig().getSourceItem();
-        if (sourceItem == null) {
+        if (player.getSource() == null || player.getSource().getConfig() == null) {
             return null;
+        } else {
+            return player.getSource().getConfig().getType().name();
         }
-        return sourceItem.getType().name();
     }
 
     String getStreamUrl() {
-        SourceItem sourceItem = player.getConfig().getSourceItem();
-
-        if (sourceItem == null) {
+        if (player.getSource() == null || player.getSource().getConfig() == null) {
             return null;
-        }
-
-        switch (sourceItem.getType()) {
-            case DASH:
-                return sourceItem.getDashSource().getUrl();
-            case HLS:
-                return sourceItem.getHlsSource().getUrl();
-            case PROGRESSIVE:
-                return sourceItem.getProgressiveSources().get(0).getUrl();
-            case SMOOTH:
-                return sourceItem.getSmoothSource().getUrl();
-            default:
-                return "Unknown streamUrl";
+        } else {
+            return player.getSource().getConfig().getUrl();
         }
     }
 }

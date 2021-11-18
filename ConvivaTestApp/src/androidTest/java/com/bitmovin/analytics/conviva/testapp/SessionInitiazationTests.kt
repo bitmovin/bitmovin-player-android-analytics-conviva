@@ -69,7 +69,6 @@ class SessionInitiazationTests : TestBase() {
 
         // load source and playback should auto start
         loadSource(activityScenario = activityScenario, source = DEFAULT_DASH_VOD_SOURCE)
-
         // verify playing tracking
         verifyPlaying(activityScenario = activityScenario)
     }
@@ -146,7 +145,6 @@ class SessionInitiazationTests : TestBase() {
 
         // load source and playback should auto start
         loadSource(activityScenario = activityScenario, source = DEFAULT_DASH_LIVE_SOURCE)
-
         // verify playing tracking
         verifyPlaying(activityScenario = activityScenario)
     }
