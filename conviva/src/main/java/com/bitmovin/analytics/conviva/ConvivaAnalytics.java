@@ -52,7 +52,7 @@ public class ConvivaAnalytics {
                             String customerKey,
                             Context context,
                             ConvivaConfig config) {
-        this(player, customerKey, context, new ConvivaConfig(), null);
+        this(player, customerKey, context, config, null);
     }
 
     public ConvivaAnalytics(Player player,
