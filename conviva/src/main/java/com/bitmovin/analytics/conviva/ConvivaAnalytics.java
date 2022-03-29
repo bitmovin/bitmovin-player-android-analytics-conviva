@@ -12,15 +12,12 @@ import com.bitmovin.player.api.event.SourceEvent;
 import com.bitmovin.player.api.media.video.quality.VideoQuality;
 import com.bitmovin.player.api.source.Source;
 import com.bitmovin.player.api.source.SourceConfig;
-import com.conviva.api.AndroidSystemInterfaceFactory;
 import com.conviva.api.Client;
-import com.conviva.api.ClientSettings;
 import com.conviva.api.ContentMetadata;
 import com.conviva.api.ConvivaException;
-import com.conviva.api.SystemFactory;
-import com.conviva.api.SystemSettings;
 import com.conviva.api.player.PlayerStateManager;
-import com.conviva.api.system.SystemInterface;
+import com.conviva.sdk.ConvivaSdkConstants;
+import com.conviva.sdk.ConvivaVideoAnalytics;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -64,30 +61,20 @@ public class ConvivaAnalytics {
         this.playerHelper = new BitmovinPlayerHelper(player);
         this.config = config;
 
-        SystemInterface androidSystemInterface = AndroidSystemInterfaceFactory.buildSecure(context);
-        if (androidSystemInterface.isInitialized()) {
-            SystemSettings systemSettings = new SystemSettings();
-            systemSettings.allowUncaughtExceptions = false;
-
-            if (config.isDebugLoggingEnabled()) {
-                systemSettings.logLevel = SystemSettings.LogLevel.DEBUG;
-            }
-
-            SystemFactory androidSystemFactory = new SystemFactory(androidSystemInterface, systemSettings);
-            ClientSettings clientSettings = new ClientSettings(customerKey);
-
+        if(BuildConfig.DEBUG) {
+            Map<String, Object> settings = new HashMap<String, Object>();
             if (config.getGatewayUrl() != null) {
-                clientSettings.gatewayUrl = config.getGatewayUrl();
+                settings.put(ConvivaSdkConstants.GATEWAY_URL, config.getGatewayUrl());
             }
-
-            if (client != null) {
-                this.client = client;
-            } else {
-                this.client = new Client(clientSettings, androidSystemFactory);
+            if (config.isDebugLoggingEnabled()) {
+                settings.put(ConvivaSdkConstants.LOG_LEVEL, ConvivaSdkConstants.LogLevel.DEBUG);
             }
-
-            attachBitmovinEventListeners();
+            com.conviva.sdk.ConvivaAnalytics.init(context, customerKey), settings);
+        } else {
+            com.conviva.sdk.ConvivaAnalytics.init(context, customerKey);
         }
+
+        attachBitmovinEventListeners();
     }
 
     private void ensureConvivaSessionIsCreatedAndInitialized() {
