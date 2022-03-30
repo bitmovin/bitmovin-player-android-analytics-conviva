@@ -37,6 +37,7 @@ public class ConvivaAnalytics {
 
     // Helper
     private Boolean adStarted = false;
+    private Boolean isSessionActive = false;
 
     public ConvivaAnalytics(Player player, String customerKey, Context context) {
         this(player, customerKey, context, new ConvivaConfig());
@@ -217,6 +218,9 @@ public class ConvivaAnalytics {
     }
 
     private void internalInitializeSession() {
+        if(isSessionActive) {
+            return;
+        }
         Log.d("TAG", "internalInitializeSession");
         createContentMetadata();
         convivaVideoAnalytics.reportPlaybackRequested(contentMetadataBuilder.build());
@@ -224,7 +228,7 @@ public class ConvivaAnalytics {
         if (metadataOverrides != null) {
             updateContentMetadata(metadataOverrides);
         }
-        // Not needed (?) client.attachPlayer(sessionId, playerStateManager);
+        isSessionActive = true;
     }
 
     private void updateSession() {
@@ -273,12 +277,16 @@ public class ConvivaAnalytics {
     }
 
     private void internalEndSession() {
+        if(!isSessionActive) {
+            return;
+        }
         Log.d("TAG", "internalEndSession");
         convivaVideoAnalytics.reportPlaybackEnded();
         convivaVideoAnalytics.release();
         com.conviva.sdk.ConvivaAnalytics.release();
         contentMetadataBuilder.reset();
         Log.e(TAG, "Session ended");
+        isSessionActive = false;
     }
     // endregion
 
