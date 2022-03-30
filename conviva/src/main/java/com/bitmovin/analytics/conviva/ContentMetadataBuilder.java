@@ -3,6 +3,7 @@ package com.bitmovin.analytics.conviva;
 import android.util.Log;
 
 import com.conviva.api.ContentMetadata;
+import com.conviva.sdk.ConvivaSdkConstants;
 
 import org.apache.commons.lang3.ObjectUtils;
 
@@ -13,7 +14,7 @@ class ContentMetadataBuilder {
 
     private static final String TAG = ContentMetadataBuilder.class.getSimpleName();
 
-    private ContentMetadata contentMetadata;
+    private Map<String, Object> contentInfo;
 
     // internal metadata fields to enable merging / overriding
     private MetadataOverrides metadataOverrides;
@@ -21,7 +22,7 @@ class ContentMetadataBuilder {
     private boolean playbackStarted;
 
     ContentMetadataBuilder() {
-        contentMetadata = new ContentMetadata();
+        contentInfo = new HashMap<String, Object>();
         metadata = new MetadataOverrides();
         metadataOverrides = new MetadataOverrides();
     }
@@ -43,44 +44,52 @@ class ContentMetadataBuilder {
         playbackStarted = value;
     }
 
-    public ContentMetadata build() {
+    public Map<String, Object> build() {
+
         if (!playbackStarted) {
-            // Asset name is only allowed to be set once
-            if (contentMetadata.assetName == null) {
-                contentMetadata.assetName = getAssetName();
+            if(!contentInfo.containsKey(ConvivaSdkConstants.ASSET_NAME)) {
+                contentInfo.put(ConvivaSdkConstants.ASSET_NAME, getAssetName());
             }
 
-            contentMetadata.viewerId = getViewerId();
-            contentMetadata.streamType = ObjectUtils.defaultIfNull(
+            contentInfo.put(ConvivaSdkConstants.VIEWER_ID, getViewerId());
+
+            ConvivaSdkConstants.StreamType streamType = ObjectUtils.defaultIfNull(
                     metadataOverrides.getStreamType(),
                     metadata.getStreamType());
+            boolean isLive = streamType == ConvivaSdkConstants.StreamType.LIVE;
+            contentInfo.put(ConvivaSdkConstants.IS_LIVE, isLive);
 
-            contentMetadata.applicationName = ObjectUtils.defaultIfNull(
-                    metadataOverrides.getApplicationName(),
-                    metadata.getApplicationName());
+            String applicationName = ObjectUtils.defaultIfNull(
+                metadataOverrides.getApplicationName(),
+                metadata.getApplicationName());
+            contentInfo.put(ConvivaSdkConstants.FRAMEWORK_NAME, applicationName);
 
             Integer duration = ObjectUtils.defaultIfNull(
-                    metadataOverrides.getDuration(),
-                    metadata.getDuration());
-            contentMetadata.duration = duration != null ? duration : -1;
+                metadataOverrides.getDuration(),
+                metadata.getDuration());
+            Integer convivaDuration = duration != null ? duration : -1;
+            contentInfo.put(ConvivaSdkConstants.DURATION, convivaDuration);
 
-            contentMetadata.custom = getCustom();
+            // TODO - what to do about custom?
+//            contentMetadata.custom = getCustom();
         }
 
         Integer frameRate = ObjectUtils.defaultIfNull(
                 metadataOverrides.getEncodedFrameRate(),
                 metadata.getEncodedFrameRate());
-        contentMetadata.encodedFrameRate = frameRate != null ? frameRate : -1;
+        contentInfo.put(ConvivaSdkConstants.ENCODED_FRAMERATE, frameRate != null ? frameRate : -1);
+    
+        String defaultResource = ObjectUtils.defaultIfNull(
+                 metadataOverrides.getDefaultResource(),
+                 metadata.getDefaultResource());
+        contentInfo.put(ConvivaSdkConstants.DEFAULT_RESOURCE, defaultResource);
 
-        contentMetadata.defaultResource = ObjectUtils.defaultIfNull(
-                metadataOverrides.getDefaultResource(),
-                metadata.getDefaultResource());
+        String streamUrl = ObjectUtils.defaultIfNull(
+            metadataOverrides.getStreamUrl(),
+            metadata.getStreamUrl());
+        contentInfo.put(ConvivaSdkConstants.STREAM_URL, streamUrl);
 
-        contentMetadata.streamUrl = ObjectUtils.defaultIfNull(
-                metadataOverrides.getStreamUrl(),
-                metadata.getStreamUrl());
-
-        return contentMetadata;
+        return contentInfo;
     }
 
     public void setAssetName(String newValue) {
@@ -99,7 +108,7 @@ class ContentMetadataBuilder {
         return ObjectUtils.defaultIfNull(metadataOverrides.getViewerId(), metadata.getViewerId());
     }
 
-    public void setStreamType(ContentMetadata.StreamType newValue) {
+    public void setStreamType(ConvivaSdkConstants.StreamType newValue) {
         metadata.setStreamType(newValue);
     }
 
@@ -131,7 +140,7 @@ class ContentMetadataBuilder {
         metadata.setEncodedFrameRate(newValue);
     }
 
-    public void setdefaultResource(String newValue) {
+    public void setDefaultResource(String newValue) {
         metadata.setDefaultResource(newValue);
     }
 
@@ -143,6 +152,6 @@ class ContentMetadataBuilder {
         metadataOverrides = new MetadataOverrides();
         metadata = new MetadataOverrides();
         playbackStarted = false;
-        contentMetadata = new ContentMetadata();
+        contentInfo = new HashMap<String, Object>();
     }
 }
