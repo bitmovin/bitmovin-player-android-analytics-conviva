@@ -72,8 +72,7 @@ class ContentMetadataBuilder {
                 contentInfo.put(ConvivaSdkConstants.DURATION, convivaDuration);
             }
 
-            // TODO - what to do about custom?
-//            contentMetadata.custom = getCustom();
+            contentInfo.putAll(getCustom());
         }
 
         Integer frameRate = ObjectUtils.defaultIfNull(
