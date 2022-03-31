@@ -116,7 +116,6 @@ public class ConvivaAnalytics {
                     "AssetName is missing. Load player source (with Title) first or set assetName via updateContentMetadata"
             );
         }
-
         internalInitializeSession();
     }
 
@@ -145,7 +144,6 @@ public class ConvivaAnalytics {
     public void updateContentMetadata(MetadataOverrides metadataOverrides) {
         this.contentMetadataBuilder.setOverrides(metadataOverrides);
         this.metadataOverrides = metadataOverrides;
-
         this.createContentMetadata();
         this.updateSession();
     }
@@ -231,7 +229,6 @@ public class ConvivaAnalytics {
     }
 
     private void updateSession() {
-
         this.buildDynamicContentMetadata();
 
         VideoQuality videoQuality = bitmovinPlayer.getPlaybackVideoData();
@@ -241,6 +238,10 @@ public class ConvivaAnalytics {
                 convivaVideoAnalytics.reportPlaybackMetric(ConvivaSdkConstants.PLAYBACK.RESOLUTION, videoQuality.getHeight(), videoQuality.getWidth());
                 convivaVideoAnalytics.reportPlaybackMetric(ConvivaSdkConstants.PLAYBACK.BITRATE, bitrate);
                 convivaVideoAnalytics.reportPlaybackMetric(ConvivaSdkConstants.PLAYBACK.RENDERED_FRAMERATE, Math.round(videoQuality.getFrameRate()));
+        }
+
+        if(isSessionActive) {
+            convivaVideoAnalytics.setContentInfo(contentMetadataBuilder.build());
         }
     }
 
@@ -252,7 +253,6 @@ public class ConvivaAnalytics {
                 contentMetadataBuilder.setAssetName(sourceConfig.getTitle());
             }
         }
-
         this.buildDynamicContentMetadata();
     }
 

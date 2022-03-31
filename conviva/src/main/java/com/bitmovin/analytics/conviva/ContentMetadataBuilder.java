@@ -68,7 +68,9 @@ class ContentMetadataBuilder {
                 metadataOverrides.getDuration(),
                 metadata.getDuration());
             Integer convivaDuration = duration != null ? duration : -1;
-            contentInfo.put(ConvivaSdkConstants.DURATION, convivaDuration);
+            if(convivaDuration > 0) {
+                contentInfo.put(ConvivaSdkConstants.DURATION, convivaDuration);
+            }
 
             // TODO - what to do about custom?
 //            contentMetadata.custom = getCustom();
