@@ -13,7 +13,6 @@ import com.bitmovin.player.api.media.video.quality.VideoQuality;
 import com.bitmovin.player.api.source.Source;
 import com.bitmovin.player.api.source.SourceConfig;
 import com.conviva.api.Client;
-import com.conviva.api.ContentMetadata;
 import com.conviva.sdk.ConvivaAdAnalytics;
 import com.conviva.sdk.ConvivaSdkConstants;
 import com.conviva.sdk.ConvivaVideoAnalytics;
@@ -84,7 +83,7 @@ public class ConvivaAnalytics {
     }
 
     public void sendCustomApplicationEvent(String name, Map<String, Object> attributes) {
-        Log.d(TAG, "Will send custome application event: " + name + " " + attributes.toString());
+        Log.d(TAG, "Will send custom application event: " + name + " " + attributes.toString());
         com.conviva.sdk.ConvivaAnalytics.reportAppEvent(name, attributes);
     }
 
@@ -446,7 +445,6 @@ public class ConvivaAnalytics {
                 @Override
                 public void run() {
                     Log.d(TAG, "[Player Event] Paused");
-                    convivaVideoAnalytics.reportPlaybackEnded();
                     transitionState(ConvivaSdkConstants.PlayerState.PAUSED);
                 }
             }, 100);
@@ -484,7 +482,6 @@ public class ConvivaAnalytics {
                     Log.d(TAG, "[Player Event] StallEnded");
                     ConvivaSdkConstants.PlayerState state = ConvivaSdkConstants.PlayerState.PLAYING;
                     if (bitmovinPlayer.isPaused()) {
-                        convivaVideoAnalytics.reportPlaybackEnded();
                         state = ConvivaSdkConstants.PlayerState.PAUSED;
                     }
                     transitionState(state);

@@ -62,7 +62,7 @@ class ContentMetadataBuilder {
             String applicationName = ObjectUtils.defaultIfNull(
                 metadataOverrides.getApplicationName(),
                 metadata.getApplicationName());
-            contentInfo.put(ConvivaSdkConstants.FRAMEWORK_NAME, applicationName);
+            contentInfo.put(ConvivaSdkConstants.PLAYER_NAME, applicationName);
 
             Integer duration = ObjectUtils.defaultIfNull(
                 metadataOverrides.getDuration(),
