@@ -121,7 +121,7 @@ public class ConvivaAnalytics {
 
     /**
      * Ends the current conviva tracking session.
-     * Results in a no-opt if there is no active session.
+     * Results in a no-op if there is no active session.
      * <p>
      * Warning: The integration can only be validated without external session managing.
      * So when using this method we can no longer ensure that the session is managed at the correct time.
@@ -234,7 +234,6 @@ public class ConvivaAnalytics {
         VideoQuality videoQuality = bitmovinPlayer.getPlaybackVideoData();
         if (videoQuality != null) {
             int bitrate = videoQuality.getBitrate() / 1000; // in kbps
-                // TODO - will this still work or should we implement a Conviva callback?
                 convivaVideoAnalytics.reportPlaybackMetric(ConvivaSdkConstants.PLAYBACK.RESOLUTION, videoQuality.getHeight(), videoQuality.getWidth());
                 convivaVideoAnalytics.reportPlaybackMetric(ConvivaSdkConstants.PLAYBACK.BITRATE, bitrate);
                 convivaVideoAnalytics.reportPlaybackMetric(ConvivaSdkConstants.PLAYBACK.RENDERED_FRAMERATE, Math.round(videoQuality.getFrameRate()));
@@ -279,7 +278,6 @@ public class ConvivaAnalytics {
         if(!isSessionActive) {
             return;
         }
-        Log.d("TAG", "internalEndSession");
         convivaVideoAnalytics.reportPlaybackEnded();
         convivaVideoAnalytics.release();
         com.conviva.sdk.ConvivaAnalytics.release();
@@ -543,9 +541,6 @@ public class ConvivaAnalytics {
         @Override
         public void onEvent(PlayerEvent.AdStarted adStartedEvent) {
             Log.d(TAG, "[Player Event] AdStarted");
-            // Client.AdPosition adPosition = AdEventUtil.parseAdPosition(adStartedEvent, bitmovinPlayer.getDuration());
-            // Not the best documentation, need to check with Conviva, but this seems to be managed internally now.
-            // In this case we could remove AdEventUtil.
             adStarted = true;
             convivaVideoAnalytics.reportAdBreakStarted(ConvivaSdkConstants.AdPlayer.CONTENT, ConvivaSdkConstants.AdType.SERVER_SIDE);
         }
