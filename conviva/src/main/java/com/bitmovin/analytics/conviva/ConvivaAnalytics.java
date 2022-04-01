@@ -12,7 +12,6 @@ import com.bitmovin.player.api.event.SourceEvent;
 import com.bitmovin.player.api.media.video.quality.VideoQuality;
 import com.bitmovin.player.api.source.Source;
 import com.bitmovin.player.api.source.SourceConfig;
-import com.conviva.api.Client;
 import com.conviva.sdk.ConvivaAdAnalytics;
 import com.conviva.sdk.ConvivaSdkConstants;
 import com.conviva.sdk.ConvivaVideoAnalytics;
@@ -46,14 +45,6 @@ public class ConvivaAnalytics {
                             String customerKey,
                             Context context,
                             ConvivaConfig config) {
-        this(player, customerKey, context, config, null);
-    }
-
-    public ConvivaAnalytics(Player player,
-                            String customerKey,
-                            Context context,
-                            ConvivaConfig config,
-                            Client client) {
         this.bitmovinPlayer = player;
         this.playerHelper = new BitmovinPlayerHelper(player);
         this.config = config;
