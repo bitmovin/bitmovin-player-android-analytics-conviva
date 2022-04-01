@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+### [2.0.2]
+
+### Added
+
+- This version features an update to the Conviva SDK to 4.0.17. This deprecates the old V3 SDK, which means that any users that make use of the constructor that includes the Client parameter will now see the deprecation warning. The fix is to simply remove the Client parameter.
+
 ### [2.0.1]
 ### Fixed
 - Fixed an issue with one of the constructors not passing right parameter

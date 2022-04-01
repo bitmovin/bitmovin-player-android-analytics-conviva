@@ -26,11 +26,11 @@ allprojects {
 }
 ```
 
-And this lines to your main project
+And these lines to your main project
 ```
 dependencies {
-  implementation 'com.conviva.sdk:conviva-core-sdk:2.145.1' // <-- conviva sdk
-  implementation 'com.bitmovin.analytics:conviva:1.1.1'
+  implementation 'com.conviva.sdk:conviva-core-sdk:4.0.17.197' // <-- conviva sdk
+  implementation 'com.bitmovin.analytics:conviva:2.0.2'
 }
 ```
 
