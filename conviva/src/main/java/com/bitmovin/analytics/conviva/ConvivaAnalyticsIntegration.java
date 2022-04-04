@@ -517,13 +517,11 @@ public class ConvivaAnalyticsIntegration {
 
     private void setSeekStart(int seekTarget) {
         Log.d(TAG, "Sending seek start event");
-        // TODO - Verify...Conviva docs indicate SEEK_START rather than SEEK_STARTED...?
         convivaVideoAnalytics.reportPlaybackMetric(ConvivaSdkConstants.PLAYBACK.SEEK_STARTED, seekTarget);
     };
 
     public void setSeekEnd() {
         Log.d(TAG, "Sending seek end event");
-        // TODO - Verify...Conviva docs indicate SEEK_END rather than SEEK_ENDED...?
         convivaVideoAnalytics.reportPlaybackMetric(ConvivaSdkConstants.PLAYBACK.SEEK_ENDED);
     }
     // endregion
