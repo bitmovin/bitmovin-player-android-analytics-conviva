@@ -13,15 +13,16 @@ import com.bitmovin.player.api.media.video.quality.VideoQuality;
 import com.bitmovin.player.api.source.Source;
 import com.bitmovin.player.api.source.SourceConfig;
 import com.conviva.sdk.ConvivaAdAnalytics;
+import com.conviva.sdk.ConvivaAnalytics;
 import com.conviva.sdk.ConvivaSdkConstants;
 import com.conviva.sdk.ConvivaVideoAnalytics;
 
 import java.util.HashMap;
 import java.util.Map;
 
-public class ConvivaAnalytics {
+public class ConvivaAnalyticsIntegration {
 
-    private static final String TAG = "ConvivaAnalytics";
+    private static final String TAG = "ConvivaAnalyticsInt";
 
     private Player bitmovinPlayer;
     private ContentMetadataBuilder contentMetadataBuilder = new ContentMetadataBuilder();
@@ -37,14 +38,14 @@ public class ConvivaAnalytics {
     private Boolean adStarted = false;
     private Boolean isSessionActive = false;
 
-    public ConvivaAnalytics(Player player, String customerKey, Context context) {
+    public ConvivaAnalyticsIntegration(Player player, String customerKey, Context context) {
         this(player, customerKey, context, new ConvivaConfig());
     }
 
-    public ConvivaAnalytics(Player player,
-                            String customerKey,
-                            Context context,
-                            ConvivaConfig config) {
+    public ConvivaAnalyticsIntegration(Player player,
+                                       String customerKey,
+                                       Context context,
+                                       ConvivaConfig config) {
         this.bitmovinPlayer = player;
         this.playerHelper = new BitmovinPlayerHelper(player);
         this.config = config;
@@ -57,13 +58,13 @@ public class ConvivaAnalytics {
             if (config.isDebugLoggingEnabled()) {
                 settings.put(ConvivaSdkConstants.LOG_LEVEL, ConvivaSdkConstants.LogLevel.DEBUG);
             }
-            com.conviva.sdk.ConvivaAnalytics.init(context, customerKey, settings);
+            ConvivaAnalytics.init(context, customerKey, settings);
         } else {
-            com.conviva.sdk.ConvivaAnalytics.init(context, customerKey);
+            ConvivaAnalytics.init(context, customerKey);
         }
 
-        convivaVideoAnalytics = com.conviva.sdk.ConvivaAnalytics.buildVideoAnalytics(context);
-        convivaAdAnalytics = com.conviva.sdk.ConvivaAnalytics.buildAdAnalytics(context, convivaVideoAnalytics);
+        convivaVideoAnalytics = ConvivaAnalytics.buildVideoAnalytics(context);
+        convivaAdAnalytics = ConvivaAnalytics.buildAdAnalytics(context, convivaVideoAnalytics);
 
         attachBitmovinEventListeners();
     }
@@ -75,7 +76,7 @@ public class ConvivaAnalytics {
 
     public void sendCustomApplicationEvent(String name, Map<String, Object> attributes) {
         Log.d(TAG, "Will send custom application event: " + name + " " + attributes.toString());
-        com.conviva.sdk.ConvivaAnalytics.reportAppEvent(name, attributes);
+        ConvivaAnalytics.reportAppEvent(name, attributes);
     }
 
     public void sendCustomPlaybackEvent(String name) {
@@ -84,7 +85,7 @@ public class ConvivaAnalytics {
 
     public void sendCustomPlaybackEvent(String name, Map<String, Object> attributes) {
         Log.d(TAG, "Will report app event: " + name + " " + attributes.toString());
-        com.conviva.sdk.ConvivaAnalytics.reportAppEvent(name, attributes);
+        ConvivaAnalytics.reportAppEvent(name, attributes);
     }
 
     /**
@@ -271,7 +272,7 @@ public class ConvivaAnalytics {
         }
         convivaVideoAnalytics.reportPlaybackEnded();
         convivaVideoAnalytics.release();
-        com.conviva.sdk.ConvivaAnalytics.release();
+        ConvivaAnalytics.release();
         contentMetadataBuilder.reset();
         Log.e(TAG, "Session ended");
         isSessionActive = false;

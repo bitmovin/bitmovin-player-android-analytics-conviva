@@ -4,7 +4,7 @@ import android.content.Context
 import android.content.Intent
 import androidx.test.core.app.ActivityScenario
 import androidx.test.core.app.ApplicationProvider
-import com.bitmovin.analytics.conviva.ConvivaAnalytics
+import com.bitmovin.analytics.conviva.ConvivaAnalyticsIntegration
 import com.bitmovin.analytics.conviva.ConvivaConfig
 import com.bitmovin.analytics.conviva.MetadataOverrides
 import com.bitmovin.player.api.source.Source
@@ -21,7 +21,7 @@ import java.util.HashMap
 
 open class TestBase {
     lateinit var convivaConfig: ConvivaConfig
-    var convivaAnalytics: ConvivaAnalytics? = null
+    var convivaAnalytics: ConvivaAnalyticsIntegration? = null
     var clientSettingsMock: ClientSettings? = null
     var clientMock: Client? = null
     var playerStateManagerMock: PlayerStateManager? = null
@@ -111,15 +111,15 @@ open class TestBase {
         playerStateManagerMock?.let { unmockkObject(it) }
     }
 
-    fun createConvivaAnalyticsObject(activity: MainActivity) : ConvivaAnalytics {
+    fun createConvivaAnalyticsObject(activity: MainActivity) : ConvivaAnalyticsIntegration {
         // Setup mocks and create ConvivaAnalytics using mock objects
         setupMocks(activity.applicationContext)
-        return ConvivaAnalytics(
-            activity.bitmovinPlayer,
-            "test",
-            activity.applicationContext,
-            convivaConfig,
-            clientMock)
+        return ConvivaAnalyticsIntegration(
+                activity.bitmovinPlayer,
+                "test",
+                activity.applicationContext,
+                convivaConfig,
+                clientMock)
     }
 
     fun defaultMetadataOverrides() : MetadataOverrides {
