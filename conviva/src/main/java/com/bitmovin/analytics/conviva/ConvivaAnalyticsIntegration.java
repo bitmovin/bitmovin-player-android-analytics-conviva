@@ -99,7 +99,6 @@ public class ConvivaAnalyticsIntegration {
      * If no source was loaded this method will throw an error.
      */
     public void initializeSession() throws ConvivaAnalyticsException {
-
         if ((bitmovinPlayer.getSource() == null ||
                 bitmovinPlayer.getSource().getConfig() == null
                 || bitmovinPlayer.getSource().getConfig().getTitle() == null)
@@ -140,6 +139,11 @@ public class ConvivaAnalyticsIntegration {
         this.updateSession();
     }
 
+    public void release() {
+        convivaVideoAnalytics.release();
+        ConvivaAnalytics.release();
+    }
+
     /**
      * Sends a custom deficiency event during playback to Conviva's Player Insight. If no session is active it will NOT
      * create one.
@@ -174,7 +178,11 @@ public class ConvivaAnalyticsIntegration {
     public void pauseTracking() {
         Log.d(TAG, "Will report ad break started: " + ConvivaSdkConstants.AdPlayer.SEPARATE + " " + ConvivaSdkConstants.AdType.CLIENT_SIDE);
         convivaVideoAnalytics.reportAdBreakStarted(ConvivaSdkConstants.AdPlayer.SEPARATE, ConvivaSdkConstants.AdType.CLIENT_SIDE);
-        convivaVideoAnalytics.reportPlaybackEnded();
+        if(isSessionActive) {
+            convivaVideoAnalytics.reportPlaybackEnded();
+            isSessionActive = false;
+        }
+
         Log.d(TAG, "Tracking paused.");
     }
 
@@ -182,11 +190,42 @@ public class ConvivaAnalyticsIntegration {
      * Puts the session state from a notMonitored state into the last one tracked.
      */
     public void resumeTracking() {
+        if(!isSessionActive) {
             convivaVideoAnalytics.reportPlaybackRequested();
-            convivaVideoAnalytics.reportAdBreakEnded();
-            Log.d(TAG, "Tracking resumed.");
+            isSessionActive = true;
+        }
+
+        convivaVideoAnalytics.reportAdBreakEnded();
+        Log.d(TAG, "Tracking resumed.");
     }
+
+    /**
+     * This should be called when the app is resumed
+     */
+    public void reportAppForegrounded() {
+        Log.d(TAG, "appForegrounded");
+        ConvivaAnalytics.reportAppForegrounded();
+    }
+
+    /**
+     * This should be called when the app is paused
+     */
+    public void reportAppBackgrounded() {
+        Log.d(TAG, "appBackgrounded");
+        if(isSessionActive) {
+            ConvivaAnalytics.reportAppBackgrounded();
+            isSessionActive = false;
+        }
+
+    }
+
     // endregion
+
+    private void ensureConvivaSessionIsCreatedAndInitialized() {
+        if (!isSessionActive) {
+            internalInitializeSession();
+        }
+    }
 
     private void customEvent(Event event) {
         customEvent(event, new HashMap<String, Object>());
@@ -210,7 +249,7 @@ public class ConvivaAnalyticsIntegration {
         if(isSessionActive) {
             return;
         }
-        Log.d("TAG", "internalInitializeSession");
+        Log.d(TAG, "internalInitializeSession");
         createContentMetadata();
         convivaVideoAnalytics.reportPlaybackRequested(contentMetadataBuilder.build());
         setupPlayerStateManager();
@@ -271,10 +310,8 @@ public class ConvivaAnalyticsIntegration {
             return;
         }
         convivaVideoAnalytics.reportPlaybackEnded();
-        convivaVideoAnalytics.release();
-        ConvivaAnalytics.release();
         contentMetadataBuilder.reset();
-        Log.e(TAG, "Session ended");
+        Log.d(TAG, "Session ended");
         isSessionActive = false;
     }
     // endregion
@@ -410,6 +447,7 @@ public class ConvivaAnalyticsIntegration {
         @Override
         public void onEvent(PlayerEvent.Play playEvent) {
             Log.d(TAG, "[Player Event] Play");
+            ensureConvivaSessionIsCreatedAndInitialized();
             updateSession();
         }
     };
