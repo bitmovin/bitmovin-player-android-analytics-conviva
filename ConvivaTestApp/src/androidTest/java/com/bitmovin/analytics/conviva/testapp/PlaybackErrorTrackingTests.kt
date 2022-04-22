@@ -3,6 +3,7 @@ package com.bitmovin.analytics.conviva.testapp
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.conviva.api.*
 import com.conviva.api.player.PlayerStateManager
+import com.conviva.sdk.ConvivaSdkConstants
 import io.mockk.*
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -41,7 +42,7 @@ class PlaybackErrorTrackingTests: TestBase() {
             // verify error is reported to Conviva and session is ended
             verifyOrder {
                 // Conviva error is reported
-                clientMock?.reportError(CONVIVA_SESSION_ID, any(), Client.ErrorSeverity.FATAL)
+                clientMock?.reportError(CONVIVA_SESSION_ID, any(), ConvivaSdkConstants.ErrorSeverity.FATAL)
 
                 // Conviva session is ended
                 clientMock?.detachPlayer(CONVIVA_SESSION_ID)
@@ -84,7 +85,7 @@ class PlaybackErrorTrackingTests: TestBase() {
             // verify error is reported to Conviva and session is ended
             verifyOrder {
                 // Conviva error is reported
-                clientMock?.reportError(CONVIVA_SESSION_ID, any(), Client.ErrorSeverity.FATAL)
+                clientMock?.reportError(CONVIVA_SESSION_ID, any(), ConvivaSdkConstants.ErrorSeverity.FATAL)
 
                 // Conviva session is ended
                 clientMock?.detachPlayer(CONVIVA_SESSION_ID)

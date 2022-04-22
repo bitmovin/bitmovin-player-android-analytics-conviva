@@ -1,7 +1,8 @@
 package com.bitmovin.analytics.conviva.testapp
 
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import com.conviva.api.*
+import com.conviva.sdk.ConvivaSdkConstants
+import com.conviva.sdk.ConvivaSdkConstants.*
 import io.mockk.*
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -15,7 +16,7 @@ class CustomMetadataTests : TestBase() {
         customInternTags["contentType"] = "Episode"
         val customMetadata = customMetadataOverrides(
             source = DEFAULT_DASH_VOD_SOURCE,
-            streamType = ContentMetadata.StreamType.VOD,
+            streamType = StreamType.VOD,
             duration = DEFAULT_DASH_VOD_SOURCE_DURATION,
             customTags = customInternTags)
 
@@ -33,7 +34,7 @@ class CustomMetadataTests : TestBase() {
         verifyPlayingWithMetadata(
             activityScenario = activityScenario,
             source = DEFAULT_DASH_VOD_SOURCE,
-            streamType = ContentMetadata.StreamType.VOD,
+            streamType = StreamType.VOD,
             streamDuration = DEFAULT_DASH_VOD_SOURCE_DURATION,
             metadata = customMetadata,
             overrideCustom = true
@@ -46,7 +47,7 @@ class CustomMetadataTests : TestBase() {
         customInternTags["contentType"] = "Episode"
         val customMetadata = customMetadataOverrides(
             source = DEFAULT_DASH_LIVE_SOURCE,
-            streamType = ContentMetadata.StreamType.LIVE,
+            streamType = StreamType.LIVE,
             duration = DEFAULT_DASH_LIVE_SOURCE_DURATION,
             customTags = customInternTags)
 
@@ -64,7 +65,7 @@ class CustomMetadataTests : TestBase() {
         verifyPlayingWithMetadata(
             activityScenario = activityScenario,
             source = DEFAULT_DASH_LIVE_SOURCE,
-            streamType = ContentMetadata.StreamType.LIVE,
+            streamType = StreamType.LIVE,
             streamDuration = DEFAULT_DASH_LIVE_SOURCE_DURATION,
             metadata = customMetadata,
             overrideCustom = true
@@ -80,7 +81,7 @@ class CustomMetadataTests : TestBase() {
         customInternTags["integrationVersion"] = "CUSTOM_INTEGRATION_VERSION"
         val customMetadata = customMetadataOverrides(
             source = DEFAULT_DASH_VOD_SOURCE,
-            streamType = ContentMetadata.StreamType.VOD,
+            streamType = StreamType.VOD,
             duration = DEFAULT_DASH_VOD_SOURCE_DURATION,
             customTags = customInternTags)
 
@@ -98,7 +99,7 @@ class CustomMetadataTests : TestBase() {
         verifyPlayingWithMetadata(
             activityScenario = activityScenario,
             source = DEFAULT_DASH_VOD_SOURCE,
-            streamType = ContentMetadata.StreamType.VOD,
+            streamType = StreamType.VOD,
             streamDuration = DEFAULT_DASH_VOD_SOURCE_DURATION,
             metadata = customMetadata,
             overrideCustom = true
@@ -110,7 +111,7 @@ class CustomMetadataTests : TestBase() {
                     CONVIVA_SESSION_ID,
                     metadataEq(expectedContentMetadata(
                         source = DEFAULT_DASH_VOD_SOURCE,
-                        streamType = ContentMetadata.StreamType.VOD,
+                        streamType = StreamType.VOD,
                         duration = DEFAULT_DASH_VOD_SOURCE_DURATION,
                         overrideMetadata = customMetadata,
                         overrideCustom = true))

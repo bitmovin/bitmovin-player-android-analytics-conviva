@@ -110,7 +110,7 @@ class SessionTerminationTests : TestBase() {
         activityScenario.onActivity { activity: MainActivity ->
             clearMocks(playerStateManagerMock!!)
             clearMocks(clientMock!!)
-            convivaAnalytics?.endSession()
+            convivaAnalyticsIntegration?.endSession()
         }
         Thread.sleep(2000)
 
@@ -189,7 +189,7 @@ class SessionTerminationTests : TestBase() {
         activityScenario.onActivity { activity: MainActivity ->
             clearMocks(playerStateManagerMock!!)
             clearMocks(clientMock!!)
-            convivaAnalytics?.endSession()
+            convivaAnalyticsIntegration?.endSession()
         }
         Thread.sleep(2000)
         // verify session termination
