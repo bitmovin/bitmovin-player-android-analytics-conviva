@@ -7,7 +7,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### [2.0.2]
 ### Added
 
-- This version features an update to the Conviva SDK to 4.0.20. This removes the old V3 SDK, which means that any users that make use of the constructor including the Client parameter will now need to simply remove that Client parameter.
+- This version features an update to the Conviva SDK to 4.0.20. This update adds API breaking changes.
 
 ### Removed
 - Constructor: `ConvivaAnalyticsIntegration(Player player, String customerKey, Context context, ConvivaConfig config, Client client)`

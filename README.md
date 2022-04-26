@@ -1,5 +1,5 @@
 # bitmovin-player-android-analytics-conviva
-Integration of the Bitmovin Android Player SDK with the Conviva Analytics
+Integration of the Bitmovin Android Player SDK with the Conviva Analytics SDK
 
 ## Limitations
 - Tracking multiple sources within a Playlist, and related use cases, introduced in Player Android SDK version `v3` are not supported.
@@ -46,7 +46,7 @@ For more information about permissions and collected network types please look a
 
 ## Examples
 
-The following example create a ConvivaAnalytics object and attaches at Bitmovin Native SDK to it
+The following example create a ConvivaAnalyticsIntegration object and attaches at Bitmovin Native SDK to it
 
 #### Basic Conviva Reporting
 
@@ -56,8 +56,8 @@ ConvivaConfiguration convivaConfig = new ConvivaConfig(
     "ConvivaExample_BitmovinPlayer",
     "ViewerId1");
 
-// Create ConvivaAnalytics
-convivaAnalytics = new ConvivaAnalytics(bitmovinPlayer, "YOUR-CUSTOMER-KEY", getApplicationContext(), convivaConfig);
+// Create ConvivaAnalyticsIntegration
+convivaAnalyticsIntegration = new ConvivaAnalyticsIntegration(bitmovinPlayer, "YOUR-CUSTOMER-KEY", getApplicationContext(), convivaConfig);
 
 // Add a new source item
 SourceConfig sourceConfig = new SourceConfig("STREAM-URL", SourceType.Dash);
@@ -89,10 +89,10 @@ customInternTags.put("contentType", "Episode");
 metadata.setCustom(customInternTags);
 
 // …
-// Initialize ConvivaAnalytics
+// Initialize ConvivaAnalyticsIntegration
 // …
 
-convivaAnalytics.updateContentMetadata(metadata);
+convivaAnalyticsIntegration.updateContentMetadata(metadata);
 ```
 
 Those values will be cleaned up after the session is closed.
@@ -111,7 +111,21 @@ If your app stops playback when entering background conviva suggests to end the 
 
 A session can be ended using following method call:
 
-`convivaAnalytics.endSession()`
+`convivaAnalyticsIntegration.endSession()`
 Since the `BitmovinPlayer` automatically pauses the video if no background playback is configured the session creation after the app is in foreground again is handled automatically.
 
+#### Clean up
+
+At end of app instance lifecycle, the convivaAnalyticsIntegration should be released:
+
+```java
+@Override
+protected void onDestroy() {
+    bitmovinPlayerView.onDestroy();
+    convivaAnalyticsIntegration.release();
+    super.onDestroy();
+}
+```
+
 A [full example app](https://github.com/bitmovin/bitmovin-player-android-analytics-conviva/tree/master/ConvivaExampleApp) can be seen in the github repo
+
