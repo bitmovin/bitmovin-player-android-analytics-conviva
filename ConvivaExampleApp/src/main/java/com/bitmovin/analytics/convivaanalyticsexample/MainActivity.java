@@ -2,18 +2,20 @@ package com.bitmovin.analytics.convivaanalyticsexample;
 
 import android.os.Bundle;
 import androidx.appcompat.app.AppCompatActivity;
+
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.Switch;
 
-import com.bitmovin.analytics.conviva.ConvivaAnalytics;
+import com.bitmovin.analytics.conviva.ConvivaAnalyticsIntegration;
 import com.bitmovin.analytics.conviva.ConvivaAnalyticsException;
 import com.bitmovin.analytics.conviva.ConvivaConfig;
 import com.bitmovin.analytics.conviva.MetadataOverrides;
+import com.bitmovin.player.api.PlaybackConfig;
 import com.bitmovin.player.api.Player;
 import com.bitmovin.player.PlayerView;
-import com.bitmovin.player.api.source.Source;
 import com.bitmovin.player.api.source.SourceConfig;
 import com.bitmovin.player.api.PlayerConfig;
 import com.bitmovin.player.api.advertising.AdItem;
@@ -35,7 +37,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     // Conviva
     private static final String customerKey = "";
     private static String gatewayUrl; // Set only in debug mode
-    private ConvivaAnalytics convivaAnalytics;
+    private ConvivaAnalyticsIntegration convivaAnalyticsIntegration;
 
     // Player
     private Player bitmovinPlayer;
@@ -75,7 +77,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         convivaConfig.setDebugLoggingEnabled(true);
 
         // Create ConvivaAnalytics
-        convivaAnalytics = new ConvivaAnalytics(
+        convivaAnalyticsIntegration = new ConvivaAnalyticsIntegration(
                 bitmovinPlayer,
                 customerKey,
                 getApplicationContext(),
@@ -88,7 +90,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         Map<String, String> customInternTags = new HashMap<>();
         customInternTags.put("contentType", "Episode");
         metadata.setCustom(customInternTags);
-        convivaAnalytics.updateContentMetadata(metadata);
+        convivaAnalyticsIntegration.updateContentMetadata(metadata);
 
         // load source using the created source configuration
         bitmovinPlayer.load(buildSourceConfiguration());
@@ -130,23 +132,20 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     protected void onResume() {
         super.onResume();
         bitmovinPlayerView.onResume();
-        try {
-            convivaAnalytics.initializeSession();
-        } catch (ConvivaAnalyticsException e) {
-            e.printStackTrace();
-        }
+        convivaAnalyticsIntegration.reportAppForegrounded();
     }
 
     @Override
     protected void onPause() {
+        convivaAnalyticsIntegration.reportAppBackgrounded();
         bitmovinPlayerView.onStop();
-        convivaAnalytics.endSession();
         super.onPause();
     }
 
     @Override
-    protected void onDestroy() {
+    protected void onDestroy() {    
         bitmovinPlayerView.onDestroy();
+        convivaAnalyticsIntegration.release();
         super.onDestroy();
     }
 
@@ -171,7 +170,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         } else if (v == sendCustomEventButton) {
             Map<String, Object> eventAttributes = new HashMap<>();
             eventAttributes.put("Some", "Attributes");
-            this.convivaAnalytics.sendCustomPlaybackEvent("Custom Event", eventAttributes);
+            this.convivaAnalyticsIntegration.sendCustomPlaybackEvent("Custom Event", eventAttributes);
         }
     }
 }
