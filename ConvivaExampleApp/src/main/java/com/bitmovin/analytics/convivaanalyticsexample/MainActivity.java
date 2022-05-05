@@ -3,17 +3,15 @@ package com.bitmovin.analytics.convivaanalyticsexample;
 import android.os.Bundle;
 import androidx.appcompat.app.AppCompatActivity;
 
-import android.util.Log;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.Switch;
 
-import com.bitmovin.analytics.conviva.ConvivaAnalyticsIntegration;
-import com.bitmovin.analytics.conviva.ConvivaAnalyticsException;
+import com.bitmovin.analytics.conviva.ConvivaAnalyticsIntegration;;
 import com.bitmovin.analytics.conviva.ConvivaConfig;
 import com.bitmovin.analytics.conviva.MetadataOverrides;
-import com.bitmovin.player.api.PlaybackConfig;
 import com.bitmovin.player.api.Player;
 import com.bitmovin.player.PlayerView;
 import com.bitmovin.player.api.source.SourceConfig;
@@ -29,14 +27,16 @@ import java.util.Map;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
     // UI
+    private Button pauseTrackingButton;
+    private Button resumeTrackingButton;
     private Button releaseButton;
     private Button createButton;
     private Button sendCustomEventButton;
     private Switch includeAdsSwitch;
 
     // Conviva
-    private static final String customerKey = "";
-    private static String gatewayUrl; // Set only in debug mode
+    private static final String customerKey = "7e3b1e4d931a80408880c0847df5f5cc90c2c50f";
+    private static String gatewayUrl = "https://eyevinn-test.testonly.conviva.com"; // Set only in debug mode
     private ConvivaAnalyticsIntegration convivaAnalyticsIntegration;
 
     // Player
@@ -47,6 +47,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        pauseTrackingButton = findViewById(R.id.pause_tracking_button);
+        pauseTrackingButton.setOnClickListener(this);
+        resumeTrackingButton = findViewById(R.id.resume_tracking_button);
+        resumeTrackingButton.setOnClickListener(this);
         releaseButton = findViewById(R.id.release_button);
         releaseButton.setOnClickListener(this);
         createButton = findViewById(R.id.create_button);
@@ -149,28 +153,30 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         super.onDestroy();
     }
 
-    private void unloadPlayer() {
-        if (bitmovinPlayer != null) {
-            bitmovinPlayer.unload();
+    private void tearDownPlayer() {
+        convivaAnalyticsIntegration.release();
+        ViewGroup parent = (ViewGroup) bitmovinPlayerView.getParent();
+        if (parent != null) {
+            parent.removeView(bitmovinPlayerView);
         }
-    }
-
-    private void loadPlayer(SourceConfig sourceConfig) {
-        if (bitmovinPlayer != null) {
-            bitmovinPlayer.load(sourceConfig);
-        }
+        bitmovinPlayer.destroy();
+        bitmovinPlayerView.onDestroy();
     }
 
     @Override
     public void onClick(View v) {
         if (v == releaseButton) {
-            unloadPlayer();
+            tearDownPlayer();
         } else if (v == createButton) {
-            loadPlayer(buildSourceConfiguration());
+            this.setupBitmovinPlayer();
         } else if (v == sendCustomEventButton) {
             Map<String, Object> eventAttributes = new HashMap<>();
             eventAttributes.put("Some", "Attributes");
             this.convivaAnalyticsIntegration.sendCustomPlaybackEvent("Custom Event", eventAttributes);
+        } else if (v == pauseTrackingButton) {
+            this.convivaAnalyticsIntegration.pauseTracking(false);
+        } else if (v == resumeTrackingButton) {
+            this.convivaAnalyticsIntegration.resumeTracking();
         }
     }
 }

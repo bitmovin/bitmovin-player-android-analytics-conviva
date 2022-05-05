@@ -12,6 +12,7 @@ import com.bitmovin.player.api.event.SourceEvent;
 import com.bitmovin.player.api.media.video.quality.VideoQuality;
 import com.bitmovin.player.api.source.Source;
 import com.bitmovin.player.api.source.SourceConfig;
+import com.conviva.api.ConvivaConstants;
 import com.conviva.sdk.ConvivaAdAnalytics;
 import com.conviva.sdk.ConvivaAnalytics;
 import com.conviva.sdk.ConvivaSdkConstants;
@@ -37,6 +38,7 @@ public class ConvivaAnalyticsIntegration {
     // Helper
     private Boolean adStarted = false;
     private Boolean isSessionActive = false;
+    private Boolean isBumper = false;
 
     public ConvivaAnalyticsIntegration(Player player, String customerKey, Context context) {
         this(player, customerKey, context, new ConvivaConfig());
@@ -175,14 +177,10 @@ public class ConvivaAnalyticsIntegration {
     /**
      * Puts the session state in a notMonitored state.
      */
-    public void pauseTracking() {
-        Log.d(TAG, "Will report ad break started: " + ConvivaSdkConstants.AdPlayer.SEPARATE + " " + ConvivaSdkConstants.AdType.CLIENT_SIDE);
-        convivaVideoAnalytics.reportAdBreakStarted(ConvivaSdkConstants.AdPlayer.SEPARATE, ConvivaSdkConstants.AdType.CLIENT_SIDE);
-        if(isSessionActive) {
-            convivaVideoAnalytics.reportPlaybackEnded();
-            isSessionActive = false;
-        }
-
+    public void pauseTracking(Boolean _isBumper) {
+        isBumper = _isBumper;
+        String event = isBumper ? ConvivaSdkConstants.Events.BUMPER_VIDEO_STARTED.toString() : ConvivaSdkConstants.Events.USER_WAIT_STARTED.toString();
+        convivaVideoAnalytics.reportPlaybackEvent(event);
         Log.d(TAG, "Tracking paused.");
     }
 
@@ -190,12 +188,8 @@ public class ConvivaAnalyticsIntegration {
      * Puts the session state from a notMonitored state into the last one tracked.
      */
     public void resumeTracking() {
-        if(!isSessionActive) {
-            convivaVideoAnalytics.reportPlaybackRequested();
-            isSessionActive = true;
-        }
-
-        convivaVideoAnalytics.reportAdBreakEnded();
+        String event = isBumper ? ConvivaSdkConstants.Events.BUMPER_VIDEO_ENDED.toString() : ConvivaSdkConstants.Events.USER_WAIT_ENDED.toString();
+        convivaVideoAnalytics.reportPlaybackEvent(event);
         Log.d(TAG, "Tracking resumed.");
     }
 
