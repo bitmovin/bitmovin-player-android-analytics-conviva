@@ -200,6 +200,9 @@ public class ConvivaAnalyticsIntegration {
     public void reportAppForegrounded() {
         Log.d(TAG, "appForegrounded");
         ConvivaAnalytics.reportAppForegrounded();
+        if(!isSessionActive) {
+            isSessionActive = true;
+        }
     }
 
     /**
