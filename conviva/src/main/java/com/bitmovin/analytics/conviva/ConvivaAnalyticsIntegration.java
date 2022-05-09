@@ -167,8 +167,9 @@ public class ConvivaAnalyticsIntegration {
      */
     public void reportPlaybackDeficiency(String message, ConvivaSdkConstants.ErrorSeverity severity, Boolean endSession) {
         Log.d(TAG, "Will report playback deficiency: " + message + ",  " + severity.toString());
-        convivaVideoAnalytics.reportPlaybackError(message, severity);
-
+        if (isSessionActive) {
+            convivaVideoAnalytics.reportPlaybackError(message, severity);
+        }
         if (endSession) {
             internalEndSession();
         }
@@ -300,11 +301,11 @@ public class ConvivaAnalyticsIntegration {
     }
 
     private void internalEndSession() {
+        contentMetadataBuilder.reset();
         if(!isSessionActive) {
             return;
         }
         convivaVideoAnalytics.reportPlaybackEnded();
-        contentMetadataBuilder.reset();
         Log.d(TAG, "Session ended");
         isSessionActive = false;
     }
