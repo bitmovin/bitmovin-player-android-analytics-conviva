@@ -114,7 +114,7 @@ public class ConvivaAnalyticsIntegration {
 
     /**
      * Ends the current conviva tracking session.
-     * Results in a no-op if there is no active session.
+     * If there is no active session, the only thing that will happen is resetting the content metadata.
      * <p>
      * Warning: The integration can only be validated without external session managing.
      * So when using this method we can no longer ensure that the session is managed at the correct time.
