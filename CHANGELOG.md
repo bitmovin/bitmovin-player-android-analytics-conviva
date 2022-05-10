@@ -13,7 +13,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Constructor: `ConvivaAnalyticsIntegration(Player player, String customerKey, Context context, ConvivaConfig config, Client client)`
 
 ### Changed
-- `ConvivaAnalytics` is renamed to `ConvivaAnalyticsIntegration` 
+- `ConvivaAnalytics` is renamed to `ConvivaAnalyticsIntegration`
+- 'ConvivaAnalyticsIntegration' method `pauseTracking()' is now 'pauseTracking(Boolean _isBumper)',
+allowing specification of reason for pausing tracking, if desired.
 
 ### [2.0.1]
 ### Fixed

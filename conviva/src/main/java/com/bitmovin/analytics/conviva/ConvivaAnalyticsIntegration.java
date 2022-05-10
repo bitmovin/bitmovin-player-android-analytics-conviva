@@ -29,7 +29,6 @@ public class ConvivaAnalyticsIntegration {
     private ContentMetadataBuilder contentMetadataBuilder = new ContentMetadataBuilder();
     private ConvivaConfig config;
     private ConvivaVideoAnalytics convivaVideoAnalytics;
-    private ConvivaAdAnalytics convivaAdAnalytics;
     private MetadataOverrides metadataOverrides;
 
     // Wrapper to extract bitmovinPlayer helper methods
@@ -39,6 +38,7 @@ public class ConvivaAnalyticsIntegration {
     private Boolean adStarted = false;
     private Boolean isSessionActive = false;
     private Boolean isBumper = false;
+    private Boolean isBackgrounded = false;
 
     public ConvivaAnalyticsIntegration(Player player, String customerKey, Context context) {
         this(player, customerKey, context, new ConvivaConfig());
@@ -66,8 +66,6 @@ public class ConvivaAnalyticsIntegration {
         }
 
         convivaVideoAnalytics = ConvivaAnalytics.buildVideoAnalytics(context);
-        convivaAdAnalytics = ConvivaAnalytics.buildAdAnalytics(context, convivaVideoAnalytics);
-
         attachBitmovinEventListeners();
     }
 
@@ -177,6 +175,9 @@ public class ConvivaAnalyticsIntegration {
 
     /**
      * Puts the session state in a notMonitored state.
+     *
+     * @param _isBumper If tracking is paused in order to display a bumper video (or similar), set this to true.
+     *                  Otherwise the event is regarded as a "user wait"-event.
      */
     public void pauseTracking(Boolean _isBumper) {
         isBumper = _isBumper;
@@ -200,9 +201,7 @@ public class ConvivaAnalyticsIntegration {
     public void reportAppForegrounded() {
         Log.d(TAG, "appForegrounded");
         ConvivaAnalytics.reportAppForegrounded();
-        if(!isSessionActive) {
-            isSessionActive = true;
-        }
+        isBackgrounded = false;
     }
 
     /**
@@ -210,9 +209,9 @@ public class ConvivaAnalyticsIntegration {
      */
     public void reportAppBackgrounded() {
         Log.d(TAG, "appBackgrounded");
-        if(isSessionActive) {
+        if(!isBackgrounded) {
             ConvivaAnalytics.reportAppBackgrounded();
-            isSessionActive = false;
+            isBackgrounded = true;
         }
 
     }
@@ -568,7 +567,7 @@ public class ConvivaAnalyticsIntegration {
         public void onEvent(PlayerEvent.AdStarted adStartedEvent) {
             Log.d(TAG, "[Player Event] AdStarted");
             adStarted = true;
-            convivaVideoAnalytics.reportAdBreakStarted(ConvivaSdkConstants.AdPlayer.CONTENT, ConvivaSdkConstants.AdType.SERVER_SIDE);
+            convivaVideoAnalytics.reportAdBreakStarted(ConvivaSdkConstants.AdPlayer.CONTENT, ConvivaSdkConstants.AdType.CLIENT_SIDE);
         }
     };
 
