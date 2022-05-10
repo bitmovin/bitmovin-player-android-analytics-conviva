@@ -48,6 +48,15 @@ public class ConvivaAnalyticsIntegration {
                                        String customerKey,
                                        Context context,
                                        ConvivaConfig config) {
+        this(player, customerKey, context, config, null);
+    }
+
+    public ConvivaAnalyticsIntegration(Player player,
+                                       String customerKey,
+                                       Context context,
+                                       ConvivaConfig config,
+                                       ConvivaVideoAnalytics videoAnalytics
+                                       ) {
         this.bitmovinPlayer = player;
         this.playerHelper = new BitmovinPlayerHelper(player);
         this.config = config;
@@ -60,12 +69,21 @@ public class ConvivaAnalyticsIntegration {
             if (config.isDebugLoggingEnabled()) {
                 settings.put(ConvivaSdkConstants.LOG_LEVEL, ConvivaSdkConstants.LogLevel.DEBUG);
             }
-            ConvivaAnalytics.init(context, customerKey, settings);
+            if(videoAnalytics == null) {
+                ConvivaAnalytics.init(context, customerKey, settings);
+            }
         } else {
-            ConvivaAnalytics.init(context, customerKey);
+            if(videoAnalytics == null) {
+                ConvivaAnalytics.init(context, customerKey);
+            }
         }
 
-        convivaVideoAnalytics = ConvivaAnalytics.buildVideoAnalytics(context);
+        if(videoAnalytics != null) {
+            convivaVideoAnalytics = videoAnalytics;
+        } else {
+            convivaVideoAnalytics = ConvivaAnalytics.buildVideoAnalytics(context);
+        }
+
         attachBitmovinEventListeners();
     }
 

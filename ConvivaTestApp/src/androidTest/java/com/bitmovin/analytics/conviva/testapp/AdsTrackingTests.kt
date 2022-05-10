@@ -2,6 +2,7 @@ package com.bitmovin.analytics.conviva.testapp
 
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.conviva.api.*
+import com.conviva.sdk.ConvivaSdkConstants
 import io.mockk.*
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -18,22 +19,18 @@ class AdsTrackingTests : TestBase() {
 
         // initialize session and verify
         initializeSession(activityScenario)
-        verifySessionIntialization(activityScenario)
+        verifySessionInitialization(activityScenario)
 
         // load source and verify
         loadSource(activityScenario, DEFAULT_DASH_VOD_SOURCE)
-        verifyPlaying(activityScenario = activityScenario)
+
+        //verifyPlaying(activityScenario = activityScenario)
 
         // verify Ad start
         activityScenario.onActivity { activity: MainActivity ->
             verifyOrder {
-                clientMock?.updateContentMetadata(CONVIVA_SESSION_ID, any())
-                clientMock?.adStart(
-                    CONVIVA_SESSION_ID,
-                    Client.AdStream.SEPARATE,
-                    Client.AdPlayer.CONTENT,
-                    Client.AdPosition.PREROLL
-                )
+                convivaAnalyticsIntegration?.updateContentMetadata(any())
+                videoAnalyticsMock?.reportAdBreakStarted(ConvivaSdkConstants.AdPlayer.CONTENT, ConvivaSdkConstants.AdType.CLIENT_SIDE)
             }
         }
     }
