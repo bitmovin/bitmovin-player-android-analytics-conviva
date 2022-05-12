@@ -12,30 +12,23 @@ import com.bitmovin.player.api.event.SourceEvent;
 import com.bitmovin.player.api.media.video.quality.VideoQuality;
 import com.bitmovin.player.api.source.Source;
 import com.bitmovin.player.api.source.SourceConfig;
-import com.conviva.api.AndroidSystemInterfaceFactory;
-import com.conviva.api.Client;
-import com.conviva.api.ClientSettings;
-import com.conviva.api.ContentMetadata;
-import com.conviva.api.ConvivaException;
-import com.conviva.api.SystemFactory;
-import com.conviva.api.SystemSettings;
-import com.conviva.api.player.PlayerStateManager;
-import com.conviva.api.system.SystemInterface;
+import com.conviva.api.ConvivaConstants;
+import com.conviva.sdk.ConvivaAdAnalytics;
+import com.conviva.sdk.ConvivaAnalytics;
+import com.conviva.sdk.ConvivaSdkConstants;
+import com.conviva.sdk.ConvivaVideoAnalytics;
 
 import java.util.HashMap;
 import java.util.Map;
 
-public class ConvivaAnalytics {
+public class ConvivaAnalyticsIntegration {
 
-    private static final String TAG = "ConvivaAnalytics";
+    private static final String TAG = "ConvivaAnalyticsInt";
 
-    private Client client = null;
     private Player bitmovinPlayer;
     private ContentMetadataBuilder contentMetadataBuilder = new ContentMetadataBuilder();
     private ConvivaConfig config;
-    private int sessionId = Client.NO_SESSION_KEY;
-    private PlayerStateManager playerStateManager;
-    private ClientMeasureInterface clientMeasureInterface;
+    private ConvivaVideoAnalytics convivaVideoAnalytics;
     private MetadataOverrides metadataOverrides;
 
     // Wrapper to extract bitmovinPlayer helper methods
@@ -43,57 +36,55 @@ public class ConvivaAnalytics {
 
     // Helper
     private Boolean adStarted = false;
+    private Boolean isSessionActive = false;
+    private Boolean isBumper = false;
+    private Boolean isBackgrounded = false;
 
-    public ConvivaAnalytics(Player player, String customerKey, Context context) {
+    public ConvivaAnalyticsIntegration(Player player, String customerKey, Context context) {
         this(player, customerKey, context, new ConvivaConfig());
     }
 
-    public ConvivaAnalytics(Player player,
-                            String customerKey,
-                            Context context,
-                            ConvivaConfig config) {
+    public ConvivaAnalyticsIntegration(Player player,
+                                       String customerKey,
+                                       Context context,
+                                       ConvivaConfig config) {
         this(player, customerKey, context, config, null);
     }
 
-    public ConvivaAnalytics(Player player,
-                            String customerKey,
-                            Context context,
-                            ConvivaConfig config,
-                            Client client) {
+    public ConvivaAnalyticsIntegration(Player player,
+                                       String customerKey,
+                                       Context context,
+                                       ConvivaConfig config,
+                                       ConvivaVideoAnalytics videoAnalytics
+                                       ) {
         this.bitmovinPlayer = player;
         this.playerHelper = new BitmovinPlayerHelper(player);
         this.config = config;
 
-        SystemInterface androidSystemInterface = AndroidSystemInterfaceFactory.buildSecure(context);
-        if (androidSystemInterface.isInitialized()) {
-            SystemSettings systemSettings = new SystemSettings();
-            systemSettings.allowUncaughtExceptions = false;
-
-            if (config.isDebugLoggingEnabled()) {
-                systemSettings.logLevel = SystemSettings.LogLevel.DEBUG;
-            }
-
-            SystemFactory androidSystemFactory = new SystemFactory(androidSystemInterface, systemSettings);
-            ClientSettings clientSettings = new ClientSettings(customerKey);
-
+        if(BuildConfig.DEBUG) {
+            Map<String, Object> settings = new HashMap<String, Object>();
             if (config.getGatewayUrl() != null) {
-                clientSettings.gatewayUrl = config.getGatewayUrl();
+                settings.put(ConvivaSdkConstants.GATEWAY_URL, config.getGatewayUrl());
             }
-
-            if (client != null) {
-                this.client = client;
-            } else {
-                this.client = new Client(clientSettings, androidSystemFactory);
+            if (config.isDebugLoggingEnabled()) {
+                settings.put(ConvivaSdkConstants.LOG_LEVEL, ConvivaSdkConstants.LogLevel.DEBUG);
             }
-
-            attachBitmovinEventListeners();
+            if(videoAnalytics == null) {
+                ConvivaAnalytics.init(context, customerKey, settings);
+            }
+        } else {
+            if(videoAnalytics == null) {
+                ConvivaAnalytics.init(context, customerKey);
+            }
         }
-    }
 
-    private void ensureConvivaSessionIsCreatedAndInitialized() {
-        if (!isSessionActive()) {
-            internalInitializeSession();
+        if(videoAnalytics != null) {
+            convivaVideoAnalytics = videoAnalytics;
+        } else {
+            convivaVideoAnalytics = ConvivaAnalytics.buildVideoAnalytics(context);
         }
+
+        attachBitmovinEventListeners();
     }
 
     // region public methods
@@ -102,11 +93,8 @@ public class ConvivaAnalytics {
     }
 
     public void sendCustomApplicationEvent(String name, Map<String, Object> attributes) {
-        try {
-            client.sendCustomEvent(Client.NO_SESSION_KEY, name, attributes);
-        } catch (ConvivaException e) {
-            Log.e(TAG, e.getLocalizedMessage());
-        }
+        Log.d(TAG, "Will send custom application event: " + name + " " + attributes.toString());
+        ConvivaAnalytics.reportAppEvent(name, attributes);
     }
 
     public void sendCustomPlaybackEvent(String name) {
@@ -114,15 +102,8 @@ public class ConvivaAnalytics {
     }
 
     public void sendCustomPlaybackEvent(String name, Map<String, Object> attributes) {
-        if (!isSessionActive()) {
-            Log.e(TAG, "Cannot send playback event, no active monitoring session");
-            return;
-        }
-        try {
-            client.sendCustomEvent(sessionId, name, attributes);
-        } catch (ConvivaException e) {
-            Log.e(TAG, e.getLocalizedMessage());
-        }
+        Log.d(TAG, "Will report app event: " + name + " " + attributes.toString());
+        ConvivaAnalytics.reportAppEvent(name, attributes);
     }
 
     /**
@@ -136,10 +117,6 @@ public class ConvivaAnalytics {
      * If no source was loaded this method will throw an error.
      */
     public void initializeSession() throws ConvivaAnalyticsException {
-        if (isSessionActive()) {
-            return;
-        }
-
         if ((bitmovinPlayer.getSource() == null ||
                 bitmovinPlayer.getSource().getConfig() == null
                 || bitmovinPlayer.getSource().getConfig().getTitle() == null)
@@ -148,22 +125,17 @@ public class ConvivaAnalytics {
                     "AssetName is missing. Load player source (with Title) first or set assetName via updateContentMetadata"
             );
         }
-
         internalInitializeSession();
     }
 
     /**
      * Ends the current conviva tracking session.
-     * Results in a no-opt if there is no active session.
+     * If there is no active session, the only thing that will happen is resetting the content metadata.
      * <p>
      * Warning: The integration can only be validated without external session managing.
      * So when using this method we can no longer ensure that the session is managed at the correct time.
      */
     public void endSession() {
-        if (!isSessionActive()) {
-            return;
-        }
-
         internalEndSession();
     }
 
@@ -181,14 +153,13 @@ public class ConvivaAnalytics {
     public void updateContentMetadata(MetadataOverrides metadataOverrides) {
         this.contentMetadataBuilder.setOverrides(metadataOverrides);
         this.metadataOverrides = metadataOverrides;
-
-        if (!this.isSessionActive()) {
-            Log.i(TAG, "[ ConvivaAnalytics ] no active session; Don't propagate content metadata to conviva.");
-            return;
-        }
-
         this.createContentMetadata();
         this.updateSession();
+    }
+
+    public void release() {
+        convivaVideoAnalytics.release();
+        ConvivaAnalytics.release();
     }
 
     /**
@@ -198,7 +169,7 @@ public class ConvivaAnalytics {
      * @param message Message which will be send to conviva
      * @param severity One of FATAL or WARNING
      */
-    public void reportPlaybackDeficiency(String message, Client.ErrorSeverity severity) {
+    public void reportPlaybackDeficiency(String message, ConvivaSdkConstants.ErrorSeverity severity) {
         reportPlaybackDeficiency(message, severity, true);
     }
 
@@ -210,17 +181,11 @@ public class ConvivaAnalytics {
      * @param severity One of FATAL or WARNING
      * @param endSession Boolean flag if session should be closed after reporting the deficiency
      */
-    public void reportPlaybackDeficiency(String message, Client.ErrorSeverity severity, Boolean endSession) {
-        if (!isSessionActive()) {
-            return;
+    public void reportPlaybackDeficiency(String message, ConvivaSdkConstants.ErrorSeverity severity, Boolean endSession) {
+        Log.d(TAG, "Will report playback deficiency: " + message + ",  " + severity.toString());
+        if (isSessionActive) {
+            convivaVideoAnalytics.reportPlaybackError(message, severity);
         }
-
-        try {
-            this.client.reportError(this.sessionId, message, severity);
-        } catch (ConvivaException e) {
-            Log.e(TAG, e.getLocalizedMessage());
-        }
-
         if (endSession) {
             internalEndSession();
         }
@@ -228,97 +193,100 @@ public class ConvivaAnalytics {
 
     /**
      * Puts the session state in a notMonitored state.
+     *
+     * @param _isBumper If tracking is paused in order to display a bumper video (or similar), set this to true.
+     *                  Otherwise the event is regarded as a "user wait"-event.
      */
-    public void pauseTracking() {
-        try {
-            client.adStart(sessionId, Client.AdStream.SEPARATE, Client.AdPlayer.SEPARATE, Client.AdPosition.PREROLL);
-            client.detachPlayer(sessionId);
-            Log.d(TAG, "Tracking paused.");
-        } catch (ConvivaException e) {
-            Log.e(TAG, e.getLocalizedMessage());
-        }
-
+    public void pauseTracking(Boolean _isBumper) {
+        isBumper = _isBumper;
+        String event = isBumper ? ConvivaSdkConstants.Events.BUMPER_VIDEO_STARTED.toString() : ConvivaSdkConstants.Events.USER_WAIT_STARTED.toString();
+        convivaVideoAnalytics.reportPlaybackEvent(event);
+        Log.d(TAG, "Tracking paused.");
     }
 
     /**
      * Puts the session state from a notMonitored state into the last one tracked.
      */
     public void resumeTracking() {
-        try {
-            client.attachPlayer(sessionId, playerStateManager);
-            client.adEnd(sessionId);
-            Log.d(TAG, "Tracking resumed.");
-        } catch (ConvivaException e) {
-            Log.e(TAG, e.getLocalizedMessage());
+        String event = isBumper ? ConvivaSdkConstants.Events.BUMPER_VIDEO_ENDED.toString() : ConvivaSdkConstants.Events.USER_WAIT_ENDED.toString();
+        convivaVideoAnalytics.reportPlaybackEvent(event);
+        Log.d(TAG, "Tracking resumed.");
+    }
+
+    /**
+     * This should be called when the app is resumed
+     */
+    public void reportAppForegrounded() {
+        Log.d(TAG, "appForegrounded");
+        ConvivaAnalytics.reportAppForegrounded();
+        isBackgrounded = false;
+    }
+
+    /**
+     * This should be called when the app is paused
+     */
+    public void reportAppBackgrounded() {
+        Log.d(TAG, "appBackgrounded");
+        if(!isBackgrounded) {
+            ConvivaAnalytics.reportAppBackgrounded();
+            isBackgrounded = true;
+        }
+
+    }
+
+    // endregion
+
+    private void ensureConvivaSessionIsCreatedAndInitialized() {
+        if (!isSessionActive) {
+            internalInitializeSession();
         }
     }
-    // endregion
 
     private void customEvent(Event event) {
         customEvent(event, new HashMap<String, Object>());
     }
 
     private void customEvent(Event event, Map<String, Object> attributes) {
-        if (!isSessionActive()) {
-            return;
-        }
-
         String eventName = event.getClass().getSimpleName();
         sendCustomPlaybackEvent("on" + eventName, attributes);
     }
 
     // region Session handling
     private void setupPlayerStateManager() {
-        try {
-            playerStateManager = client.getPlayerStateManager();
-            playerStateManager.setPlayerState(PlayerStateManager.PlayerState.STOPPED);
-            playerStateManager.setPlayerType("Bitmovin Player Android");
-            playerStateManager.setPlayerVersion(playerHelper.getSdkVersionString());
-            clientMeasureInterface = new ClientMeasureInterface();
-            playerStateManager.setClientMeasureInterface(clientMeasureInterface);
-        } catch (ConvivaException e) {
-            Log.e(TAG, e.getLocalizedMessage());
-        }
+        convivaVideoAnalytics.reportPlaybackMetric(ConvivaSdkConstants.PLAYBACK.PLAYER_STATE, ConvivaSdkConstants.PlayerState.STOPPED);
+        Map<String, Object> playerInfo = new HashMap<String, Object>();
+        playerInfo.put(ConvivaSdkConstants.FRAMEWORK_NAME,"Bitmovin Player Android");
+        playerInfo.put(ConvivaSdkConstants.FRAMEWORK_VERSION, playerHelper.getSdkVersionString());
+        convivaVideoAnalytics.setPlayerInfo(playerInfo);
     }
 
     private void internalInitializeSession() {
-        try {
-            createContentMetadata();
-            sessionId = client.createSession(contentMetadataBuilder.build());
-            setupPlayerStateManager();
-            if (metadataOverrides != null) {
-                updateContentMetadata(metadataOverrides);
-            }
-            Log.d(TAG, "[Player Event] Created SessionID - " + sessionId);
-            client.attachPlayer(sessionId, playerStateManager);
-        } catch (ConvivaException e) {
-            Log.e(TAG, e.getLocalizedMessage());
+        if(isSessionActive) {
+            return;
         }
+        Log.d(TAG, "internalInitializeSession");
+        createContentMetadata();
+        convivaVideoAnalytics.reportPlaybackRequested(contentMetadataBuilder.build());
+        setupPlayerStateManager();
+        if (metadataOverrides != null) {
+            updateContentMetadata(metadataOverrides);
+        }
+        isSessionActive = true;
     }
 
     private void updateSession() {
-        if (!isSessionActive()) {
-            return;
-        }
         this.buildDynamicContentMetadata();
 
         VideoQuality videoQuality = bitmovinPlayer.getPlaybackVideoData();
         if (videoQuality != null) {
             int bitrate = videoQuality.getBitrate() / 1000; // in kbps
-            try {
-                playerStateManager.setBitrateKbps(bitrate);
-                playerStateManager.setVideoHeight(videoQuality.getHeight());
-                playerStateManager.setVideoWidth(videoQuality.getWidth());
-                clientMeasureInterface.setFrameRate(videoQuality.getFrameRate());
-            } catch (ConvivaException e) {
-                Log.e(TAG, e.getLocalizedMessage());
-            }
+                convivaVideoAnalytics.reportPlaybackMetric(ConvivaSdkConstants.PLAYBACK.RESOLUTION, videoQuality.getHeight(), videoQuality.getWidth());
+                convivaVideoAnalytics.reportPlaybackMetric(ConvivaSdkConstants.PLAYBACK.BITRATE, bitrate);
+                convivaVideoAnalytics.reportPlaybackMetric(ConvivaSdkConstants.PLAYBACK.RENDERED_FRAMERATE, Math.round(videoQuality.getFrameRate()));
         }
 
-        try {
-            client.updateContentMetadata(sessionId, contentMetadataBuilder.build());
-        } catch (ConvivaException e) {
-            Log.e(TAG, e.getLocalizedMessage());
+        if(isSessionActive) {
+            convivaVideoAnalytics.setContentInfo(contentMetadataBuilder.build());
         }
     }
 
@@ -330,7 +298,6 @@ public class ConvivaAnalytics {
                 contentMetadataBuilder.setAssetName(sourceConfig.getTitle());
             }
         }
-
         this.buildDynamicContentMetadata();
     }
 
@@ -344,9 +311,9 @@ public class ConvivaAnalytics {
         contentMetadataBuilder.setCustom(customInternTags);
 
         if (bitmovinPlayer.isLive()) {
-            contentMetadataBuilder.setStreamType(ContentMetadata.StreamType.LIVE);
+            contentMetadataBuilder.setStreamType(ConvivaSdkConstants.StreamType.LIVE);
         } else {
-            contentMetadataBuilder.setStreamType(ContentMetadata.StreamType.VOD);
+            contentMetadataBuilder.setStreamType(ConvivaSdkConstants.StreamType.VOD);
             contentMetadataBuilder.setDuration((int) bitmovinPlayer.getDuration());
         }
 
@@ -354,22 +321,13 @@ public class ConvivaAnalytics {
     }
 
     private void internalEndSession() {
-        if (!isSessionActive()) {
+        contentMetadataBuilder.reset();
+        if(!isSessionActive) {
             return;
         }
-
-        try {
-            client.detachPlayer(sessionId);
-            client.cleanupSession(sessionId);
-            client.releasePlayerStateManager(playerStateManager);
-        } catch (ConvivaException e) {
-            Log.e(TAG, e.getLocalizedMessage());
-        } finally {
-            sessionId = Client.NO_SESSION_KEY;
-            playerStateManager = null;
-            contentMetadataBuilder.reset();
-            Log.e(TAG, "Session ended");
-        }
+        convivaVideoAnalytics.reportPlaybackEnded();
+        Log.d(TAG, "Session ended");
+        isSessionActive = false;
     }
     // endregion
 
@@ -408,23 +366,12 @@ public class ConvivaAnalytics {
         bitmovinPlayer.on(PlayerEvent.VideoPlaybackQualityChanged.class, onVideoPlaybackQualityChangedListener);
     }
 
-    private synchronized void transitionState(PlayerStateManager.PlayerState state) {
-        if (!isSessionActive()) {
-            return;
-        }
-
-        try {
-            Log.d(TAG, "Transitioning to :" + state.name());
-            playerStateManager.setPlayerState(state);
-        } catch (ConvivaException e) {
-            Log.e(TAG, "Unable to transition state: " + e.getLocalizedMessage());
-        }
+    private synchronized void transitionState(ConvivaSdkConstants.PlayerState state) {
+        Log.d(TAG, "Transitioning to :" + state.name());
+        convivaVideoAnalytics.reportPlaybackMetric(ConvivaSdkConstants.PLAYBACK.PLAYER_STATE, state);
     }
 
     // region Helper
-    private boolean isSessionActive() {
-        return sessionId != Client.NO_SESSION_KEY;
-    }
 
     private void trackAdEnd() {
         if (!adStarted) {
@@ -433,11 +380,8 @@ public class ConvivaAnalytics {
         }
         adStarted = false;
 
-        try {
-            client.adEnd(sessionId);
-        } catch (ConvivaException e) {
-            Log.e(TAG, e.getLocalizedMessage());
-        }
+        Log.d(TAG, "Report ad break ended");
+        convivaVideoAnalytics.reportAdBreakEnded();
     }
     // endregion
 
@@ -463,15 +407,9 @@ public class ConvivaAnalytics {
         @Override
         public void onEvent(PlayerEvent.Error event) {
             Log.d(TAG, "[Player Event] Error");
-            try {
-                ensureConvivaSessionIsCreatedAndInitialized();
-
-                String message = String.format("%s - %s", event.getCode(), event.getMessage());
-                client.reportError(sessionId, message, Client.ErrorSeverity.FATAL);
-                internalEndSession();
-            } catch (ConvivaException e) {
-                Log.e(TAG, e.getLocalizedMessage());
-            }
+            String message = String.format("%s - %s", event.getCode(), event.getMessage());
+            convivaVideoAnalytics.reportPlaybackError(message, ConvivaSdkConstants.ErrorSeverity.FATAL);
+            internalEndSession();
         }
     };
 
@@ -479,15 +417,9 @@ public class ConvivaAnalytics {
         @Override
         public void onEvent(SourceEvent.Error event) {
             Log.d(TAG, "[Source Event] Error");
-            try {
-                ensureConvivaSessionIsCreatedAndInitialized();
-
-                String message = String.format("%s - %s", event.getCode(), event.getMessage());
-                client.reportError(sessionId, message, Client.ErrorSeverity.FATAL);
-                internalEndSession();
-            } catch (ConvivaException e) {
-                Log.e(TAG, e.getLocalizedMessage());
-            }
+            String message = String.format("%s - %s", event.getCode(), event.getMessage());
+            convivaVideoAnalytics.reportPlaybackError(message, ConvivaSdkConstants.ErrorSeverity.FATAL);
+            internalEndSession();
         }
     };
 
@@ -495,14 +427,8 @@ public class ConvivaAnalytics {
         @Override
         public void onEvent(PlayerEvent.Warning warningEvent) {
             Log.d(TAG, "[Player Event] Warning");
-            try {
-                ensureConvivaSessionIsCreatedAndInitialized();
-
-                String message = String.format("%s - %s", warningEvent.getCode(), warningEvent.getMessage());
-                client.reportError(sessionId, message, Client.ErrorSeverity.WARNING);
-            } catch (ConvivaException e) {
-                Log.e(TAG, e.getLocalizedMessage());
-            }
+            String message = String.format("%s - %s", warningEvent.getCode(), warningEvent.getMessage());
+            convivaVideoAnalytics.reportPlaybackError(message, ConvivaSdkConstants.ErrorSeverity.WARNING);
         }
     };
 
@@ -510,14 +436,8 @@ public class ConvivaAnalytics {
         @Override
         public void onEvent(SourceEvent.Warning warningEvent) {
             Log.d(TAG, "[Source Event] Warning");
-            try {
-                ensureConvivaSessionIsCreatedAndInitialized();
-
-                String message = String.format("%s - %s", warningEvent.getCode(), warningEvent.getMessage());
-                client.reportError(sessionId, message, Client.ErrorSeverity.WARNING);
-            } catch (ConvivaException e) {
-                Log.e(TAG, e.getLocalizedMessage());
-            }
+            String message = String.format("%s - %s", warningEvent.getCode(), warningEvent.getMessage());
+            convivaVideoAnalytics.reportPlaybackError(message, ConvivaSdkConstants.ErrorSeverity.WARNING);
         }
     };
 
@@ -552,7 +472,7 @@ public class ConvivaAnalytics {
         public void onEvent(PlayerEvent.Playing playingEvent) {
             Log.d(TAG, "[Player Event] Playing");
             contentMetadataBuilder.setPlaybackStarted(true);
-            transitionState(PlayerStateManager.PlayerState.PLAYING);
+            transitionState(ConvivaSdkConstants.PlayerState.PLAYING);
         }
     };
 
@@ -568,7 +488,7 @@ public class ConvivaAnalytics {
                 @Override
                 public void run() {
                     Log.d(TAG, "[Player Event] Paused");
-                    transitionState(PlayerStateManager.PlayerState.PAUSED);
+                    transitionState(ConvivaSdkConstants.PlayerState.PAUSED);
                 }
             }, 100);
         }
@@ -578,7 +498,7 @@ public class ConvivaAnalytics {
         @Override
         public void onEvent(PlayerEvent.PlaybackFinished playbackFinishedEvent) {
             Log.d(TAG, "[Player Event] PlaybackFinished");
-            transitionState(PlayerStateManager.PlayerState.STOPPED);
+            transitionState(ConvivaSdkConstants.PlayerState.STOPPED);
             internalEndSession();
         }
     };
@@ -587,7 +507,7 @@ public class ConvivaAnalytics {
         @Override
         public void onEvent(PlayerEvent.StallStarted stallStartedEvent) {
             Log.d(TAG, "[Player Event] StallStarted");
-            transitionState(PlayerStateManager.PlayerState.BUFFERING);
+            transitionState(ConvivaSdkConstants.PlayerState.BUFFERING);
         }
     };
 
@@ -603,9 +523,9 @@ public class ConvivaAnalytics {
                 @Override
                 public void run() {
                     Log.d(TAG, "[Player Event] StallEnded");
-                    PlayerStateManager.PlayerState state = PlayerStateManager.PlayerState.PLAYING;
+                    ConvivaSdkConstants.PlayerState state = ConvivaSdkConstants.PlayerState.PLAYING;
                     if (bitmovinPlayer.isPaused()) {
-                        state = PlayerStateManager.PlayerState.PAUSED;
+                        state = ConvivaSdkConstants.PlayerState.PAUSED;
                     }
                     transitionState(state);
                 }
@@ -649,30 +569,13 @@ public class ConvivaAnalytics {
     };
 
     private void setSeekStart(int seekTarget) {
-        if (!isSessionActive()) {
-            // Handle the case that the User seeks on the UI before play was triggered.
-            // This also handles startTime feature. The same applies for onTimeShift.
-            return;
-        }
         Log.d(TAG, "Sending seek start event");
-        try {
-            playerStateManager.setPlayerSeekStart(seekTarget);
-        } catch (ConvivaException e) {
-            Log.e(TAG, e.getLocalizedMessage());
-        }
+        convivaVideoAnalytics.reportPlaybackMetric(ConvivaSdkConstants.PLAYBACK.SEEK_STARTED, seekTarget);
     };
 
     public void setSeekEnd() {
-        if (!isSessionActive()) {
-            // See comment in setSeekStart
-            return;
-        }
         Log.d(TAG, "Sending seek end event");
-        try {
-            playerStateManager.setPlayerSeekEnd();
-        } catch (ConvivaException e) {
-            Log.e(TAG, e.getLocalizedMessage());
-        }
+        convivaVideoAnalytics.reportPlaybackMetric(ConvivaSdkConstants.PLAYBACK.SEEK_ENDED);
     }
     // endregion
 
@@ -681,14 +584,8 @@ public class ConvivaAnalytics {
         @Override
         public void onEvent(PlayerEvent.AdStarted adStartedEvent) {
             Log.d(TAG, "[Player Event] AdStarted");
-            Client.AdPosition adPosition = AdEventUtil.parseAdPosition(adStartedEvent, bitmovinPlayer.getDuration());
             adStarted = true;
-
-            try {
-                client.adStart(sessionId, Client.AdStream.SEPARATE, Client.AdPlayer.CONTENT, adPosition);
-            } catch (ConvivaException e) {
-                Log.e(TAG, e.getLocalizedMessage());
-            }
+            convivaVideoAnalytics.reportAdBreakStarted(ConvivaSdkConstants.AdPlayer.CONTENT, ConvivaSdkConstants.AdType.CLIENT_SIDE);
         }
     };
 

@@ -18,6 +18,33 @@
         android:orientation="vertical" />
 
     <Button
+        android:id="@+id/resume_tracking_button"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="16dp"
+        android:layout_marginRight="16dp"
+        android:text="Resume tracking"
+        app:layout_constraintHorizontal_weight="1"
+        app:layout_constraintStart_toEndOf="@id/pause_tracking_button"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/pause_tracking_button" />
+
+    <Button
+        android:id="@+id/pause_tracking_button"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginLeft="16dp"
+        android:layout_marginTop="16dp"
+        android:layout_marginEnd="16dp"
+        android:layout_marginRight="16dp"
+        android:text="Pause tracking"
+        app:layout_constraintHorizontal_weight="1"
+        app:layout_constraintEnd_toStartOf="@id/resume_tracking_button"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/include_ads_switch" />
+
+    <Button
         android:id="@+id/custom_event_button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -26,7 +53,7 @@
         android:layout_marginTop="16dp"
         android:layout_marginEnd="16dp"
         android:layout_marginRight="16dp"
-        android:text="Send custom event"
+        android:text="@string/send_custom_event"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/release_button" />
@@ -40,11 +67,11 @@
         android:layout_marginTop="16dp"
         android:layout_marginEnd="16dp"
         android:layout_marginRight="16dp"
-        android:text="Release"
+        android:text="@string/release"
         app:layout_constraintEnd_toStartOf="@+id/create_button"
         app:layout_constraintHorizontal_weight="1"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/include_ads_switch" />
+        app:layout_constraintTop_toBottomOf="@+id/pause_tracking_button" />
 
     <Button
         android:id="@+id/create_button"
@@ -52,7 +79,7 @@
         android:layout_height="wrap_content"
         android:layout_marginEnd="16dp"
         android:layout_marginRight="16dp"
-        android:text="Create"
+        android:text="@string/create"
         app:layout_constraintStart_toEndOf="@+id/release_button"
         app:layout_constraintHorizontal_weight="1"
         app:layout_constraintEnd_toEndOf="parent"
@@ -67,10 +94,11 @@
         android:layout_marginTop="16dp"
         android:layout_marginEnd="16dp"
         android:layout_marginRight="16dp"
-        android:checked="true"
-        android:text="Include Ads"
+        android:checked="false"
+        android:text="@string/include_ads"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/bitmovinPlayerUIView" />
+        app:layout_constraintTop_toBottomOf="@+id/bitmovinPlayerUIView"
+        tools:ignore="UseSwitchCompatOrMaterialXml" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

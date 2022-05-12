@@ -1,6 +1,6 @@
 package com.bitmovin.analytics.conviva;
 
-import com.conviva.api.ContentMetadata;
+import com.conviva.sdk.ConvivaSdkConstants;
 
 import java.util.Map;
 
@@ -10,7 +10,7 @@ public class MetadataOverrides {
 
     // Can only be set before playback started
     private String viewerId;
-    private ContentMetadata.StreamType streamType;
+    private ConvivaSdkConstants.StreamType streamType;
     private String applicationName;
     private Map<String, String> custom;
     private Integer duration;
@@ -36,11 +36,11 @@ public class MetadataOverrides {
         this.viewerId = viewerId;
     }
 
-    public ContentMetadata.StreamType getStreamType() {
+    public ConvivaSdkConstants.StreamType getStreamType() {
         return streamType;
     }
 
-    public void setStreamType(ContentMetadata.StreamType streamType) {
+    public void setStreamType(ConvivaSdkConstants.StreamType streamType) {
         this.streamType = streamType;
     }
 

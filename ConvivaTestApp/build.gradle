@@ -46,6 +46,7 @@ dependencies {
     implementation 'androidx.legacy:legacy-support-v4:1.0.0' // Needed for Ad Support
 
     implementation project(path: ':conviva')
+    implementation 'androidx.test:core-ktx:1.4.0'
 
     testImplementation 'junit:junit:4.12'
     androidTestImplementation 'androidx.test.ext:junit:1.1.1'

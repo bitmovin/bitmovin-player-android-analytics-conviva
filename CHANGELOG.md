@@ -4,6 +4,19 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+### [2.0.2]
+### Added
+
+- This version features an update to the Conviva SDK to 4.0.20. This update adds API breaking changes.
+
+### Removed
+- Constructor: `ConvivaAnalyticsIntegration(Player player, String customerKey, Context context, ConvivaConfig config, Client client)`
+
+### Changed
+- `ConvivaAnalytics` is renamed to `ConvivaAnalyticsIntegration`
+- 'ConvivaAnalyticsIntegration' method `pauseTracking()' is now 'pauseTracking(Boolean _isBumper)',
+allowing specification of reason for pausing tracking, if desired.
+
 ### [2.0.1]
 ### Fixed
 - Fixed an issue with one of the constructors not passing right parameter
