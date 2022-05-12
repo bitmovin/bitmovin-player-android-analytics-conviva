@@ -1,11 +1,11 @@
 apply plugin: 'com.android.application'
 
 android {
-    compileSdkVersion 28
+    compileSdkVersion 31
     defaultConfig {
         applicationId "com.bitmovin.analytics.convivaanalyticsexample"
         minSdkVersion 16
-        targetSdkVersion 28
+        targetSdkVersion 31
         versionCode 1
         versionName "1.0"
         multiDexEnabled true
@@ -24,6 +24,9 @@ android {
         sourceCompatibility 1.8
         targetCompatibility 1.8
     }
+    packagingOptions {
+        resources.excludes.add("META-INF/*")
+    }
 }
 
 dependencies {
@@ -35,14 +38,14 @@ dependencies {
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.1.0'
 
     implementation 'androidx.appcompat:appcompat:1.2.0'
-    implementation 'com.bitmovin.player:player:3.9.0'
+    implementation 'com.bitmovin.player:player:3.18.0'
     implementation 'androidx.legacy:legacy-support-v4:1.0.0'
 
     implementation project(':conviva')
 
-    //implementation 'com.bitmovin.analytics:conviva:1.1.4'
+    //implementation 'com.bitmovin.analytics:conviva:2.1.0'
 
-    implementation 'com.google.ads.interactivemedia.v3:interactivemedia:3.19.4' // only needed if ads are used:
-    implementation 'com.google.android.gms:play-services-ads:19.3.0' // only needed if ads are used
+    implementation 'com.google.ads.interactivemedia.v3:interactivemedia:3.26.0' // only needed if ads are used:
+    implementation 'com.google.android.gms:play-services-ads-identifier:18.0.1' // only needed if ads are used
     implementation 'androidx.legacy:legacy-support-v4:1.0.0' // only needed if ads are used
 }
