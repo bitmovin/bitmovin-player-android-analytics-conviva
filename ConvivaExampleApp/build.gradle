@@ -44,6 +44,7 @@ dependencies {
     implementation project(':conviva')
 
     //implementation 'com.bitmovin.analytics:conviva:2.1.0'
+    //api 'com.conviva.sdk:conviva-core-sdk:4.0.20'
 
     implementation 'com.google.ads.interactivemedia.v3:interactivemedia:3.26.0' // only needed if ads are used:
     implementation 'com.google.android.gms:play-services-ads-identifier:18.0.1' // only needed if ads are used
