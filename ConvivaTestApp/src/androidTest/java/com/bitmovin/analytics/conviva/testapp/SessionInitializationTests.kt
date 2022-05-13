@@ -35,7 +35,7 @@ class SessionInitializationTests : TestBase() {
         playSource(activityScenario = activityScenario)
 
         // verify session initialization and playing state
-        verifySessionInitialization(activityScenario)
+        verifySessionInitialization(activityScenario, metadata)
         verifyPlaying(activityScenario = activityScenario)
     }
 
@@ -48,7 +48,7 @@ class SessionInitializationTests : TestBase() {
 
         // initialize and verify session
         initializeSession(activityScenario)
-        verifySessionInitialization(activityScenario)
+        verifySessionInitialization(activityScenario, metadata)
 
         // load + play source and verify playing state
         loadSource(activityScenario = activityScenario, source = DEFAULT_DASH_VOD_SOURCE)
@@ -65,7 +65,7 @@ class SessionInitializationTests : TestBase() {
 
         // initialize and verify session
         initializeSession(activityScenario)
-        verifySessionInitialization(activityScenario)
+        verifySessionInitialization(activityScenario,metadata)
 
         // load source and playback should auto start
         loadSource(activityScenario = activityScenario, source = DEFAULT_DASH_VOD_SOURCE)
@@ -85,7 +85,7 @@ class SessionInitializationTests : TestBase() {
         playSource(activityScenario = activityScenario)
 
         // verify session initialization
-        verifySessionInitialization(activityScenario)
+        verifySessionInitialization(activityScenario, metadata)
 
         // verify playing tracking
         verifyPlaying(activityScenario = activityScenario)
@@ -103,7 +103,7 @@ class SessionInitializationTests : TestBase() {
         playSource(activityScenario = activityScenario)
 
         // verify session initialization
-        verifySessionInitialization(activityScenario)
+        verifySessionInitialization(activityScenario, metadata)
 
         // verify playing tracking
         verifyPlaying(activityScenario = activityScenario)
@@ -120,7 +120,7 @@ class SessionInitializationTests : TestBase() {
         initializeSession(activityScenario)
 
         // verify session initialization
-        verifySessionInitialization(activityScenario)
+        verifySessionInitialization(activityScenario, metadata)
 
         // load and play source
         loadSource(activityScenario = activityScenario, source = DEFAULT_DASH_LIVE_SOURCE)
@@ -141,7 +141,7 @@ class SessionInitializationTests : TestBase() {
         initializeSession(activityScenario)
 
         // verify session initialization
-        verifySessionInitialization(activityScenario)
+        verifySessionInitialization(activityScenario, metadata)
 
         // load source and playback should auto start
         loadSource(activityScenario = activityScenario, source = DEFAULT_DASH_LIVE_SOURCE)

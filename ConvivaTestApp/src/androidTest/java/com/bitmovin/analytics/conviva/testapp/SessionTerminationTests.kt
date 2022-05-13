@@ -1,6 +1,7 @@
 package com.bitmovin.analytics.conviva.testapp
 
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import com.conviva.sdk.ConvivaSdkConstants
 import io.mockk.*
 import org.junit.Assert
 import org.junit.Test
@@ -19,33 +20,32 @@ class SessionTerminationTests : TestBase() {
         initializeSession(activityScenario)
 
         // verify session initialization
-        verifySessionInitialization(activityScenario)
+        verifySessionInitialization(activityScenario, metadata)
 
         // load source and verify
-//        loadSource(activityScenario, DEFAULT_DASH_VOD_SOURCE)
-//        verifyPlaying(activityScenario = activityScenario)
-//
-//        // seek near to end to finish playback
-//        activityScenario.onActivity { activity: MainActivity ->
-//            // Seek close to end to finish playback
-//            clearMocks(playerStateManagerMock!!)
-//            clearMocks(clientMock!!)
-//            activity.bitmovinPlayer.seek(activity.bitmovinPlayer.duration - 1)
-//        }
-//        Thread.sleep(4000)
-//
-//        // verify session termination
-//        activityScenario.onActivity { activity: MainActivity ->
-//            verify {
-//                playerStateManagerMock?.setPlayerState(PlayerStateManager.PlayerState.STOPPED)
-//            }
-//            verifyOrder {
-//                clientMock?.updateContentMetadata(CONVIVA_SESSION_ID, any())
+        loadSource(activityScenario, DEFAULT_DASH_VOD_SOURCE)
+        verifyPlaying(activityScenario = activityScenario)
+
+        // seek near to end to finish playback
+        activityScenario.onActivity { activity: MainActivity ->
+            // Seek close to end to finish playback
+            clearMocks(videoAnalyticsMock!!)
+            activity.bitmovinPlayer.seek(activity.bitmovinPlayer.duration - 1)
+        }
+        Thread.sleep(4000)
+
+        // verify session termination
+        activityScenario.onActivity { activity: MainActivity ->
+            verify {
+                videoAnalyticsMock?.reportPlaybackMetric(ConvivaSdkConstants.PLAYBACK.PLAYER_STATE, ConvivaSdkConstants.PlayerState.STOPPED)
+            }
+            verifyOrder {
+                convivaAnalyticsIntegration?.updateContentMetadata(any())
 //                clientMock?.detachPlayer(CONVIVA_SESSION_ID)
 //                clientMock?.cleanupSession(CONVIVA_SESSION_ID)
 //                clientMock?.releasePlayerStateManager(playerStateManagerMock)
-//            }
-//        }
+            }
+        }
     }
 
     @Test
@@ -58,7 +58,7 @@ class SessionTerminationTests : TestBase() {
         initializeSession(activityScenario)
 
         // verify session initialization
-        verifySessionInitialization(activityScenario)
+        verifySessionInitialization(activityScenario, metadata)
 
         // load source and verify
         loadSource(activityScenario, DEFAULT_DASH_VOD_SOURCE)
@@ -99,7 +99,7 @@ class SessionTerminationTests : TestBase() {
         initializeSession(activityScenario)
 
         // verify session initialization
-        verifySessionInitialization(activityScenario)
+        verifySessionInitialization(activityScenario, metadata)
 
         // load source and verify
         loadSource(activityScenario, DEFAULT_DASH_VOD_SOURCE)
@@ -136,7 +136,7 @@ class SessionTerminationTests : TestBase() {
         initializeSession(activityScenario)
 
         // verify session initialization
-        verifySessionInitialization(activityScenario)
+        verifySessionInitialization(activityScenario, metadata)
 
         // load source and verify
         loadSource(activityScenario, DEFAULT_DASH_LIVE_SOURCE)
@@ -178,7 +178,7 @@ class SessionTerminationTests : TestBase() {
         initializeSession(activityScenario)
 
         // verify session initialization
-        verifySessionInitialization(activityScenario)
+        verifySessionInitialization(activityScenario, metadata)
 
         // load source and verify
         loadSource(activityScenario, DEFAULT_DASH_LIVE_SOURCE)
