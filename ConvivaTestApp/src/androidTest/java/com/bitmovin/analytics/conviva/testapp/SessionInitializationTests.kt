@@ -19,7 +19,7 @@ class SessionInitializationTests : TestBase() {
         playSource(activityScenario = activityScenario)
 
         // verify session initialization and playing state
-        verifySessionInitialization(activityScenario)
+        verifySessionInitialization(activityScenario, metadata)
         verifyPlaying(activityScenario = activityScenario)
     }
 

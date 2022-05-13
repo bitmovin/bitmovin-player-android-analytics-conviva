@@ -71,7 +71,7 @@ open class TestBase {
         videoAnalyticsMock?.let { unmockkObject(it) }
     }
 
-    fun createConvivaAnalyticsObject(activity: MainActivity) : ConvivaAnalyticsIntegration {
+    fun  createConvivaAnalyticsObject(activity: MainActivity) : ConvivaAnalyticsIntegration {
         // Setup mocks and create ConvivaAnalytics using mock objects
         ConvivaAnalytics.init(activity.applicationContext, "test")
         setupMocks(activity.applicationContext)
@@ -199,11 +199,22 @@ open class TestBase {
     }
 
     fun verifySessionInitialization(activityScenario: ActivityScenario<MainActivity>) {
-        activityScenario.onActivity { activity: MainActivity ->
+        verifySessionInitialization(activityScenario, null);
+    }
+    fun verifySessionInitialization(activityScenario: ActivityScenario<MainActivity>, metadata: MetadataOverrides?) {
+        activityScenario.onActivity { _: MainActivity ->
             verifyOrder {
-                convivaAnalyticsIntegration?.initializeSession()
-                convivaAnalyticsIntegration?.get("internalInitializeSession")
-                // convivaAnalyticsIntegration?.get("setupPlayerStateManager")
+                if(metadata != null) {
+                    convivaAnalyticsIntegration?.updateContentMetadata(metadata)
+                }
+
+                convivaAnalyticsIntegration?.get("createContentMetadata")
+
+                convivaAnalyticsIntegration?.get("buildDynamicContentMetadata")
+
+                convivaAnalyticsIntegration?.get("updateSession")
+
+                convivaAnalyticsIntegration?.get("buildDynamicContentMetadata")
             }
         }
     }
