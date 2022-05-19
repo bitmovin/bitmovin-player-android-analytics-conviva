@@ -19,7 +19,7 @@ class SessionInitializationTests : TestBase() {
         playSource(activityScenario = activityScenario)
 
         // verify session initialization and playing state
-        verifySessionInitialization(activityScenario, metadata)
+        verifySessionInitialization(activityScenario, metadata, true)
         verifyPlaying(activityScenario = activityScenario)
     }
 
@@ -35,7 +35,7 @@ class SessionInitializationTests : TestBase() {
         playSource(activityScenario = activityScenario)
 
         // verify session initialization and playing state
-        verifySessionInitialization(activityScenario, metadata)
+        verifySessionInitialization(activityScenario, metadata, true)
         verifyPlaying(activityScenario = activityScenario)
     }
 
@@ -85,7 +85,7 @@ class SessionInitializationTests : TestBase() {
         playSource(activityScenario = activityScenario)
 
         // verify session initialization
-        verifySessionInitialization(activityScenario, metadata)
+        verifySessionInitialization(activityScenario, metadata, true)
 
         // verify playing tracking
         verifyPlaying(activityScenario = activityScenario)
@@ -103,7 +103,7 @@ class SessionInitializationTests : TestBase() {
         playSource(activityScenario = activityScenario)
 
         // verify session initialization
-        verifySessionInitialization(activityScenario, metadata)
+        verifySessionInitialization(activityScenario, metadata, true)
 
         // verify playing tracking
         verifyPlaying(activityScenario = activityScenario)

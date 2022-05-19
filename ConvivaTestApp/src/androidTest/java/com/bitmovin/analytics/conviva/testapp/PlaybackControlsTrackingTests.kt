@@ -4,6 +4,8 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.bitmovin.player.api.event.PlayerEvent.Muted
 import com.bitmovin.player.api.event.PlayerEvent.Unmuted
 import com.bitmovin.player.api.media.video.quality.VideoQuality
+import com.conviva.sdk.ConvivaAnalytics
+import com.conviva.sdk.ConvivaSdkConstants
 import io.mockk.*
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -26,31 +28,31 @@ class PlaybackControlsTrackingTests: TestBase() {
         loadSource(activityScenario, DEFAULT_DASH_VOD_SOURCE)
         verifyPlaying(activityScenario = activityScenario)
 
-//        // pause playback
-//        activityScenario.onActivity { activity: MainActivity ->
-//            clearMocks(playerStateManagerMock!!)
-//            activity.bitmovinPlayer.pause()
-//        }
-//        Thread.sleep(2000)
-//        // verify pause tracking
-//        activityScenario.onActivity { activity: MainActivity ->
-//            verify(atLeast=1) {
-//                playerStateManagerMock?.setPlayerState(PlayerStateManager.PlayerState.PAUSED)
-//            }
-//        }
+        // pause playback
+        activityScenario.onActivity { activity: MainActivity ->
+            clearMocks(videoAnalyticsMock!!)
+            activity.bitmovinPlayer.pause()
+        }
+        Thread.sleep(2000)
+        // verify pause tracking
+        activityScenario.onActivity { activity: MainActivity ->
+            verify(atLeast=1) {
+                videoAnalyticsMock?.reportPlaybackMetric(ConvivaSdkConstants.PLAYBACK.PLAYER_STATE, ConvivaSdkConstants.PlayerState.PAUSED)
+            }
+        }
 
         // resume playback
-//        activityScenario.onActivity { activity: MainActivity ->
-//            clearMocks(playerStateManagerMock!!)
-//            activity.bitmovinPlayer.play()
-//        }
-//        Thread.sleep(2000)
-//        // verify resume tracking
-//        activityScenario.onActivity { activity: MainActivity ->
-//            verify(exactly=1) {
-//                playerStateManagerMock?.setPlayerState(PlayerStateManager.PlayerState.PLAYING)
-//            }
-//        }
+        activityScenario.onActivity { activity: MainActivity ->
+            clearMocks(videoAnalyticsMock!!)
+            activity.bitmovinPlayer.play()
+        }
+        Thread.sleep(2000)
+        // verify resume tracking
+        activityScenario.onActivity { activity: MainActivity ->
+            verify(exactly=1) {
+                videoAnalyticsMock?.reportPlaybackMetric(ConvivaSdkConstants.PLAYBACK.PLAYER_STATE, ConvivaSdkConstants.PlayerState.PLAYING)
+            }
+        }
     }
 
     @Test
@@ -70,21 +72,23 @@ class PlaybackControlsTrackingTests: TestBase() {
         verifyPlaying(activityScenario = activityScenario)
 
         // seek
-//        activityScenario.onActivity { activity: MainActivity ->
-//            // Seek playback
-//            clearMocks(playerStateManagerMock!!)
-//            activity.bitmovinPlayer.seek(120.0)
-//        }
-//        Thread.sleep(2000)
-//        // verify seek tracking
-//        activityScenario.onActivity { activity: MainActivity ->
-//            verifyOrder {
-//                playerStateManagerMock?.setPlayerSeekStart(120000)
-//                playerStateManagerMock?.setPlayerState(PlayerStateManager.PlayerState.BUFFERING)
-//                playerStateManagerMock?.setPlayerSeekEnd()
-//                playerStateManagerMock?.setPlayerState(PlayerStateManager.PlayerState.PLAYING)
-//            }
-//        }
+        activityScenario.onActivity { activity: MainActivity ->
+            // Seek playback
+            clearMocks(videoAnalyticsMock!!)
+            activity.bitmovinPlayer.seek(120.0)
+        }
+        Thread.sleep(2000)
+        // verify seek tracking
+        activityScenario.onActivity { activity: MainActivity ->
+            verifyOrder {
+                videoAnalyticsMock?.reportPlaybackMetric(ConvivaSdkConstants.PLAYBACK.SEEK_STARTED,120000)
+                // TODO - why is this behaviour different?
+                // videoAnalyticsMock?.reportPlaybackMetric(ConvivaSdkConstants.PLAYBACK.PLAYER_STATE, ConvivaSdkConstants.PlayerState.BUFFERING)
+                videoAnalyticsMock?.reportPlaybackMetric(ConvivaSdkConstants.PLAYBACK.SEEK_ENDED)
+                // TODO - why is this behaviour different?
+                // videoAnalyticsMock?.reportPlaybackMetric(ConvivaSdkConstants.PLAYBACK.PLAYER_STATE, ConvivaSdkConstants.PlayerState.PLAYING)
+            }
+        }
     }
 
     @Test
@@ -104,18 +108,18 @@ class PlaybackControlsTrackingTests: TestBase() {
         verifyPlaying(activityScenario = activityScenario)
 
         // timeshift
-//        activityScenario.onActivity { activity: MainActivity ->
-//            clearMocks(playerStateManagerMock!!)
-//            activity.bitmovinPlayer.timeShift(30.0)
-//        }
-//        Thread.sleep(2000)
-//        // verify timeshift tracking
-//        activityScenario.onActivity { activity: MainActivity ->
-//            verifyOrder {
-//                playerStateManagerMock?.setPlayerSeekStart(-1)
-//                playerStateManagerMock?.setPlayerSeekEnd()
-//            }
-//        }
+        activityScenario.onActivity { activity: MainActivity ->
+            clearMocks(videoAnalyticsMock!!)
+            activity.bitmovinPlayer.timeShift(30.0)
+        }
+        Thread.sleep(2000)
+        // verify timeshift tracking
+        activityScenario.onActivity { activity: MainActivity ->
+            verifyOrder {
+                videoAnalyticsMock?.reportPlaybackMetric(ConvivaSdkConstants.PLAYBACK.SEEK_STARTED,-1)
+                videoAnalyticsMock?.reportPlaybackMetric(ConvivaSdkConstants.PLAYBACK.SEEK_ENDED)
+            }
+        }
     }
 
     @Test
@@ -135,33 +139,31 @@ class PlaybackControlsTrackingTests: TestBase() {
         verifyPlaying(activityScenario = activityScenario)
 
         // mute playback
-//        activityScenario.onActivity { activity: MainActivity ->
-//            clearMocks(clientMock!!)
-//            activity.bitmovinPlayer.mute()
-//        }
-//        Thread.sleep(1000)
-//        // verify mute tracking
-//        activityScenario.onActivity { activity: MainActivity ->
-//            verify {
-//                val eventName: String? = Muted::class.simpleName
-//                clientMock?.sendCustomEvent(CONVIVA_SESSION_ID, "on$eventName", any())
-//            }
-//        }
+        activityScenario.onActivity { activity: MainActivity ->
+            activity.bitmovinPlayer.mute()
+        }
+        Thread.sleep(1000)
+        // verify mute tracking
+        activityScenario.onActivity { activity: MainActivity ->
+            verify {
+                val eventName: String? = Muted::class.simpleName
+                ConvivaAnalytics.reportAppEvent("on$eventName", HashMap())
+            }
+        }
 
         // unmute playback
-//        activityScenario.onActivity { activity: MainActivity ->
-//            clearMocks(clientMock!!)
-//            activity.bitmovinPlayer.unmute()
-//        }
-//        Thread.sleep(1000)
-//
-//        // verify unmute tracking
-//        activityScenario.onActivity { activity: MainActivity ->
-//            verify {
-//                val eventName: String? = Unmuted::class.simpleName
-//                clientMock?.sendCustomEvent(CONVIVA_SESSION_ID, "on$eventName", any())
-//            }
-//        }
+        activityScenario.onActivity { activity: MainActivity ->
+            activity.bitmovinPlayer.unmute()
+        }
+        Thread.sleep(1000)
+
+        // verify unmute tracking
+        activityScenario.onActivity { activity: MainActivity ->
+            verify {
+                val eventName: String? = Unmuted::class.simpleName
+                ConvivaAnalytics.reportAppEvent("on$eventName", HashMap())
+            }
+        }
     }
 
     @Test
@@ -182,31 +184,30 @@ class PlaybackControlsTrackingTests: TestBase() {
 
         // switch video quality
         var switchToVideoQuality: VideoQuality? = null
-//        activityScenario.onActivity { activity: MainActivity ->
-//            clearMocks(playerStateManagerMock!!)
-//            clearMocks(clientMock!!)
-//            val videoQualityArr = activity.bitmovinPlayer.availableVideoQualities
-//            val currVideoQuality = activity.bitmovinPlayer.videoQuality
-//            switchToVideoQuality = videoQualityArr[0]
-//            for (quality in videoQualityArr) {
-//                if (quality.bitrate < switchToVideoQuality!!.bitrate && quality.id !== currVideoQuality!!.id) {
-//                    switchToVideoQuality = quality
-//                }
-//            }
-//            activity.bitmovinPlayer.setVideoQuality(switchToVideoQuality?.id!!)
-//        }
-//        Thread.sleep(2000)
+        activityScenario.onActivity { activity: MainActivity ->
+            clearMocks(videoAnalyticsMock!!)
+            val videoQualityArr = activity.bitmovinPlayer.availableVideoQualities
+            val currVideoQuality = activity.bitmovinPlayer.videoQuality
+            switchToVideoQuality = videoQualityArr[0]
+            for (quality in videoQualityArr) {
+                if (quality.bitrate < switchToVideoQuality!!.bitrate && quality.id !== currVideoQuality!!.id) {
+                    switchToVideoQuality = quality
+                }
+            }
+            activity.bitmovinPlayer.setVideoQuality(switchToVideoQuality?.id!!)
+        }
+        Thread.sleep(2000)
 
         // verify quality tracking
-//        activityScenario.onActivity { activity: MainActivity ->
-//            verifyOrder() {
-//                playerStateManagerMock?.setBitrateKbps(switchToVideoQuality!!.bitrate / 1000)
-//                playerStateManagerMock?.setVideoHeight(switchToVideoQuality!!.height)
-//                playerStateManagerMock?.setVideoWidth(switchToVideoQuality!!.width)
-//            }
-//            verify {
-//                clientMock?.updateContentMetadata(CONVIVA_SESSION_ID, any())
-//            }
-//        }
+        activityScenario.onActivity { activity: MainActivity ->
+            verifyOrder() {
+                videoAnalyticsMock?.reportPlaybackMetric(ConvivaSdkConstants.PLAYBACK.RESOLUTION, switchToVideoQuality!!.height, switchToVideoQuality!!.width)
+                videoAnalyticsMock?.reportPlaybackMetric(ConvivaSdkConstants.PLAYBACK.BITRATE, switchToVideoQuality!!.bitrate / 1000)
+
+            }
+            verify {
+                videoAnalyticsMock?.setContentInfo(any())
+            }
+        }
     }
 }

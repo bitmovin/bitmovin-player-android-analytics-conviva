@@ -40,10 +40,8 @@ class SessionTerminationTests : TestBase() {
                 videoAnalyticsMock?.reportPlaybackMetric(ConvivaSdkConstants.PLAYBACK.PLAYER_STATE, ConvivaSdkConstants.PlayerState.STOPPED)
             }
             verifyOrder {
-                convivaAnalyticsIntegration?.updateContentMetadata(any())
-//                clientMock?.detachPlayer(CONVIVA_SESSION_ID)
-//                clientMock?.cleanupSession(CONVIVA_SESSION_ID)
-//                clientMock?.releasePlayerStateManager(playerStateManagerMock)
+                videoAnalyticsMock?.reportPlaybackMetric(ConvivaSdkConstants.PLAYBACK.PLAYER_STATE, ConvivaSdkConstants.PlayerState.STOPPED)
+                videoAnalyticsMock?.reportPlaybackEnded()
             }
         }
     }
@@ -65,28 +63,25 @@ class SessionTerminationTests : TestBase() {
         verifyPlaying(activityScenario = activityScenario)
 
         // Unload source
-//        activityScenario.onActivity { activity: MainActivity ->
-//            try {
-//                clearMocks(playerStateManagerMock!!)
-//                clearMocks(clientMock!!)
-//                activity.bitmovinPlayer.unload()
-//            } catch (e: Exception) {
-//                // Expectation is to not receive any exception
-//                Assert.assertTrue("Received unexpected exception: $e", false)
-//            }
-//        }
-//        Thread.sleep(2000)
-//        // verify session termination
-//        activityScenario.onActivity { activity: MainActivity ->
-//            verify(inverse = true) {
-//                playerStateManagerMock?.setPlayerState(PlayerStateManager.PlayerState.STOPPED)
-//            }
-//            verifyOrder {
-//                clientMock?.detachPlayer(CONVIVA_SESSION_ID)
-//                clientMock?.cleanupSession(CONVIVA_SESSION_ID)
-//                clientMock?.releasePlayerStateManager(playerStateManagerMock)
-//            }
-//        }
+        activityScenario.onActivity { activity: MainActivity ->
+            try {
+                clearMocks(videoAnalyticsMock!!)
+                activity.bitmovinPlayer.unload()
+            } catch (e: Exception) {
+                // Expectation is to not receive any exception
+                Assert.assertTrue("Received unexpected exception: $e", false)
+            }
+        }
+        Thread.sleep(2000)
+        // verify session termination
+        activityScenario.onActivity { activity: MainActivity ->
+            verify(inverse = true) {
+                videoAnalyticsMock?.reportPlaybackMetric(ConvivaSdkConstants.PLAYBACK.PLAYER_STATE, ConvivaSdkConstants.PlayerState.STOPPED)
+            }
+            verify {
+                videoAnalyticsMock?.reportPlaybackEnded()
+            }
+        }
     }
 
     @Test
@@ -106,24 +101,21 @@ class SessionTerminationTests : TestBase() {
         verifyPlaying(activityScenario = activityScenario)
 
         // end session explicitly
-//        activityScenario.onActivity { activity: MainActivity ->
-//            clearMocks(playerStateManagerMock!!)
-//            clearMocks(clientMock!!)
-//            convivaAnalyticsIntegration?.endSession()
-//        }
-//        Thread.sleep(2000)
-//
-//        // verify session termination
-//        activityScenario.onActivity { activity: MainActivity ->
-//            verify(inverse = true) {
-//                playerStateManagerMock?.setPlayerState(PlayerStateManager.PlayerState.STOPPED)
-//            }
-//            verifyOrder {
-//                clientMock?.detachPlayer(CONVIVA_SESSION_ID)
-//                clientMock?.cleanupSession(CONVIVA_SESSION_ID)
-//                clientMock?.releasePlayerStateManager(playerStateManagerMock)
-//            }
-//        }
+        activityScenario.onActivity { activity: MainActivity ->
+            clearMocks(videoAnalyticsMock!!)
+            convivaAnalyticsIntegration?.release();
+        }
+        Thread.sleep(2000)
+
+        // verify session termination
+        activityScenario.onActivity { activity: MainActivity ->
+            verify(inverse = true) {
+                videoAnalyticsMock?.reportPlaybackMetric(ConvivaSdkConstants.PLAYBACK.PLAYER_STATE, ConvivaSdkConstants.PlayerState.STOPPED)
+            }
+            verify {
+                videoAnalyticsMock?.release();
+            }
+        }
     }
 
     @Test
@@ -143,10 +135,8 @@ class SessionTerminationTests : TestBase() {
         verifyPlaying(activityScenario = activityScenario)
 
         // Unload source
-/*        activityScenario.onActivity { activity: MainActivity ->
+        activityScenario.onActivity { activity: MainActivity ->
             try {
-                clearMocks(playerStateManagerMock!!)
-                clearMocks(clientMock!!)
                 activity.bitmovinPlayer.unload()
             } catch (e: Exception) {
                 // Expectation is to not receive any exception
@@ -158,14 +148,12 @@ class SessionTerminationTests : TestBase() {
         // verify session termination
         activityScenario.onActivity { activity: MainActivity ->
             verify(inverse = true) {
-                playerStateManagerMock?.setPlayerState(PlayerStateManager.PlayerState.STOPPED)
+                videoAnalyticsMock?.reportPlaybackMetric(ConvivaSdkConstants.PLAYBACK.PLAYER_STATE, ConvivaSdkConstants.PlayerState.STOPPED)
             }
-            verifyOrder {
-                clientMock?.detachPlayer(CONVIVA_SESSION_ID)
-                clientMock?.cleanupSession(CONVIVA_SESSION_ID)
-                clientMock?.releasePlayerStateManager(playerStateManagerMock)
+            verify {
+                videoAnalyticsMock?.reportPlaybackEnded()
             }
-        }*/
+        }
     }
 
     @Test
@@ -185,22 +173,19 @@ class SessionTerminationTests : TestBase() {
         verifyPlaying(activityScenario = activityScenario)
 
         // end session explicitly
-//        activityScenario.onActivity { activity: MainActivity ->
-//            clearMocks(playerStateManagerMock!!)
-//            clearMocks(clientMock!!)
-//            convivaAnalyticsIntegration?.endSession()
-//        }
-//        Thread.sleep(2000)
-//        // verify session termination
-//        activityScenario.onActivity { activity: MainActivity ->
-//            verify(inverse = true) {
-//                playerStateManagerMock?.setPlayerState(PlayerStateManager.PlayerState.STOPPED)
-//            }
-//            verifyOrder {
-//                clientMock?.detachPlayer(CONVIVA_SESSION_ID)
-//                clientMock?.cleanupSession(CONVIVA_SESSION_ID)
-//                clientMock?.releasePlayerStateManager(playerStateManagerMock)
-//            }
-//        }
+        activityScenario.onActivity { activity: MainActivity ->
+        clearMocks(videoAnalyticsMock!!)
+            convivaAnalyticsIntegration?.release()
+        }
+        Thread.sleep(2000)
+        // verify session termination
+        activityScenario.onActivity { activity: MainActivity ->
+            verify(inverse = true) {
+                videoAnalyticsMock?.reportPlaybackMetric(ConvivaSdkConstants.PLAYBACK.PLAYER_STATE, ConvivaSdkConstants.PlayerState.STOPPED)
+            }
+            verifyOrder {
+                videoAnalyticsMock?.release();
+            }
+        }
     }
 }

@@ -8,11 +8,12 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import java.util.*
 
+// TODO - currently broken
 @RunWith(AndroidJUnit4::class)
 class CustomMetadataTests : TestBase() {
     @Test
     fun metadataOverrideVodExplicitInitialize() {
-        val customInternTags: MutableMap<String, String> = HashMap()
+        val customInternTags: MutableMap<String, String> = mutableMapOf<String, String>()
         customInternTags["contentType"] = "Episode"
         val customMetadata = customMetadataOverrides(
             source = DEFAULT_DASH_VOD_SOURCE,
@@ -42,7 +43,7 @@ class CustomMetadataTests : TestBase() {
     }
 
     @Test
-    fun metadataOverrideLiveExplicitInitalize() {
+    fun metadataOverrideLiveExplicitInitialize() {
         val customInternTags: MutableMap<String, String> = HashMap()
         customInternTags["contentType"] = "Episode"
         val customMetadata = customMetadataOverrides(
