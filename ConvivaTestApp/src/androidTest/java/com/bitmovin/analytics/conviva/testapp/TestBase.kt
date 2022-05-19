@@ -257,17 +257,15 @@ open class TestBase {
         activityScenario.onActivity { activity: MainActivity ->
             verify {
                 // TODO: Verify updateContentMetadata in the new form
-                val metadata = MetadataOverrides()
                 val rawMetadata = metadataEq(
                     expectedContentMetadata(
-                            source = source,
-                            streamType = streamType,
-                            duration = streamDuration,
-                            overrideMetadata = metadata,
-                            overrideCustom = overrideCustom
-                        )
+                        source = source,
+                        streamType = streamType,
+                        duration = streamDuration,
+                        overrideMetadata = metadata,
+                        overrideCustom = overrideCustom
+                    )
                 )
-
                 metadata.assetName = rawMetadata[ConvivaSdkConstants.ASSET_NAME] as String?
                 metadata.applicationName = rawMetadata[ConvivaSdkConstants.PLAYER_NAME] as String?
                 metadata.viewerId = rawMetadata[ConvivaSdkConstants.VIEWER_ID] as String?
