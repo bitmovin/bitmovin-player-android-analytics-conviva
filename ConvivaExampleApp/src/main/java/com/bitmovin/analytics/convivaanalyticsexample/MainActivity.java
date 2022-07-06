@@ -35,8 +35,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private Switch includeAdsSwitch;
 
     // Conviva
-    private static final String customerKey = "7e3b1e4d931a80408880c0847df5f5cc90c2c50f";
-    private static String gatewayUrl = "https://eyevinn-test.testonly.conviva.com"; // Set only in debug mode
+    private static final String customerKey = "YOUR-CUSTOMER-KEY";
+    private static String gatewayUrl; // Set only in debug mode
     private ConvivaAnalyticsIntegration convivaAnalyticsIntegration;
 
     // Player

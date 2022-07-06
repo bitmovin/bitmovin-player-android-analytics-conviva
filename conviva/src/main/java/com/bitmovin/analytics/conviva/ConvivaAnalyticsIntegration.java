@@ -60,8 +60,7 @@ public class ConvivaAnalyticsIntegration {
         this.bitmovinPlayer = player;
         this.playerHelper = new BitmovinPlayerHelper(player);
         this.config = config;
-
-        if(BuildConfig.DEBUG) {
+        if(config.getGatewayUrl() != null || config.isDebugLoggingEnabled()) {
             Map<String, Object> settings = new HashMap<String, Object>();
             if (config.getGatewayUrl() != null) {
                 settings.put(ConvivaSdkConstants.GATEWAY_URL, config.getGatewayUrl());
