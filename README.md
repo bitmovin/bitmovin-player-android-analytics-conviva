@@ -30,7 +30,7 @@ And these lines to your main project
 ```
 dependencies {
   implementation 'com.conviva.sdk:conviva-core-sdk:4.0.20' // <-- conviva sdk
-  implementation 'com.bitmovin.analytics:conviva:2.1.0'
+  implementation 'com.bitmovin.analytics:conviva:2.1.1'
 }
 ```
 
