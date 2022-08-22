@@ -4,13 +4,13 @@ plugins {
 }
 
 android {
-    compileSdkVersion 28
+    compileSdkVersion 31
     buildToolsVersion "30.0.3"
 
     defaultConfig {
         applicationId "com.bitmovin.analytics.conviva.testapp"
         minSdkVersion 28
-        targetSdkVersion 28
+        targetSdkVersion 31
         versionCode 1
         versionName "1.0"
         multiDexEnabled true
@@ -35,17 +35,23 @@ android {
     kotlinOptions {
         jvmTarget = '1.8'
     }
+    packagingOptions {
+        resources.excludes.add("META-INF/*")
+    }
 }
 
 dependencies {
     implementation 'androidx.appcompat:appcompat:1.0.0'
-    implementation "com.bitmovin.player:player:3.9.0"
+    implementation "com.bitmovin.player:player:3.18.0"
 
-    implementation "com.google.ads.interactivemedia.v3:interactivemedia:3.19.4" // Needed for Ad Support
-    implementation "com.google.android.gms:play-services-ads:19.3.0" // Needed for Ad Support
-    implementation 'androidx.legacy:legacy-support-v4:1.0.0' // Needed for Ad Support
+    implementation 'com.google.ads.interactivemedia.v3:interactivemedia:3.26.0' // only needed if ads are used:
+    implementation 'com.google.android.gms:play-services-ads-identifier:18.0.1' // only needed if ads are used
+    implementation 'androidx.legacy:legacy-support-v4:1.0.0' // only needed if ads are used
 
     implementation project(path: ':conviva')
+    //implementation 'com.bitmovin.analytics:conviva:2.1.1'
+    //api 'com.conviva.sdk:conviva-core-sdk:4.0.20'
+
     implementation 'androidx.test:core-ktx:1.4.0'
 
     testImplementation 'junit:junit:4.12'
