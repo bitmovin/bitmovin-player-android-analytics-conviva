@@ -2,6 +2,7 @@ package com.bitmovin.analytics.conviva.testapp
 
 import android.content.Context
 import android.content.Intent
+import android.util.Log
 import androidx.test.core.app.ActivityScenario
 import androidx.test.core.app.ApplicationProvider
 import com.bitmovin.analytics.conviva.ConvivaAnalyticsIntegration
@@ -153,16 +154,15 @@ open class TestBase {
     }
 
     // TODO: All references to ContentMetadata are obsolete and we should be using Map<String, String> instead
-    fun MockKMatcherScope.metadataEq(expectedMetadata: Map<String, Any>) = match<Map<String, Any>>  {
-        it[ConvivaSdkConstants.ASSET_NAME] == expectedMetadata[ConvivaSdkConstants.ASSET_NAME] &&
-        it[ConvivaSdkConstants.PLAYER_NAME] == expectedMetadata[ConvivaSdkConstants.PLAYER_NAME] &&
-        it[ConvivaSdkConstants.VIEWER_ID] == expectedMetadata[ConvivaSdkConstants.VIEWER_ID] &&
-        it[ConvivaSdkConstants.IS_LIVE] == expectedMetadata[ConvivaSdkConstants.IS_LIVE] &&
-        it[ConvivaSdkConstants.STREAM_URL] == expectedMetadata[ConvivaSdkConstants.STREAM_URL] &&
-        it[ConvivaSdkConstants.DURATION] == expectedMetadata[ConvivaSdkConstants.DURATION] &&
-        it[ConvivaSdkConstants.ENCODED_FRAMERATE] == expectedMetadata[ConvivaSdkConstants.ENCODED_FRAMERATE] &&
-        it["streamType"] == expectedMetadata["streamType"] &&
-        it["integrationVersion"] == expectedMetadata["integrationVersion"]
+    fun MockKMatcherScope.metadataEq(expectedMetadata: MetadataOverrides) = match<MetadataOverrides>  {
+        it.assetName == expectedMetadata.assetName &&
+        it.applicationName == expectedMetadata.applicationName &&
+        it.viewerId == expectedMetadata.viewerId &&
+        it.streamType == expectedMetadata.streamType &&
+        it.streamUrl == expectedMetadata.streamUrl &&
+        it.duration == expectedMetadata.duration &&
+        it.encodedFrameRate == expectedMetadata.encodedFrameRate &&
+        it.custom.equals(expectedMetadata.custom)
     }
 
 
@@ -229,7 +229,7 @@ open class TestBase {
         activityScenario.onActivity { activity: MainActivity ->
             activity.bitmovinPlayer.load(source)
         }
-        Thread.sleep(2000)
+        Thread.sleep(4000)
     }
 
     fun playSource(activityScenario: ActivityScenario<MainActivity>) {
@@ -257,15 +257,15 @@ open class TestBase {
         activityScenario.onActivity { activity: MainActivity ->
             verify {
                 // TODO: Verify updateContentMetadata in the new form
-                val rawMetadata = metadataEq(
-                    expectedContentMetadata(
-                        source = source,
-                        streamType = streamType,
-                        duration = streamDuration,
-                        overrideMetadata = metadata,
-                        overrideCustom = overrideCustom
-                    )
+                val rawMetadata = expectedContentMetadata(
+                    source = source,
+                    streamType = streamType,
+                    duration = streamDuration,
+                    overrideMetadata = metadata,
+                    overrideCustom = overrideCustom
                 )
+
+
                 metadata.assetName = rawMetadata[ConvivaSdkConstants.ASSET_NAME] as String?
                 metadata.applicationName = rawMetadata[ConvivaSdkConstants.PLAYER_NAME] as String?
                 metadata.viewerId = rawMetadata[ConvivaSdkConstants.VIEWER_ID] as String?
@@ -274,8 +274,10 @@ open class TestBase {
                 metadata.duration = rawMetadata[ConvivaSdkConstants.DURATION] as Int?
                 metadata.encodedFrameRate = rawMetadata[ConvivaSdkConstants.ENCODED_FRAMERATE] as Int?
 
-                convivaAnalyticsIntegration?.updateContentMetadata(metadata)
+                convivaAnalyticsIntegration?.updateContentMetadata(metadataEq ( metadata ))
             }
+
+
 
             verify(atLeast = 1) {
                 videoAnalyticsMock?.reportPlaybackMetric(ConvivaSdkConstants.PLAYBACK.PLAYER_STATE, ConvivaSdkConstants.PlayerState.PLAYING);
