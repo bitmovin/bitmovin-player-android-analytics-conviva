@@ -106,28 +106,5 @@ class CustomMetadataTests : TestBase() {
             metadata = customMetadata,
             overrideCustom = true
         )
-
-        activityScenario.onActivity { activity: MainActivity ->
-            verify {
-                var metadata = MetadataOverrides()
-                val rawMetadata = metadataEq(
-                        expectedContentMetadata(
-                            source = DEFAULT_DASH_VOD_SOURCE,
-                            streamType = StreamType.VOD,
-                            duration = DEFAULT_DASH_VOD_SOURCE_DURATION,
-                            overrideMetadata = customMetadata,
-                            overrideCustom = true
-                        )
-                )
-                metadata.assetName = rawMetadata[ConvivaSdkConstants.ASSET_NAME] as String?
-                metadata.applicationName = rawMetadata[ConvivaSdkConstants.PLAYER_NAME] as String?
-                metadata.viewerId = rawMetadata[ConvivaSdkConstants.VIEWER_ID] as String?
-                metadata.streamType = if (rawMetadata[ConvivaSdkConstants.IS_LIVE] as Boolean) ConvivaSdkConstants.StreamType.LIVE else ConvivaSdkConstants.StreamType.VOD
-                metadata.streamUrl = rawMetadata[ConvivaSdkConstants.STREAM_URL] as String?
-                metadata.duration = rawMetadata[ConvivaSdkConstants.DURATION] as Int?
-                metadata.encodedFrameRate = rawMetadata[ConvivaSdkConstants.ENCODED_FRAMERATE] as Int?
-                convivaAnalyticsIntegration?.updateContentMetadata(metadata)
-            }
-        }
     }
 }
