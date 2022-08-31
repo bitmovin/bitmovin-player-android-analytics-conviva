@@ -12,8 +12,6 @@ import com.bitmovin.player.api.event.SourceEvent;
 import com.bitmovin.player.api.media.video.quality.VideoQuality;
 import com.bitmovin.player.api.source.Source;
 import com.bitmovin.player.api.source.SourceConfig;
-import com.conviva.api.ConvivaConstants;
-import com.conviva.sdk.ConvivaAdAnalytics;
 import com.conviva.sdk.ConvivaAnalytics;
 import com.conviva.sdk.ConvivaSdkConstants;
 import com.conviva.sdk.ConvivaVideoAnalytics;
@@ -545,7 +543,8 @@ public class ConvivaAnalyticsIntegration {
         public void onEvent(PlayerEvent.Seek seekEvent) {
             Log.d(TAG, "[Player Event] Seek");
             setSeekStart((int) seekEvent.getTo().getTime() * 1000);
-        }
+            // Conviva expect notification of buffering events on seek (typically there is always buffering)
+            transitionState(ConvivaSdkConstants.PlayerState.BUFFERING);        }
     };
 
     private EventListener<PlayerEvent.Seeked> onSeekedListener = new EventListener<PlayerEvent.Seeked>() {
@@ -553,6 +552,18 @@ public class ConvivaAnalyticsIntegration {
         public void onEvent(PlayerEvent.Seeked seekedEvent) {
             Log.d(TAG, "[Player Event] Seeked");
             setSeekEnd();
+            // Notify of seek buffering complete at this stage.
+            new Handler().postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    Log.d(TAG, "[Player Event] Update state after buffering");
+                    ConvivaSdkConstants.PlayerState state = ConvivaSdkConstants.PlayerState.PLAYING;
+                    if (bitmovinPlayer.isPaused()) {
+                        state = ConvivaSdkConstants.PlayerState.PAUSED;
+                    }
+                    transitionState(state);
+                }
+            }, 100);
         }
     };
 
