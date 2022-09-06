@@ -137,6 +137,7 @@ class SessionTerminationTests : TestBase() {
         // Unload source
         activityScenario.onActivity { activity: MainActivity ->
             try {
+                clearMocks(videoAnalyticsMock!!)
                 activity.bitmovinPlayer.unload()
             } catch (e: Exception) {
                 // Expectation is to not receive any exception

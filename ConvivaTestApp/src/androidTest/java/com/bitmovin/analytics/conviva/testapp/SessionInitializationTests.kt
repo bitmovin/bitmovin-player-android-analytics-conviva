@@ -6,7 +6,7 @@ import org.junit.runner.RunWith
 
 @RunWith(AndroidJUnit4::class)
 class SessionInitializationTests : TestBase() {
-
+    // If you experience failing tests in the emulator, try restricting network on your emulate to ensure BUFFERING is triggered.
     @Test
     fun implicitSessionStartOnManualPlayVOD() {
         val metadata = customMetadataOverrides()
