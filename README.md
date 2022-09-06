@@ -8,7 +8,7 @@ Integration of the Bitmovin Android Player SDK with the Conviva Analytics SDK
 
 The 2.x.x versions of the Conviva Analytics Integration depends on `BitmovinPlayer` version `>= 3.0.0`.
 
-For `BitmovinPlayer` version `2.x.x` please use Conviva integration version `1.1.5`
+Note: `BitmovinPlayer` version `2.x.x` is not supported anymore. Please upgrade to `BitmovinPlayer` version `3.x.x`.
 
 # Getting Started
 
@@ -30,7 +30,7 @@ And these lines to your main project
 ```
 dependencies {
   implementation 'com.conviva.sdk:conviva-core-sdk:4.0.20' // <-- conviva sdk
-  implementation 'com.bitmovin.analytics:conviva:2.1.0'
+  implementation 'com.bitmovin.analytics:conviva:2.1.1'
 }
 ```
 

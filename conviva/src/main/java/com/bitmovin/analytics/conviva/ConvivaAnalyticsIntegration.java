@@ -60,8 +60,7 @@ public class ConvivaAnalyticsIntegration {
         this.bitmovinPlayer = player;
         this.playerHelper = new BitmovinPlayerHelper(player);
         this.config = config;
-
-        if(BuildConfig.DEBUG) {
+        if(config.getGatewayUrl() != null || config.isDebugLoggingEnabled()) {
             Map<String, Object> settings = new HashMap<String, Object>();
             if (config.getGatewayUrl() != null) {
                 settings.put(ConvivaSdkConstants.GATEWAY_URL, config.getGatewayUrl());
@@ -294,8 +293,14 @@ public class ConvivaAnalyticsIntegration {
         Source source = bitmovinPlayer.getSource();
         if (source != null) {
             SourceConfig sourceConfig = source.getConfig();
+            String overriddenAssetName = metadataOverrides.getAssetName();
+
             if (sourceConfig != null) {
-                contentMetadataBuilder.setAssetName(sourceConfig.getTitle());
+                contentMetadataBuilder.setAssetName(overriddenAssetName != null ? overriddenAssetName : sourceConfig.getTitle());
+            } else {
+                if(overriddenAssetName != null) {
+                    contentMetadataBuilder.setAssetName(overriddenAssetName);
+                }
             }
         }
         this.buildDynamicContentMetadata();
