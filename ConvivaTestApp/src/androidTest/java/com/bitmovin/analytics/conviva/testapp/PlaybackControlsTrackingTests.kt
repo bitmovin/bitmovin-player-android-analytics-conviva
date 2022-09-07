@@ -82,11 +82,8 @@ class PlaybackControlsTrackingTests: TestBase() {
         activityScenario.onActivity { activity: MainActivity ->
             verifyOrder {
                 videoAnalyticsMock?.reportPlaybackMetric(ConvivaSdkConstants.PLAYBACK.SEEK_STARTED,120000)
-                // TODO - why is this behaviour different?
-                // videoAnalyticsMock?.reportPlaybackMetric(ConvivaSdkConstants.PLAYBACK.PLAYER_STATE, ConvivaSdkConstants.PlayerState.BUFFERING)
+                videoAnalyticsMock?.reportPlaybackMetric(ConvivaSdkConstants.PLAYBACK.PLAYER_STATE, ConvivaSdkConstants.PlayerState.BUFFERING)
                 videoAnalyticsMock?.reportPlaybackMetric(ConvivaSdkConstants.PLAYBACK.SEEK_ENDED)
-                // TODO - why is this behaviour different?
-                // videoAnalyticsMock?.reportPlaybackMetric(ConvivaSdkConstants.PLAYBACK.PLAYER_STATE, ConvivaSdkConstants.PlayerState.PLAYING)
             }
         }
     }
@@ -117,6 +114,7 @@ class PlaybackControlsTrackingTests: TestBase() {
         activityScenario.onActivity { activity: MainActivity ->
             verifyOrder {
                 videoAnalyticsMock?.reportPlaybackMetric(ConvivaSdkConstants.PLAYBACK.SEEK_STARTED,-1)
+                videoAnalyticsMock?.reportPlaybackMetric(ConvivaSdkConstants.PLAYBACK.PLAYER_STATE, ConvivaSdkConstants.PlayerState.BUFFERING)
                 videoAnalyticsMock?.reportPlaybackMetric(ConvivaSdkConstants.PLAYBACK.SEEK_ENDED)
             }
         }

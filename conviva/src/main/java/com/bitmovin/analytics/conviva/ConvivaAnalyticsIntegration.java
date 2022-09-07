@@ -544,7 +544,8 @@ public class ConvivaAnalyticsIntegration {
             Log.d(TAG, "[Player Event] Seek");
             setSeekStart((int) seekEvent.getTo().getTime() * 1000);
             // Conviva expect notification of buffering events on seek (typically there is always buffering)
-            transitionState(ConvivaSdkConstants.PlayerState.BUFFERING);        }
+            transitionState(ConvivaSdkConstants.PlayerState.BUFFERING);
+        }
     };
 
     private EventListener<PlayerEvent.Seeked> onSeekedListener = new EventListener<PlayerEvent.Seeked>() {
@@ -573,6 +574,8 @@ public class ConvivaAnalyticsIntegration {
             Log.d(TAG, "[Player Event] TimeShift");
             // According to conviva it is valid to pass -1 for seeking in live streams
             setSeekStart(-1);
+            // Conviva expect notification of buffering events on timeshift (typically there is always buffering)
+            transitionState(ConvivaSdkConstants.PlayerState.BUFFERING);
         }
     };
 
