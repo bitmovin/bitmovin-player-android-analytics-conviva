@@ -1,12 +1,14 @@
 package com.bitmovin.analytics.conviva.testapp
 
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import com.conviva.api.*
+import com.conviva.sdk.ConvivaAnalytics
 import com.conviva.sdk.ConvivaSdkConstants
-import io.mockk.*
+import io.mockk.clearMocks
+import io.mockk.verify
+import io.mockk.verifyAll
+import io.mockk.verifyOrder
 import org.junit.Test
 import org.junit.runner.RunWith
-import java.util.*
 
 @RunWith(AndroidJUnit4::class)
 class CustomEventsTests: TestBase() {
@@ -15,151 +17,144 @@ class CustomEventsTests: TestBase() {
         // launch player with autoPlay enabled
         activityScenario = setupPlayerActivityForTest(autoPlay = true, defaultMetadataOverrides())
 
-        // verify that custom events are not sent before Conviva session is initialized
-//        activityScenario.onActivity { activity: MainActivity ->
-//            convivaAnalyticsIntegration?.sendCustomApplicationEvent(CUSTOM_EVENT_NAME)
-//            convivaAnalyticsIntegration?.sendCustomApplicationEvent(CUSTOM_EVENT_NAME, CUSTOM_EVENT_ATTRIBUTES)
-//            verifyAll(inverse = true) {
-//                clientMock?.sendCustomEvent(
-//                    Client.NO_SESSION_KEY, CUSTOM_EVENT_NAME,
-//                    HashMap()
-//                )
-//                clientMock?.sendCustomEvent(
-//                    Client.NO_SESSION_KEY, CUSTOM_EVENT_NAME,
-//                    CUSTOM_EVENT_ATTRIBUTES
-//                )
-//            }
-//        }
+        // initialize and verify session
+        initializeSession(activityScenario)
+        verifySessionInitialization(activityScenario)
+
+        // In the latest Conviva SDK, there is no problem with reporting app events before
+        // a session is opened, as shown here.
+        activityScenario.onActivity { activity: MainActivity ->
+            convivaAnalyticsIntegration?.sendCustomApplicationEvent(CUSTOM_EVENT_NAME)
+            convivaAnalyticsIntegration?.sendCustomApplicationEvent(CUSTOM_EVENT_NAME, HashMap(CUSTOM_EVENT_ATTRIBUTES) as Map<String, Any>?)
+
+            verifyOrder() {
+                ConvivaAnalytics.reportAppEvent(CUSTOM_EVENT_NAME, HashMap())
+                ConvivaAnalytics.reportAppEvent(CUSTOM_EVENT_NAME, HashMap(CUSTOM_EVENT_ATTRIBUTES) as Map<String, Any>?)
+            }
+        }
+
+        loadSource(activityScenario, DEFAULT_DASH_VOD_SOURCE)
+
+        activityScenario.onActivity { activity: MainActivity ->
+            convivaAnalyticsIntegration?.sendCustomApplicationEvent(CUSTOM_EVENT_NAME)
+            convivaAnalyticsIntegration?.sendCustomApplicationEvent(CUSTOM_EVENT_NAME, HashMap(CUSTOM_EVENT_ATTRIBUTES) as Map<String, Any>?)
+            verifyOrder() {
+                ConvivaAnalytics.reportAppEvent(CUSTOM_EVENT_NAME, HashMap())
+                ConvivaAnalytics.reportAppEvent(CUSTOM_EVENT_NAME, HashMap(CUSTOM_EVENT_ATTRIBUTES) as Map<String, Any>?)
+            }
+        }
+    }
+
+    @Test
+    fun customPlaybackEvent() {
+        // launch player with autoPlay enabled
+        activityScenario = setupPlayerActivityForTest(autoPlay = true, defaultMetadataOverrides())
+
+        // initialize and verify session
+        initializeSession(activityScenario)
+        verifySessionInitialization(activityScenario)
+        // In the latest Conviva SDK, there is no problem with reporting app events before
+        // a session is opened, as shown here.
+        activityScenario.onActivity { activity: MainActivity ->
+            convivaAnalyticsIntegration?.sendCustomPlaybackEvent(CUSTOM_EVENT_NAME)
+            convivaAnalyticsIntegration?.sendCustomPlaybackEvent(CUSTOM_EVENT_NAME, HashMap(CUSTOM_EVENT_ATTRIBUTES) as Map<String, Any>?)
+
+            verifyOrder() {
+                ConvivaAnalytics.reportAppEvent(CUSTOM_EVENT_NAME, HashMap())
+                ConvivaAnalytics.reportAppEvent(CUSTOM_EVENT_NAME, HashMap(CUSTOM_EVENT_ATTRIBUTES) as Map<String, Any>?)
+            }
+        }
+
+        loadSource(activityScenario, DEFAULT_DASH_VOD_SOURCE)
+
+        activityScenario.onActivity { activity: MainActivity ->
+            convivaAnalyticsIntegration?.sendCustomPlaybackEvent(CUSTOM_EVENT_NAME)
+            convivaAnalyticsIntegration?.sendCustomPlaybackEvent(CUSTOM_EVENT_NAME, HashMap(CUSTOM_EVENT_ATTRIBUTES) as Map<String, Any>?)
+
+            verifyOrder() {
+                ConvivaAnalytics.reportAppEvent(CUSTOM_EVENT_NAME, HashMap())
+                ConvivaAnalytics.reportAppEvent(CUSTOM_EVENT_NAME, HashMap(CUSTOM_EVENT_ATTRIBUTES) as Map<String, Any>?)
+            }
+        }
+    }
+
+    @Test
+    fun customErrorEvent() {
+        // launch player with autoPlay enabled
+        activityScenario = setupPlayerActivityForTest(autoPlay = true, defaultMetadataOverrides())
 
         // initialize and verify session
         initializeSession(activityScenario)
         verifySessionInitialization(activityScenario)
 
-        // verify that custom events are sent after Conviva session is initialized
-//        activityScenario.onActivity { activity: MainActivity ->
-//            convivaAnalyticsIntegration?.sendCustomApplicationEvent(CUSTOM_EVENT_NAME)
-//            convivaAnalyticsIntegration?.sendCustomApplicationEvent(CUSTOM_EVENT_NAME, CUSTOM_EVENT_ATTRIBUTES)
-//            verifyOrder() {
-//                clientMock?.sendCustomEvent(
-//                    Client.NO_SESSION_KEY,
-//                    CUSTOM_EVENT_NAME,
-//                    HashMap())
-//                clientMock?.sendCustomEvent(
-//                    Client.NO_SESSION_KEY,
-//                    CUSTOM_EVENT_NAME,
-//                    CUSTOM_EVENT_ATTRIBUTES)
-//            }
-//        }
+        // In the latest Conviva SDK, there is no problem with reporting app events before
+        // a session is opened, as shown here.
+        activityScenario.onActivity { activity: MainActivity ->
+            clearMocks(videoAnalyticsMock!!)
+            convivaAnalyticsIntegration?.reportPlaybackDeficiency(
+                CUSTOM_ERROR_MESSAGE,
+                ConvivaSdkConstants.ErrorSeverity.WARNING,
+                false
+            )
+
+            verify() {
+                videoAnalyticsMock?.reportPlaybackError(
+                        CUSTOM_ERROR_MESSAGE,
+                        ConvivaSdkConstants.ErrorSeverity.WARNING
+                )
+            }
+
+            convivaAnalyticsIntegration?.reportPlaybackDeficiency(
+                CUSTOM_ERROR_MESSAGE,
+                ConvivaSdkConstants.ErrorSeverity.FATAL,
+                true
+            )
+
+            verify() {
+                videoAnalyticsMock?.reportPlaybackError(
+                        CUSTOM_ERROR_MESSAGE,
+                        ConvivaSdkConstants.ErrorSeverity.FATAL
+                )
+            }
+        }
+
+        activityScenario = setupPlayerActivityForTest(autoPlay = true, defaultMetadataOverrides())
+
+        // initialize and verify session  again
+        initializeSession(activityScenario)
+        verifySessionInitialization(activityScenario)
+
+        // verify that custom error events are sent after Conviva session is initialized
+        // but Conviva session is not ended when endSession argument is not passed as true
+        activityScenario.onActivity { activity: MainActivity ->
+            clearMocks(videoAnalyticsMock!!)
+            convivaAnalyticsIntegration?.reportPlaybackDeficiency(
+                CUSTOM_ERROR_MESSAGE,
+                ConvivaSdkConstants.ErrorSeverity.WARNING,
+                false
+            )
+            verify(exactly = 1) {
+                videoAnalyticsMock?.reportPlaybackError(
+                    CUSTOM_ERROR_MESSAGE,
+                    ConvivaSdkConstants.ErrorSeverity.WARNING
+                )
+            }
+            verify(inverse = true) {
+                videoAnalyticsMock?.reportPlaybackEnded()
+            }
+        }
+
+        // verify that custom error events are sent after Conviva session is initialized
+        // and Conviva session is also ended when endSession argument is passed as true
+        activityScenario.onActivity { activity: MainActivity ->
+            clearMocks(videoAnalyticsMock!!)
+            convivaAnalyticsIntegration?.reportPlaybackDeficiency(
+                    CUSTOM_ERROR_MESSAGE,
+                    ConvivaSdkConstants.ErrorSeverity.FATAL,
+                    true)
+            verifyOrder() {
+                videoAnalyticsMock?.reportPlaybackEnded()
+            }
+        }
     }
-
-//    @Test
-//    fun customPlaybackEvent() {
-//        // launch player with autoPlay enabled
-//        activityScenario = setupPlayerActivityForTest(autoPlay = true, defaultMetadataOverrides())
-//
-//        // Verify that custom events are not sent before Conviva session is initialized
-//        activityScenario.onActivity { activity: MainActivity ->
-//            convivaAnalyticsIntegration?.sendCustomPlaybackEvent(CUSTOM_EVENT_NAME)
-//            convivaAnalyticsIntegration?.sendCustomPlaybackEvent(CUSTOM_EVENT_NAME, CUSTOM_EVENT_ATTRIBUTES)
-//            verifyOrder(inverse = true) {
-//                clientMock?.sendCustomEvent(
-//                    CONVIVA_SESSION_ID,
-//                    CUSTOM_EVENT_NAME,
-//                    HashMap()
-//                )
-//                clientMock?.sendCustomEvent(
-//                    CONVIVA_SESSION_ID,
-//                    CUSTOM_EVENT_NAME,
-//                    CUSTOM_EVENT_ATTRIBUTES
-//                )
-//            }
-//        }
-//
-//        // initialize and verify session
-//        initializeSession(activityScenario)
-//        verifySessionIntialization(activityScenario)
-//
-//        // verify that custom events are sent after Conviva session is initialized
-//        activityScenario.onActivity { activity: MainActivity ->
-//            convivaAnalyticsIntegration?.sendCustomPlaybackEvent(CUSTOM_EVENT_NAME)
-//            convivaAnalyticsIntegration?.sendCustomPlaybackEvent(CUSTOM_EVENT_NAME, CUSTOM_EVENT_ATTRIBUTES)
-//            verifyOrder() {
-//                clientMock?.sendCustomEvent(
-//                    CONVIVA_SESSION_ID,
-//                    CUSTOM_EVENT_NAME,
-//                    HashMap())
-//                clientMock?.sendCustomEvent(
-//                    CONVIVA_SESSION_ID,
-//                    CUSTOM_EVENT_NAME,
-//                    CUSTOM_EVENT_ATTRIBUTES)
-//            }
-//        }
-//    }
-
-//    @Test
-//    fun customErrorEvent() {
-//        // launch player with autoPlay enabled
-//        activityScenario = setupPlayerActivityForTest(autoPlay = true, defaultMetadataOverrides())
-//
-//        // verify that custom error events are not sent before Conviva session is initialized
-//        activityScenario.onActivity { activity: MainActivity ->
-//            convivaAnalyticsIntegration?.reportPlaybackDeficiency(
-//                CUSTOM_ERROR_MESSAGE,
-//                Client.ErrorSeverity.WARNING,
-//                false
-//            )
-//            verify(inverse = true) {
-//                clientMock?.reportError(any(), any(), any())
-//            }
-//            convivaAnalyticsIntegration?.reportPlaybackDeficiency(
-//                CUSTOM_ERROR_MESSAGE,
-//                ConvivaSdkConstants.ErrorSeverity.FATAL,
-//                true
-//            )
-//            verify(inverse = true) {
-//                clientMock?.reportError(any(), any(), any())
-//            }
-//        }
-//
-//        // initialize and verify session
-//        initializeSession(activityScenario)
-//        verifySessionIntialization(activityScenario)
-//
-//        // verify that custom error events are sent after Conviva session is initialized
-//        // but Conviva session is not ended when endSession argument is not passed as true
-//        activityScenario.onActivity { activity: MainActivity ->
-//            clearMocks(clientMock!!)
-//            convivaAnalyticsIntegration?.reportPlaybackDeficiency(
-//                CUSTOM_ERROR_MESSAGE,
-//                ConvivaSdkConstants.ErrorSeverity.WARNING,
-//                false
-//            )
-//            verify(exactly = 1) {
-//                clientMock?.reportError(
-//                    CONVIVA_SESSION_ID,
-//                    CUSTOM_ERROR_MESSAGE,
-//                    Client.ErrorSeverity.WARNING
-//                )
-//            }
-//            verifyAll(inverse = true) {
-//                clientMock?.detachPlayer(CONVIVA_SESSION_ID)
-//                clientMock?.cleanupSession(CONVIVA_SESSION_ID)
-//                clientMock?.releasePlayerStateManager(playerStateManagerMock)
-//            }
-//        }
-//
-//        // verify that custom error events are sent after Conviva session is initialized
-//        // and Conviva session is also ended when endSession argument is passed as true
-//        activityScenario.onActivity { activity: MainActivity ->
-//            clearMocks(clientMock!!)
-//            clearMocks(playerStateManagerMock!!)
-//            convivaAnalyticsIntegration?.reportPlaybackDeficiency(CUSTOM_ERROR_MESSAGE, Client.ErrorSeverity.FATAL, true)
-//            verifyOrder() {
-//                clientMock?.reportError(CONVIVA_SESSION_ID, CUSTOM_ERROR_MESSAGE, Client.ErrorSeverity.FATAL)
-//                clientMock?.detachPlayer(CONVIVA_SESSION_ID)
-//                clientMock?.cleanupSession(CONVIVA_SESSION_ID)
-//                clientMock?.releasePlayerStateManager(playerStateManagerMock)
-//            }
-//        }
-//    }
 }

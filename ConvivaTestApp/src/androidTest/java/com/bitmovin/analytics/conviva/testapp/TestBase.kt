@@ -2,6 +2,7 @@ package com.bitmovin.analytics.conviva.testapp
 
 import android.content.Context
 import android.content.Intent
+import android.util.Log
 import androidx.test.core.app.ActivityScenario
 import androidx.test.core.app.ApplicationProvider
 import com.bitmovin.analytics.conviva.ConvivaAnalyticsIntegration
@@ -10,7 +11,6 @@ import com.bitmovin.analytics.conviva.MetadataOverrides
 import com.bitmovin.player.api.source.Source
 import com.bitmovin.player.api.source.SourceConfig
 import com.bitmovin.player.api.source.SourceType
-import com.conviva.api.*
 import com.conviva.sdk.ConvivaAnalytics
 import com.conviva.sdk.ConvivaSdkConstants
 import com.conviva.sdk.ConvivaVideoAnalytics
@@ -23,6 +23,7 @@ open class TestBase {
     lateinit var convivaConfig: ConvivaConfig
     var convivaAnalyticsIntegration: ConvivaAnalyticsIntegration? = null
     var videoAnalyticsMock: ConvivaVideoAnalytics? = null
+    var convivaAnalyticsMock: ConvivaAnalytics? = null
     lateinit var activityScenario: ActivityScenario<MainActivity>
 
     var CONVIVA_SESSION_ID = 1
@@ -63,15 +64,20 @@ open class TestBase {
         return convivaVideoAnalytics
     }
 
+    fun mockConvivaAnalyticsObject() {
+        mockkStatic(ConvivaAnalytics::class)
+    }
+
     fun setupMocks(context: Context) {
         videoAnalyticsMock = mockVideoAnalyticsObject(context)
+        mockConvivaAnalyticsObject()
     }
 
     fun tearDownMocks () {
         videoAnalyticsMock?.let { unmockkObject(it) }
     }
 
-    fun createConvivaAnalyticsObject(activity: MainActivity) : ConvivaAnalyticsIntegration {
+    fun  createConvivaAnalyticsObject(activity: MainActivity) : ConvivaAnalyticsIntegration {
         // Setup mocks and create ConvivaAnalytics using mock objects
         ConvivaAnalytics.init(activity.applicationContext, "test")
         setupMocks(activity.applicationContext)
@@ -79,7 +85,7 @@ open class TestBase {
                 activity.bitmovinPlayer,
                 "test",
                 activity.applicationContext,
-                convivaConfig, videoAnalyticsMock), recordPrivateCalls = true)
+                convivaConfig, videoAnalyticsMock))
     }
 
     fun defaultMetadataOverrides() : MetadataOverrides {
@@ -102,7 +108,7 @@ open class TestBase {
         metadata.assetName = "Conviva Analytics Test Asset"
         metadata.custom = HashMap()
         customTags?.let {
-            customTags.forEach { s, s2 ->
+            customTags.forEach { (s: String, s2: String) ->
                 metadata.custom[s] = s2
             }
         }
@@ -120,8 +126,8 @@ open class TestBase {
         duration: Int,
         overrideMetadata: MetadataOverrides,
         overrideCustom: Boolean = false
-    ) : Map<String, Any> {
-        val contentInfo = HashMap<String, Any>()
+    ) : MutableMap<String, Any> {
+        val contentInfo = mutableMapOf<String, Any>()
         contentInfo[ConvivaSdkConstants.PLAYER_NAME] = overrideMetadata.applicationName
         contentInfo[ConvivaSdkConstants.VIEWER_ID] = overrideMetadata.viewerId
         contentInfo[ConvivaSdkConstants.ASSET_NAME] = overrideMetadata.assetName
@@ -132,7 +138,7 @@ open class TestBase {
             val streamTypeLocal = overrideMetadata.streamType ?: streamType
             contentInfo[ConvivaSdkConstants.IS_LIVE] = streamTypeLocal == ConvivaSdkConstants.StreamType.LIVE;
             contentInfo[ConvivaSdkConstants.DURATION] = overrideMetadata.duration ?: duration
-            overrideMetadata.custom.forEach { s, s2 ->
+            overrideMetadata.custom.forEach { (s: String, s2: String) ->
                 contentInfo[s] = s2
             }
             contentInfo["streamType"] = overrideMetadata.custom["streamType"] ?: source.config.type.toString()
@@ -148,16 +154,15 @@ open class TestBase {
     }
 
     // TODO: All references to ContentMetadata are obsolete and we should be using Map<String, String> instead
-    fun MockKMatcherScope.metadataEq(expectedMetadata: Map<String, String>) = match<Map<String, String>>  {
-        it[ConvivaSdkConstants.ASSET_NAME] == expectedMetadata[ConvivaSdkConstants.ASSET_NAME] &&
-        it[ConvivaSdkConstants.PLAYER_NAME] == expectedMetadata[ConvivaSdkConstants.PLAYER_NAME] &&
-        it[ConvivaSdkConstants.VIEWER_ID] == expectedMetadata[ConvivaSdkConstants.VIEWER_ID] &&
-        it[ConvivaSdkConstants.IS_LIVE] == expectedMetadata[ConvivaSdkConstants.IS_LIVE] &&
-        it[ConvivaSdkConstants.STREAM_URL] == expectedMetadata[ConvivaSdkConstants.STREAM_URL] &&
-        it[ConvivaSdkConstants.DURATION] == expectedMetadata[ConvivaSdkConstants.DURATION] &&
-        it[ConvivaSdkConstants.ENCODED_FRAMERATE] == expectedMetadata[ConvivaSdkConstants.ENCODED_FRAMERATE] &&
-        it["streamType"] == expectedMetadata["streamType"] &&
-        it["integrationVersion"] == expectedMetadata["integrationVersion"]
+    fun MockKMatcherScope.metadataEq(expectedMetadata: MetadataOverrides) = match<MetadataOverrides>  {
+        it.assetName == expectedMetadata.assetName &&
+        it.applicationName == expectedMetadata.applicationName &&
+        it.viewerId == expectedMetadata.viewerId &&
+        it.streamType == expectedMetadata.streamType &&
+        it.streamUrl == expectedMetadata.streamUrl &&
+        it.duration == expectedMetadata.duration &&
+        it.encodedFrameRate == expectedMetadata.encodedFrameRate &&
+        it.custom.equals(expectedMetadata.custom)
     }
 
 
@@ -199,11 +204,23 @@ open class TestBase {
     }
 
     fun verifySessionInitialization(activityScenario: ActivityScenario<MainActivity>) {
-        activityScenario.onActivity { activity: MainActivity ->
+        verifySessionInitialization(activityScenario, null);
+    }
+
+    // Implicit session tests do not actually initialize the session until play starts, in the new SDK
+    fun verifySessionInitialization(activityScenario: ActivityScenario<MainActivity>, metadata: MetadataOverrides?, implicit: Boolean = false) {
+        activityScenario.onActivity { _: MainActivity ->
             verifyOrder {
-                convivaAnalyticsIntegration?.initializeSession()
-                convivaAnalyticsIntegration?.get("internalInitializeSession")
-                // convivaAnalyticsIntegration?.get("setupPlayerStateManager")
+                if(metadata != null) {
+                    convivaAnalyticsIntegration?.updateContentMetadata(metadata)
+                }
+                if(!implicit) {
+                    convivaAnalyticsIntegration?.initializeSession()
+
+                    if (metadata != null) {
+                        convivaAnalyticsIntegration?.updateContentMetadata(metadata)
+                    }
+                }
             }
         }
     }
@@ -212,7 +229,7 @@ open class TestBase {
         activityScenario.onActivity { activity: MainActivity ->
             activity.bitmovinPlayer.load(source)
         }
-        Thread.sleep(2000)
+        Thread.sleep(4000)
     }
 
     fun playSource(activityScenario: ActivityScenario<MainActivity>) {
@@ -240,23 +257,30 @@ open class TestBase {
         activityScenario.onActivity { activity: MainActivity ->
             verify {
                 // TODO: Verify updateContentMetadata in the new form
-                convivaAnalyticsIntegration?.updateContentMetadata(
-                    metadataEq(
-                            expectedContentMetadata(
-                                    source = source,
-                                    streamType = streamType,
-                                    duration = streamDuration,
-                                    overrideMetadata = metadata,
-                                    overrideCustom = overrideCustom
-                            ) as Map<String, String>
-                    ) as MetadataOverrides
+                val rawMetadata = expectedContentMetadata(
+                    source = source,
+                    streamType = streamType,
+                    duration = streamDuration,
+                    overrideMetadata = metadata,
+                    overrideCustom = overrideCustom
                 )
+
+
+                metadata.assetName = rawMetadata[ConvivaSdkConstants.ASSET_NAME] as String?
+                metadata.applicationName = rawMetadata[ConvivaSdkConstants.PLAYER_NAME] as String?
+                metadata.viewerId = rawMetadata[ConvivaSdkConstants.VIEWER_ID] as String?
+                metadata.streamType = if (rawMetadata[ConvivaSdkConstants.IS_LIVE] as Boolean) ConvivaSdkConstants.StreamType.LIVE else ConvivaSdkConstants.StreamType.VOD
+                metadata.streamUrl = rawMetadata[ConvivaSdkConstants.STREAM_URL] as String?
+                metadata.duration = rawMetadata[ConvivaSdkConstants.DURATION] as Int?
+                metadata.encodedFrameRate = rawMetadata[ConvivaSdkConstants.ENCODED_FRAMERATE] as Int?
+
+                convivaAnalyticsIntegration?.updateContentMetadata(metadataEq ( metadata ))
             }
 
-            verifyOrder {
-                // TODO: Do the equivalent verification
-                videoAnalyticsMock?.reportPlaybackMetric(ConvivaSdkConstants.PLAYBACK.PLAYER_STATE, ConvivaSdkConstants.PlayerState.BUFFERING);
-                //playerStateManagerMock?.setPlayerState(PlayerStateManager.PlayerState.BUFFERING)
+
+
+            verify(atLeast = 1) {
+                videoAnalyticsMock?.reportPlaybackMetric(ConvivaSdkConstants.PLAYBACK.PLAYER_STATE, ConvivaSdkConstants.PlayerState.PLAYING);
             }
         }
     }
