@@ -1,6 +1,7 @@
 package com.bitmovin.analytics.conviva.testapp
 
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import com.bitmovin.analytics.conviva.MetadataOverrides
 import com.conviva.sdk.ConvivaSdkConstants
 import com.conviva.sdk.ConvivaSdkConstants.*
 import io.mockk.*
@@ -8,11 +9,12 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import java.util.*
 
+// TODO - currently broken
 @RunWith(AndroidJUnit4::class)
 class CustomMetadataTests : TestBase() {
     @Test
     fun metadataOverrideVodExplicitInitialize() {
-        val customInternTags: MutableMap<String, String> = HashMap()
+        val customInternTags: MutableMap<String, String> = mutableMapOf<String, String>()
         customInternTags["contentType"] = "Episode"
         val customMetadata = customMetadataOverrides(
             source = DEFAULT_DASH_VOD_SOURCE,
@@ -42,7 +44,7 @@ class CustomMetadataTests : TestBase() {
     }
 
     @Test
-    fun metadataOverrideLiveExplicitInitalize() {
+    fun metadataOverrideLiveExplicitInitialize() {
         val customInternTags: MutableMap<String, String> = HashMap()
         customInternTags["contentType"] = "Episode"
         val customMetadata = customMetadataOverrides(
@@ -104,19 +106,5 @@ class CustomMetadataTests : TestBase() {
             metadata = customMetadata,
             overrideCustom = true
         )
-
-//        activityScenario.onActivity { activity: MainActivity ->
-//            verify {
-//                clientMock?.updateContentMetadata(
-//                    CONVIVA_SESSION_ID,
-//                    metadataEq(expectedContentMetadata(
-//                        source = DEFAULT_DASH_VOD_SOURCE,
-//                        streamType = StreamType.VOD,
-//                        duration = DEFAULT_DASH_VOD_SOURCE_DURATION,
-//                        overrideMetadata = customMetadata,
-//                        overrideCustom = true))
-//                )
-//            }
-//        }
     }
 }

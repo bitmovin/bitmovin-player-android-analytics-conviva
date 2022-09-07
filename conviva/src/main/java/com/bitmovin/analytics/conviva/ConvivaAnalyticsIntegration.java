@@ -293,7 +293,7 @@ public class ConvivaAnalyticsIntegration {
         Source source = bitmovinPlayer.getSource();
         if (source != null) {
             SourceConfig sourceConfig = source.getConfig();
-            String overriddenAssetName = metadataOverrides.getAssetName();
+            String overriddenAssetName = metadataOverrides != null ? metadataOverrides.getAssetName() : null;
 
             if (sourceConfig != null) {
                 contentMetadataBuilder.setAssetName(overriddenAssetName != null ? overriddenAssetName : sourceConfig.getTitle());
