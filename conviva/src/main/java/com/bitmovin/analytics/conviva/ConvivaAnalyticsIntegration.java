@@ -553,18 +553,6 @@ public class ConvivaAnalyticsIntegration {
         public void onEvent(PlayerEvent.Seeked seekedEvent) {
             Log.d(TAG, "[Player Event] Seeked");
             setSeekEnd();
-            // Notify of seek buffering complete at this stage.
-            new Handler().postDelayed(new Runnable() {
-                @Override
-                public void run() {
-                    Log.d(TAG, "[Player Event] Update state after buffering");
-                    ConvivaSdkConstants.PlayerState state = ConvivaSdkConstants.PlayerState.PLAYING;
-                    if (bitmovinPlayer.isPaused()) {
-                        state = ConvivaSdkConstants.PlayerState.PAUSED;
-                    }
-                    transitionState(state);
-                }
-            }, 100);
         }
     };
 
@@ -595,6 +583,13 @@ public class ConvivaAnalyticsIntegration {
     public void setSeekEnd() {
         Log.d(TAG, "Sending seek end event");
         convivaVideoAnalytics.reportPlaybackMetric(ConvivaSdkConstants.PLAYBACK.SEEK_ENDED);
+        // Notify of seek buffering complete at this stage.
+        Log.d(TAG, "[Player Event] Update state after buffering");
+        ConvivaSdkConstants.PlayerState state = ConvivaSdkConstants.PlayerState.PAUSED;
+        if (bitmovinPlayer.isPlaying()) {
+            state = ConvivaSdkConstants.PlayerState.PLAYING;
+        }
+        transitionState(state);
     }
     // endregion
 

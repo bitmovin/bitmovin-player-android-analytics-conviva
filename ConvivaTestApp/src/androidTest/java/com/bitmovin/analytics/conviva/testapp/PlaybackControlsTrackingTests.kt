@@ -77,6 +77,41 @@ class PlaybackControlsTrackingTests: TestBase() {
             clearMocks(videoAnalyticsMock!!)
             activity.bitmovinPlayer.seek(120.0)
         }
+        Thread.sleep(4000)
+        // verify seek tracking
+        activityScenario.onActivity { activity: MainActivity ->
+            verifyOrder {
+                videoAnalyticsMock?.reportPlaybackMetric(ConvivaSdkConstants.PLAYBACK.SEEK_STARTED,120000)
+                videoAnalyticsMock?.reportPlaybackMetric(ConvivaSdkConstants.PLAYBACK.PLAYER_STATE, ConvivaSdkConstants.PlayerState.BUFFERING)
+                videoAnalyticsMock?.reportPlaybackMetric(ConvivaSdkConstants.PLAYBACK.SEEK_ENDED)
+                videoAnalyticsMock?.reportPlaybackMetric(ConvivaSdkConstants.PLAYBACK.PLAYER_STATE, ConvivaSdkConstants.PlayerState.PLAYING)
+
+            }
+        }
+    }
+
+    @Test
+    fun vodSeekOnPause() {
+        // launch player with autoPlay enabled and initialize session
+        val metadata = defaultMetadataOverrides()
+        activityScenario = setupPlayerActivityForTest(autoPlay = false, metadata)
+
+        // initialize session and verify
+        initializeSession(activityScenario)
+
+        // verify session initialization
+        verifySessionInitialization(activityScenario)
+
+        // load source
+        loadSource(activityScenario, DEFAULT_DASH_VOD_SOURCE)
+        // verifyPlaying(activityScenario = activityScenario)
+
+        // seek
+        activityScenario.onActivity { activity: MainActivity ->
+            // Seek playback
+            clearMocks(videoAnalyticsMock!!)
+            activity.bitmovinPlayer.seek(120.0)
+        }
         Thread.sleep(2000)
         // verify seek tracking
         activityScenario.onActivity { activity: MainActivity ->
@@ -84,6 +119,8 @@ class PlaybackControlsTrackingTests: TestBase() {
                 videoAnalyticsMock?.reportPlaybackMetric(ConvivaSdkConstants.PLAYBACK.SEEK_STARTED,120000)
                 videoAnalyticsMock?.reportPlaybackMetric(ConvivaSdkConstants.PLAYBACK.PLAYER_STATE, ConvivaSdkConstants.PlayerState.BUFFERING)
                 videoAnalyticsMock?.reportPlaybackMetric(ConvivaSdkConstants.PLAYBACK.SEEK_ENDED)
+                videoAnalyticsMock?.reportPlaybackMetric(ConvivaSdkConstants.PLAYBACK.PLAYER_STATE, ConvivaSdkConstants.PlayerState.PAUSED)
+
             }
         }
     }
@@ -116,6 +153,8 @@ class PlaybackControlsTrackingTests: TestBase() {
                 videoAnalyticsMock?.reportPlaybackMetric(ConvivaSdkConstants.PLAYBACK.SEEK_STARTED,-1)
                 videoAnalyticsMock?.reportPlaybackMetric(ConvivaSdkConstants.PLAYBACK.PLAYER_STATE, ConvivaSdkConstants.PlayerState.BUFFERING)
                 videoAnalyticsMock?.reportPlaybackMetric(ConvivaSdkConstants.PLAYBACK.SEEK_ENDED)
+                videoAnalyticsMock?.reportPlaybackMetric(ConvivaSdkConstants.PLAYBACK.PLAYER_STATE, ConvivaSdkConstants.PlayerState.PLAYING)
+
             }
         }
     }
