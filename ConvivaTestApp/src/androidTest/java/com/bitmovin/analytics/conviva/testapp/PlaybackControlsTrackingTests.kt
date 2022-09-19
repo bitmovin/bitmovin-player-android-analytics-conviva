@@ -91,7 +91,7 @@ class PlaybackControlsTrackingTests: TestBase() {
     }
 
     @Test
-    fun vodSeekOnPause() {
+    fun vodSeekWhenPaused() {
         // launch player with autoPlay enabled and initialize session
         val metadata = defaultMetadataOverrides()
         activityScenario = setupPlayerActivityForTest(autoPlay = false, metadata)
@@ -104,7 +104,6 @@ class PlaybackControlsTrackingTests: TestBase() {
 
         // load source
         loadSource(activityScenario, DEFAULT_DASH_VOD_SOURCE)
-        // verifyPlaying(activityScenario = activityScenario)
 
         // seek
         activityScenario.onActivity { activity: MainActivity ->
@@ -154,6 +153,39 @@ class PlaybackControlsTrackingTests: TestBase() {
                 videoAnalyticsMock?.reportPlaybackMetric(ConvivaSdkConstants.PLAYBACK.PLAYER_STATE, ConvivaSdkConstants.PlayerState.BUFFERING)
                 videoAnalyticsMock?.reportPlaybackMetric(ConvivaSdkConstants.PLAYBACK.SEEK_ENDED)
                 videoAnalyticsMock?.reportPlaybackMetric(ConvivaSdkConstants.PLAYBACK.PLAYER_STATE, ConvivaSdkConstants.PlayerState.PLAYING)
+
+            }
+        }
+    }
+
+    @Test
+    fun liveTimeshiftWhenPaused() {
+        // launch player with autoPlay enabled and initialize session
+        val metadata = defaultMetadataOverrides()
+        activityScenario = setupPlayerActivityForTest(autoPlay = false, metadata)
+
+        // initialize session and verify
+        initializeSession(activityScenario)
+
+        // verify session initialization
+        verifySessionInitialization(activityScenario)
+
+        // load source and verify
+        loadSource(activityScenario, DEFAULT_DASH_LIVE_SOURCE)
+
+        // timeshift
+        activityScenario.onActivity { activity: MainActivity ->
+            clearMocks(videoAnalyticsMock!!)
+            activity.bitmovinPlayer.timeShift(30.0)
+        }
+        Thread.sleep(2000)
+        // verify timeshift tracking
+        activityScenario.onActivity { activity: MainActivity ->
+            verifyOrder {
+                videoAnalyticsMock?.reportPlaybackMetric(ConvivaSdkConstants.PLAYBACK.SEEK_STARTED,-1)
+                videoAnalyticsMock?.reportPlaybackMetric(ConvivaSdkConstants.PLAYBACK.PLAYER_STATE, ConvivaSdkConstants.PlayerState.BUFFERING)
+                videoAnalyticsMock?.reportPlaybackMetric(ConvivaSdkConstants.PLAYBACK.SEEK_ENDED)
+                videoAnalyticsMock?.reportPlaybackMetric(ConvivaSdkConstants.PLAYBACK.PLAYER_STATE, ConvivaSdkConstants.PlayerState.PAUSED)
 
             }
         }
