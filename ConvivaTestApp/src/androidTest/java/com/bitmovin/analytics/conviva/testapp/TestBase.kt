@@ -26,7 +26,6 @@ open class TestBase {
     var convivaAnalyticsMock: ConvivaAnalytics? = null
     lateinit var activityScenario: ActivityScenario<MainActivity>
 
-    var CONVIVA_SESSION_ID = 1
     val CUSTOM_EVENT_NAME = "CUSTOM_APPLICATION_EVENT"
     val CUSTOM_EVENT_ATTRIBUTES: HashMap<String, String> = mutableMapOf(
         "key" to "value"
@@ -41,6 +40,7 @@ open class TestBase {
 
     val PLAYER_TYPE = "Bitmovin Player Android"
     val PLAYER_VERSION = com.bitmovin.player.BuildConfig.VERSION_NAME
+    val TIMEOUT = 4000
 
     @Before
     fun setup() {
@@ -199,7 +199,7 @@ open class TestBase {
     fun initializeSession(activityScenario: ActivityScenario<MainActivity>) {
         activityScenario.onActivity { activity: MainActivity ->
             convivaAnalyticsIntegration?.initializeSession()
-            Thread.sleep(1000)
+            Thread.sleep(TIMEOUT.toLong())
         }
     }
 
@@ -229,7 +229,7 @@ open class TestBase {
         activityScenario.onActivity { activity: MainActivity ->
             activity.bitmovinPlayer.load(source)
         }
-        Thread.sleep(4000)
+        Thread.sleep(TIMEOUT.toLong())
     }
 
     fun playSource(activityScenario: ActivityScenario<MainActivity>) {

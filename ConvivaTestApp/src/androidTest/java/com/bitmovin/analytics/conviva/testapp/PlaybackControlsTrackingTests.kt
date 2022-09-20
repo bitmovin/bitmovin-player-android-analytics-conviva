@@ -77,16 +77,49 @@ class PlaybackControlsTrackingTests: TestBase() {
             clearMocks(videoAnalyticsMock!!)
             activity.bitmovinPlayer.seek(120.0)
         }
+        Thread.sleep(4000)
+        // verify seek tracking
+        activityScenario.onActivity { activity: MainActivity ->
+            verifyOrder {
+                videoAnalyticsMock?.reportPlaybackMetric(ConvivaSdkConstants.PLAYBACK.SEEK_STARTED,120000)
+                videoAnalyticsMock?.reportPlaybackMetric(ConvivaSdkConstants.PLAYBACK.PLAYER_STATE, ConvivaSdkConstants.PlayerState.BUFFERING)
+                videoAnalyticsMock?.reportPlaybackMetric(ConvivaSdkConstants.PLAYBACK.SEEK_ENDED)
+                videoAnalyticsMock?.reportPlaybackMetric(ConvivaSdkConstants.PLAYBACK.PLAYER_STATE, ConvivaSdkConstants.PlayerState.PLAYING)
+
+            }
+        }
+    }
+
+    @Test
+    fun vodSeekWhenPaused() {
+        // launch player with autoPlay enabled and initialize session
+        val metadata = defaultMetadataOverrides()
+        activityScenario = setupPlayerActivityForTest(autoPlay = false, metadata)
+
+        // initialize session and verify
+        initializeSession(activityScenario)
+
+        // verify session initialization
+        verifySessionInitialization(activityScenario)
+
+        // load source
+        loadSource(activityScenario, DEFAULT_DASH_VOD_SOURCE)
+
+        // seek
+        activityScenario.onActivity { activity: MainActivity ->
+            // Seek playback
+            clearMocks(videoAnalyticsMock!!)
+            activity.bitmovinPlayer.seek(120.0)
+        }
         Thread.sleep(2000)
         // verify seek tracking
         activityScenario.onActivity { activity: MainActivity ->
             verifyOrder {
                 videoAnalyticsMock?.reportPlaybackMetric(ConvivaSdkConstants.PLAYBACK.SEEK_STARTED,120000)
-                // TODO - why is this behaviour different?
-                // videoAnalyticsMock?.reportPlaybackMetric(ConvivaSdkConstants.PLAYBACK.PLAYER_STATE, ConvivaSdkConstants.PlayerState.BUFFERING)
+                videoAnalyticsMock?.reportPlaybackMetric(ConvivaSdkConstants.PLAYBACK.PLAYER_STATE, ConvivaSdkConstants.PlayerState.BUFFERING)
                 videoAnalyticsMock?.reportPlaybackMetric(ConvivaSdkConstants.PLAYBACK.SEEK_ENDED)
-                // TODO - why is this behaviour different?
-                // videoAnalyticsMock?.reportPlaybackMetric(ConvivaSdkConstants.PLAYBACK.PLAYER_STATE, ConvivaSdkConstants.PlayerState.PLAYING)
+                videoAnalyticsMock?.reportPlaybackMetric(ConvivaSdkConstants.PLAYBACK.PLAYER_STATE, ConvivaSdkConstants.PlayerState.PAUSED)
+
             }
         }
     }
@@ -117,7 +150,43 @@ class PlaybackControlsTrackingTests: TestBase() {
         activityScenario.onActivity { activity: MainActivity ->
             verifyOrder {
                 videoAnalyticsMock?.reportPlaybackMetric(ConvivaSdkConstants.PLAYBACK.SEEK_STARTED,-1)
+                videoAnalyticsMock?.reportPlaybackMetric(ConvivaSdkConstants.PLAYBACK.PLAYER_STATE, ConvivaSdkConstants.PlayerState.BUFFERING)
                 videoAnalyticsMock?.reportPlaybackMetric(ConvivaSdkConstants.PLAYBACK.SEEK_ENDED)
+                videoAnalyticsMock?.reportPlaybackMetric(ConvivaSdkConstants.PLAYBACK.PLAYER_STATE, ConvivaSdkConstants.PlayerState.PLAYING)
+
+            }
+        }
+    }
+
+    @Test
+    fun liveTimeshiftWhenPaused() {
+        // launch player with autoPlay enabled and initialize session
+        val metadata = defaultMetadataOverrides()
+        activityScenario = setupPlayerActivityForTest(autoPlay = false, metadata)
+
+        // initialize session and verify
+        initializeSession(activityScenario)
+
+        // verify session initialization
+        verifySessionInitialization(activityScenario)
+
+        // load source and verify
+        loadSource(activityScenario, DEFAULT_DASH_LIVE_SOURCE)
+
+        // timeshift
+        activityScenario.onActivity { activity: MainActivity ->
+            clearMocks(videoAnalyticsMock!!)
+            activity.bitmovinPlayer.timeShift(30.0)
+        }
+        Thread.sleep(2000)
+        // verify timeshift tracking
+        activityScenario.onActivity { activity: MainActivity ->
+            verifyOrder {
+                videoAnalyticsMock?.reportPlaybackMetric(ConvivaSdkConstants.PLAYBACK.SEEK_STARTED,-1)
+                videoAnalyticsMock?.reportPlaybackMetric(ConvivaSdkConstants.PLAYBACK.PLAYER_STATE, ConvivaSdkConstants.PlayerState.BUFFERING)
+                videoAnalyticsMock?.reportPlaybackMetric(ConvivaSdkConstants.PLAYBACK.SEEK_ENDED)
+                videoAnalyticsMock?.reportPlaybackMetric(ConvivaSdkConstants.PLAYBACK.PLAYER_STATE, ConvivaSdkConstants.PlayerState.PAUSED)
+
             }
         }
     }
