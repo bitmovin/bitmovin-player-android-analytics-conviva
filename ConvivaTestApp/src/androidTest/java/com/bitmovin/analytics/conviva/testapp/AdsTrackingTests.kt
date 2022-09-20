@@ -23,13 +23,13 @@ class AdsTrackingTests : TestBase() {
 
         // load source and verify
         loadSource(activityScenario, DEFAULT_DASH_VOD_SOURCE)
+        verifyPlaying(activityScenario = activityScenario)
 
-        //verifyPlaying(activityScenario = activityScenario)
+        Thread.sleep(8000) // Bit flakey with smaller timeouts than this
 
         // verify Ad start
         activityScenario.onActivity { activity: MainActivity ->
-            verifyOrder {
-                convivaAnalyticsIntegration?.updateContentMetadata(any())
+            verify {
                 videoAnalyticsMock?.reportAdBreakStarted(ConvivaSdkConstants.AdPlayer.CONTENT, ConvivaSdkConstants.AdType.CLIENT_SIDE)
             }
         }

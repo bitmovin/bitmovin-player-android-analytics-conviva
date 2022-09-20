@@ -12,8 +12,6 @@ import com.bitmovin.player.api.event.SourceEvent;
 import com.bitmovin.player.api.media.video.quality.VideoQuality;
 import com.bitmovin.player.api.source.Source;
 import com.bitmovin.player.api.source.SourceConfig;
-import com.conviva.api.ConvivaConstants;
-import com.conviva.sdk.ConvivaAdAnalytics;
 import com.conviva.sdk.ConvivaAnalytics;
 import com.conviva.sdk.ConvivaSdkConstants;
 import com.conviva.sdk.ConvivaVideoAnalytics;
@@ -293,7 +291,7 @@ public class ConvivaAnalyticsIntegration {
         Source source = bitmovinPlayer.getSource();
         if (source != null) {
             SourceConfig sourceConfig = source.getConfig();
-            String overriddenAssetName = metadataOverrides.getAssetName();
+            String overriddenAssetName = metadataOverrides != null ? metadataOverrides.getAssetName() : null;
 
             if (sourceConfig != null) {
                 contentMetadataBuilder.setAssetName(overriddenAssetName != null ? overriddenAssetName : sourceConfig.getTitle());
@@ -545,6 +543,8 @@ public class ConvivaAnalyticsIntegration {
         public void onEvent(PlayerEvent.Seek seekEvent) {
             Log.d(TAG, "[Player Event] Seek");
             setSeekStart((int) seekEvent.getTo().getTime() * 1000);
+            // Conviva expect notification of buffering events on seek (typically there is always buffering)
+            transitionState(ConvivaSdkConstants.PlayerState.BUFFERING);
         }
     };
 
@@ -562,6 +562,8 @@ public class ConvivaAnalyticsIntegration {
             Log.d(TAG, "[Player Event] TimeShift");
             // According to conviva it is valid to pass -1 for seeking in live streams
             setSeekStart(-1);
+            // Conviva expect notification of buffering events on timeshift (typically there is always buffering)
+            transitionState(ConvivaSdkConstants.PlayerState.BUFFERING);
         }
     };
 
@@ -581,6 +583,13 @@ public class ConvivaAnalyticsIntegration {
     public void setSeekEnd() {
         Log.d(TAG, "Sending seek end event");
         convivaVideoAnalytics.reportPlaybackMetric(ConvivaSdkConstants.PLAYBACK.SEEK_ENDED);
+        // Notify of seek buffering complete at this stage.
+        Log.d(TAG, "[Player Event] Update state after buffering");
+        ConvivaSdkConstants.PlayerState state = ConvivaSdkConstants.PlayerState.PAUSED;
+        if (bitmovinPlayer.isPlaying()) {
+            state = ConvivaSdkConstants.PlayerState.PLAYING;
+        }
+        transitionState(state);
     }
     // endregion
 
