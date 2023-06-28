@@ -241,7 +241,7 @@ open class TestBase {
     fun verifyPlaying(activityScenario: ActivityScenario<MainActivity>) {
         activityScenario.onActivity { activity: MainActivity ->
             verify {
-                videoAnalyticsMock?.reportPlaybackMetric(ConvivaSdkConstants.PLAYBACK.PLAYER_STATE, ConvivaSdkConstants.PlayerState.BUFFERING);
+                videoAnalyticsMock?.reportPlaybackMetric(ConvivaSdkConstants.PLAYBACK.PLAYER_STATE, ConvivaSdkConstants.PlayerState.PLAYING);
             }
         }
     }
