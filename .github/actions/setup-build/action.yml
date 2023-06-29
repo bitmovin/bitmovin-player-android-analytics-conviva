@@ -1,0 +1,21 @@
+name: Setup build environment
+description: Setup Java and Gradle
+
+inputs:
+  architecture:
+    description: The build target architecture
+    required: false
+runs:
+  using: composite
+  steps:
+    - name: Set up Java
+      uses: actions/setup-java@v3
+      with:
+        distribution: 'zulu'
+        java-version: '11'
+        architecture: ${{ inputs.architecture }}
+
+    - name: Set up Gradle cache
+      uses: gradle/gradle-build-action@v2
+      with:
+        cache-read-only: ${{ github.ref != 'refs/heads/main' }}
