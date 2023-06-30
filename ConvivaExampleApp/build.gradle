@@ -1,7 +1,7 @@
 apply plugin: 'com.android.application'
 
 android {
-    compileSdkVersion 31
+    compileSdkVersion 33
     defaultConfig {
         applicationId "com.bitmovin.analytics.convivaanalyticsexample"
         minSdkVersion 16
@@ -38,7 +38,7 @@ dependencies {
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.1.0'
 
     implementation 'androidx.appcompat:appcompat:1.2.0'
-    implementation 'com.bitmovin.player:player:3.18.0'
+    implementation 'com.bitmovin.player:player:3.38.0'
     implementation 'androidx.legacy:legacy-support-v4:1.0.0'
 
     implementation project(':conviva')

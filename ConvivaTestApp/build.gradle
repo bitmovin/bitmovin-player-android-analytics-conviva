@@ -4,7 +4,7 @@ plugins {
 }
 
 android {
-    compileSdkVersion 31
+    compileSdkVersion 33
     buildToolsVersion "30.0.3"
 
     defaultConfig {
@@ -42,7 +42,7 @@ android {
 
 dependencies {
     implementation 'androidx.appcompat:appcompat:1.0.0'
-    implementation "com.bitmovin.player:player:3.18.0"
+    implementation "com.bitmovin.player:player:3.38.0"
 
     implementation 'com.google.ads.interactivemedia.v3:interactivemedia:3.26.0' // only needed if ads are used:
     implementation 'com.google.android.gms:play-services-ads-identifier:18.0.1' // only needed if ads are used
