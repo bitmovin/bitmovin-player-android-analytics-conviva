@@ -39,7 +39,6 @@ open class TestBase {
     val INVALID_DASH_VOD_SOURCE = Source.create(SourceConfig("https://bitmovin.com", SourceType.Dash))
 
     val PLAYER_TYPE = "Bitmovin Player Android"
-    val PLAYER_VERSION = com.bitmovin.player.BuildConfig.VERSION_NAME
     val TIMEOUT = 4000
 
     @Before
@@ -241,7 +240,7 @@ open class TestBase {
     fun verifyPlaying(activityScenario: ActivityScenario<MainActivity>) {
         activityScenario.onActivity { activity: MainActivity ->
             verify {
-                videoAnalyticsMock?.reportPlaybackMetric(ConvivaSdkConstants.PLAYBACK.PLAYER_STATE, ConvivaSdkConstants.PlayerState.BUFFERING);
+                videoAnalyticsMock?.reportPlaybackMetric(ConvivaSdkConstants.PLAYBACK.PLAYER_STATE, ConvivaSdkConstants.PlayerState.PLAYING);
             }
         }
     }
