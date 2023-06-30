@@ -13,7 +13,7 @@ Pull requests are welcome and pair well with bug reports and feature requests. H
 - Fork the repository to your own account if you haven't already.
 - Develop in a fix or feature branch (`fix/describe-your-fix`, `feature/describe-your-feature`), not in `main` or `develop`.
 - Make your changes in your fork.
-- Run tests locally using `./gradlew connectedAndroidTest` (or use equivalent in Android Studio).
+- Run tests locally using `./gradlew :ConvivaTestApp:assembleAndroidTest && ./gradlew ConvivaTestApp:connectedAndroidTest` (or use equivalent in Android Studio).
 - Lint your code locally using `./gradlew lint` (or use equivalent in Android Studio).
 - Validate your chances with the Convia Touchstone backend.
 - Add an entry to the [CHANGELOG.md](CHANGELOG.md) file in the `[Unreleased]` section to describe the changes to the project.
