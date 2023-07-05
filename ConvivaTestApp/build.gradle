@@ -4,13 +4,13 @@ plugins {
 }
 
 android {
-    compileSdkVersion 33
+    compileSdkVersion rootProject.compileSdkVersion
     buildToolsVersion "30.0.3"
 
     defaultConfig {
         applicationId "com.bitmovin.analytics.conviva.testapp"
-        minSdkVersion 28
-        targetSdkVersion 31
+        minSdkVersion 21 // We cannot use rootProject.minSdkVersion here as io.mockk requires at least 21
+        targetSdkVersion rootProject.targetSdkVersion
         versionCode 1
         versionName "1.0"
         multiDexEnabled true

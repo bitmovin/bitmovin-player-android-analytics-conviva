@@ -16,6 +16,12 @@ buildscript {
     }
 }
 
+ext {
+    minSdkVersion = 16
+    targetSdkVersion = 33
+    compileSdkVersion = 33
+}
+
 // Load dependencies
 apply from: 'dependencies.gradle'
 
