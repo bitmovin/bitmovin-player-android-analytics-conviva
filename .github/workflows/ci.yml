@@ -37,7 +37,7 @@ jobs:
   instrumentation-tests-player:
     name: Instrumentation tests
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 30
     outputs:
       total: ${{ steps.test-run.outputs.total }}
       skipped: ${{ steps.test-run.outputs.skipped }}
@@ -53,6 +53,7 @@ jobs:
         uses: ./.github/actions/setup-build
 
       - name: Run Instrumentation tests for Player on Emulator
+        # https://github.com/ReactiveCircus/android-emulator-runner
         uses: ReactiveCircus/android-emulator-runner@v2
         with:
           api-level: 33
