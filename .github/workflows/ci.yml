@@ -18,6 +18,22 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  lint-code:
+    name: Code Linting
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          ref: ${{ inputs.ref }}
+
+      - name: Setup build
+        uses: ./.github/actions/setup-build
+
+      - name: Linting
+        run: ./gradlew lint
+
   instrumentation-tests-player:
     name: Instrumentation tests
     runs-on: ubuntu-latest
