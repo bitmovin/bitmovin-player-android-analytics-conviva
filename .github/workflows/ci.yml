@@ -52,8 +52,10 @@ jobs:
       - name: Setup build
         uses: ./.github/actions/setup-build
 
-      - name: Build instrumentation tests
-        run: ./gradlew :ConvivaTestApp:assembleAndroidTest
-
-      - name: Run Instrumentation tests for Player
-        run: ./gradlew ConvivaTestApp:connectedAndroidTest
+      - name: Run Instrumentation tests for Player on Emulator
+        uses: ReactiveCircus/android-emulator-runner@v2
+        with:
+          api-level: 33
+          target: google_apis
+          arch: x86_64
+          script: ./gradlew :ConvivaTestApp:assembleAndroidTest && ./gradlew ConvivaTestApp:connectedAndroidTest
