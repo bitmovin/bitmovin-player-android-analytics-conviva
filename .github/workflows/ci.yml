@@ -36,5 +36,8 @@ jobs:
       - name: Setup build
         uses: ./.github/actions/setup-build
 
+      - name: Build instrumentation tests
+        run: ./gradlew :ConvivaTestApp:assembleAndroidTest
+
       - name: Run Instrumentation tests for Player
-        run: ./gradlew connectedAndroidTest 
+        run: ./gradlew ConvivaTestApp:connectedAndroidTest
