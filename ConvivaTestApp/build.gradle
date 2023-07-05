@@ -4,13 +4,13 @@ plugins {
 }
 
 android {
-    compileSdkVersion 33
+    compileSdkVersion rootProject.compileSdkVersion
     buildToolsVersion "30.0.3"
 
     defaultConfig {
         applicationId "com.bitmovin.analytics.conviva.testapp"
-        minSdkVersion 28
-        targetSdkVersion 31
+        minSdkVersion 21 // We cannot use rootProject.minSdkVersion here as io.mockk requires at least 21
+        targetSdkVersion rootProject.targetSdkVersion
         versionCode 1
         versionName "1.0"
         multiDexEnabled true
@@ -28,34 +28,31 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
-    compileOptions {
-        sourceCompatibility JavaVersion.VERSION_1_8
-        targetCompatibility JavaVersion.VERSION_1_8
-    }
     kotlinOptions {
         jvmTarget = '1.8'
     }
     packagingOptions {
         resources.excludes.add("META-INF/*")
     }
+    namespace 'com.bitmovin.analytics.conviva.testapp'
 }
 
 dependencies {
-    implementation 'androidx.appcompat:appcompat:1.0.0'
-    implementation "com.bitmovin.player:player:3.38.0"
+    implementation 'androidx.appcompat:appcompat:1.2.0'
+    implementation bitmovinPlayerDependencies.bitmovinPlayer
 
-    implementation 'com.google.ads.interactivemedia.v3:interactivemedia:3.26.0' // only needed if ads are used:
-    implementation 'com.google.android.gms:play-services-ads-identifier:18.0.1' // only needed if ads are used
+    implementation "com.google.ads.interactivemedia.v3:interactivemedia:$googleImaSdk" // only needed if ads are used:
+    implementation "com.google.android.gms:play-services-ads-identifier:$googlePlayAdsIdentifier" // only needed if ads are used
     implementation 'androidx.legacy:legacy-support-v4:1.0.0' // only needed if ads are used
 
     implementation project(path: ':conviva')
     //implementation 'com.bitmovin.analytics:conviva:2.1.1'
     //api 'com.conviva.sdk:conviva-core-sdk:4.0.20'
 
-    implementation 'androidx.test:core-ktx:1.4.0'
+    implementation testingDependencies.androidx_test_core_ktx
 
-    testImplementation 'junit:junit:4.12'
-    androidTestImplementation 'androidx.test.ext:junit:1.1.1'
-    androidTestImplementation 'androidx.test.espresso:espresso-core:3.2.0'
-    androidTestImplementation "io.mockk:mockk-android:1.12.0"
+    testImplementation testingDependencies.junit
+    androidTestImplementation testingDependencies.androidx_junit
+    androidTestImplementation testingDependencies.androidx_espresso_core
+    androidTestImplementation testingDependencies.mockk
 }
