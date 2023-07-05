@@ -27,6 +27,7 @@ android {
     packagingOptions {
         resources.excludes.add("META-INF/*")
     }
+    namespace 'com.bitmovin.analytics.convivaanalyticsexample'
 }
 
 dependencies {
