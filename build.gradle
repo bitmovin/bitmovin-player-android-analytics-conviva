@@ -16,6 +16,9 @@ buildscript {
     }
 }
 
+// Load dependencies
+apply from: 'dependencies.gradle'
+
 allprojects {
     repositories {
         mavenCentral()

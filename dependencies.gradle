@@ -1,0 +1,17 @@
+ext {
+    bitmovinPlayerVersion = '3.38.0'
+    googleImaSdk = '3.29.0'
+    googlePlayAdsIdentifier = '18.0.1'
+
+    bitmovinPlayerDependencies = [
+        bitmovinPlayer: "com.bitmovin.player:player:${bitmovinPlayerVersion}"
+    ]
+
+    testingDependencies = [
+      androidx_test_core_ktx: 'androidx.test:core-ktx:1.5.0',
+      junit: 'junit:junit:4.12',
+      androidx_junit: 'androidx.test.ext:junit:1.1.5',
+      androidx_espresso_core: 'androidx.test.espresso:espresso-core:3.5.1',
+      mockk: 'io.mockk:mockk-android:1.12.0'
+    ]
+}
