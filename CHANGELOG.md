@@ -6,7 +6,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 ### Changed
-- Updated BitmovinPlayer to 3.38.0
+- Updated BitmovinPlayer to 3.39.0
 - Updated Kotlin to 1.7.0
 - Updated compileSdkVersion to 33
 

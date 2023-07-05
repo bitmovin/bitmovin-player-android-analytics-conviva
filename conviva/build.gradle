@@ -7,13 +7,11 @@ def packageName = 'com.bitmovin.analytics'
 def libraryVersion = '2.1.4'
 
 android {
-    compileSdkVersion 33
+    compileSdkVersion rootProject.compileSdkVersion
 
     defaultConfig {
-        minSdkVersion 16
-        targetSdkVersion 31
-        versionCode 1
-        versionName libraryVersion
+        minSdkVersion rootProject.minSdkVersion
+        targetSdkVersion rootProject.targetSdkVersion
         multiDexEnabled true
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         buildConfigField 'String', 'VERSION_NAME', "\"${libraryVersion}\""
@@ -29,16 +27,17 @@ android {
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8
     }
+    namespace 'com.bitmovin.analytics.conviva'
 }
 
 dependencies {
     implementation fileTree(include: ['*.jar'], dir: 'libs')
     implementation 'androidx.appcompat:appcompat:1.2.0'
-    testImplementation 'junit:junit:4.12'
-    androidTestImplementation 'androidx.test.ext:junit:1.1.1'
-    androidTestImplementation 'androidx.test.espresso:espresso-core:3.1.0'
+    testImplementation testingDependencies.junit
+    androidTestImplementation testingDependencies.androidx_junit
+    androidTestImplementation testingDependencies.androidx_espresso_core
     api 'com.conviva.sdk:conviva-core-sdk:4.0.20'
-    implementation 'com.bitmovin.player:player:3.38.0'
+    implementation bitmovinPlayerDependencies.bitmovinPlayer
     implementation 'org.apache.commons:commons-text:1.7'
 }
 
@@ -56,7 +55,7 @@ publishing {
                 def dependenciesNode = asNode().appendNode('dependencies')
 
                 //Defining configuration names from which dependencies will be taken (debugCompile or releaseCompile and compile)
-                def configurationNames = ['compile']
+                def configurationNames = ['api']
 
                 configurationNames.each { configurationName ->
                     configurations[configurationName].allDependencies.each {
