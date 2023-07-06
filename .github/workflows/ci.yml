@@ -18,12 +18,12 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  get-sdk-details:
-    name: Get Android SDK get-sdk-details
-    runs-on: ubuntu-latest
-    steps:
-      - name: list emulators
-        run: /usr/local/lib/android/sdk/tools/bin/sdkmanager --list
+  # get-sdk-details:
+  #   name: Get Android SDK get-sdk-details
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - name: list emulators
+  #       run: /usr/local/lib/android/sdk/tools/bin/sdkmanager --list
   # lint-code:
   #   name: Code Linting
   #   runs-on: ubuntu-latest
@@ -40,29 +40,30 @@ jobs:
   #     - name: Linting
   #       run: ./gradlew lint
 
-  # instrumentation-tests-player:
-  #   name: Instrumentation tests
-  #   runs-on: ubuntu-latest
-  #   timeout-minutes: 30
-  #   outputs:
-  #     total: ${{ steps.test-run.outputs.total }}
-  #     skipped: ${{ steps.test-run.outputs.skipped }}
-  #     failed: ${{ steps.test-run.outputs.failed }}
-  #     failedTests: ${{ steps.test-run.outputs.failedTests }}
-  #   steps:
-  #     - name: Checkout
-  #       uses: actions/checkout@v3
-  #       with:
-  #         ref: ${{ inputs.ref }}
+  instrumentation-tests-player:
+    name: Instrumentation tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    outputs:
+      total: ${{ steps.test-run.outputs.total }}
+      skipped: ${{ steps.test-run.outputs.skipped }}
+      failed: ${{ steps.test-run.outputs.failed }}
+      failedTests: ${{ steps.test-run.outputs.failedTests }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          ref: ${{ inputs.ref }}
     
-  #     - name: Setup build
-  #       uses: ./.github/actions/setup-build
+      - name: Setup build
+        uses: ./.github/actions/setup-build
 
-  #     - name: Run Instrumentation tests for Player on Emulator
-  #       # https://github.com/ReactiveCircus/android-emulator-runner
-  #       uses: ReactiveCircus/android-emulator-runner@v2
-  #       with:
-  #         api-level: 33
-  #         target: google_apis
-  #         arch: x86_64
-  #         script: ./gradlew :ConvivaTestApp:assembleAndroidTest && ./gradlew ConvivaTestApp:connectedAndroidTest
+      - name: Run Instrumentation tests for Player on Emulator
+        # https://github.com/ReactiveCircus/android-emulator-runner
+        uses: ReactiveCircus/android-emulator-runner@v2
+        with:
+          # select one that's preinstalled on the used runner: https://github.com/actions/runner-images/tree/main/images
+          api-level: 32
+          target: google_apis
+          arch: x86_64
+          script: ./gradlew :ConvivaTestApp:assembleAndroidTest && ./gradlew ConvivaTestApp:connectedAndroidTest
