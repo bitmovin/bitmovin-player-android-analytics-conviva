@@ -23,7 +23,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: list emulators
-        run: sdkmanager --list
+        run: /usr/local/lib/android/sdk/tools/bin/sdkmanager --list
   # lint-code:
   #   name: Code Linting
   #   runs-on: ubuntu-latest
