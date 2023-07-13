@@ -10,6 +10,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Updated Kotlin to 1.7.0
 - Updated compileSdkVersion to 33
 
+### Added
+- New `release(Boolean releaseConvivaSdk)` function allows for `ConvivaAnalyticsIntegration` to be reused, when called
+with `releaseConvivaSdk = false`.
+
 ## [2.1.4]
 ### Fixed
 
