@@ -12,7 +12,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Added
 - New `release(Boolean releaseConvivaSdk)` function allows for registering a new `ConvivaAnalyticsIntegration` to a
-reused `Player`, when called with `releaseConvivaSdk = false`.
+reused `Player`, when called with `releaseConvivaSdk = false` on the previous instance.
 
 ## [2.1.4]
 ### Fixed
