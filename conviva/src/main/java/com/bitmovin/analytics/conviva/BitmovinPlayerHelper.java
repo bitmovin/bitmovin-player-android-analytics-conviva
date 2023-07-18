@@ -1,8 +1,6 @@
 package com.bitmovin.analytics.conviva;
 
 import com.bitmovin.player.api.Player;
-import com.bitmovin.player.BuildConfig;
-import com.bitmovin.player.api.source.SourceConfig;
 
 class BitmovinPlayerHelper {
     private Player player;
@@ -12,7 +10,7 @@ class BitmovinPlayerHelper {
     }
 
     String getSdkVersionString() {
-        return BuildConfig.VERSION_NAME;
+        return Player.getSdkVersion();
     }
 
     String getStreamType() {
