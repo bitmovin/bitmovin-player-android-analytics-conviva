@@ -155,8 +155,15 @@ public class ConvivaAnalyticsIntegration {
     }
 
     public void release() {
+        release(true);
+    }
+
+    public void release(Boolean releaseConvivaSdk) {
         convivaVideoAnalytics.release();
-        ConvivaAnalytics.release();
+        detachBitmovinEventListeners();
+        if (releaseConvivaSdk) {
+            ConvivaAnalytics.release();
+        }
     }
 
     /**
@@ -367,6 +374,42 @@ public class ConvivaAnalyticsIntegration {
         bitmovinPlayer.on(PlayerEvent.AdError.class, onAdErrorListener);
 
         bitmovinPlayer.on(PlayerEvent.VideoPlaybackQualityChanged.class, onVideoPlaybackQualityChangedListener);
+    }
+
+    private void detachBitmovinEventListeners() {
+        bitmovinPlayer.off(SourceEvent.Unloaded.class, onSourceUnloadedListener);
+        bitmovinPlayer.off(PlayerEvent.Error.class, onPlayerErrorListener);
+        bitmovinPlayer.off(SourceEvent.Error.class, onSourceErrorListener);
+        bitmovinPlayer.off(PlayerEvent.Warning.class, onPlayerWarningListener);
+        bitmovinPlayer.off(SourceEvent.Warning.class, onSourceWarningListener);
+
+        bitmovinPlayer.off(PlayerEvent.Muted.class, onMutedListener);
+        bitmovinPlayer.off(PlayerEvent.Unmuted.class, onUnmutedListener);
+
+        // Playback state events
+        bitmovinPlayer.off(PlayerEvent.Play.class, onPlayListener);
+        bitmovinPlayer.off(PlayerEvent.Playing.class, onPlayingListener);
+        bitmovinPlayer.off(PlayerEvent.Paused.class, onPausedListener);
+        bitmovinPlayer.off(PlayerEvent.StallEnded.class, onStallEndedListener);
+        bitmovinPlayer.off(PlayerEvent.StallStarted.class, onStallStartedListener);
+        bitmovinPlayer.off(PlayerEvent.PlaybackFinished.class, onPlaybackFinishedListener);
+
+        // Seek events
+        bitmovinPlayer.off(PlayerEvent.Seeked.class, onSeekedListener);
+        bitmovinPlayer.off(PlayerEvent.Seek.class, onSeekListener);
+
+        // Timeshift events
+        bitmovinPlayer.off(PlayerEvent.TimeShift.class, onTimeShiftListener);
+        bitmovinPlayer.off(PlayerEvent.TimeShifted.class, onTimeShiftedListener);
+
+        // Ad events
+        bitmovinPlayer.off(PlayerEvent.AdStarted.class, onAdStartedListener);
+        bitmovinPlayer.off(PlayerEvent.AdFinished.class, onAdFinishedListener);
+        bitmovinPlayer.off(PlayerEvent.AdSkipped.class, onAdSkippedListener);
+        bitmovinPlayer.off(PlayerEvent.AdError.class, onAdErrorListener);
+
+        bitmovinPlayer.off(PlayerEvent.VideoPlaybackQualityChanged.class,
+                onVideoPlaybackQualityChangedListener);
     }
 
     private synchronized void transitionState(ConvivaSdkConstants.PlayerState state) {
