@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+## 2.2.1 - 2023-08-10
+### Changed
+- Updated Conviva SDK to 4.0.33
+
 ## 2.2.0 - 2023-07-18
 ### Added
 - New `release(Boolean releaseConvivaSdk)` function allows for registering a new `ConvivaAnalyticsIntegration` to a
