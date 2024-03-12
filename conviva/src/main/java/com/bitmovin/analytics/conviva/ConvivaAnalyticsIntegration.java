@@ -1,5 +1,7 @@
 package com.bitmovin.analytics.conviva;
 
+import static com.conviva.sdk.ConvivaSdkConstants.PLAYBACK.PLAY_HEAD_TIME;
+
 import android.content.Context;
 import android.os.Handler;
 import android.util.Log;
@@ -372,6 +374,7 @@ public class ConvivaAnalyticsIntegration {
         bitmovinPlayer.on(PlayerEvent.AdFinished.class, onAdFinishedListener);
         bitmovinPlayer.on(PlayerEvent.AdSkipped.class, onAdSkippedListener);
         bitmovinPlayer.on(PlayerEvent.AdError.class, onAdErrorListener);
+        bitmovinPlayer.on(PlayerEvent.TimeChanged.class, onVideoTimeChangedListener);
 
         bitmovinPlayer.on(PlayerEvent.VideoPlaybackQualityChanged.class, onVideoPlaybackQualityChangedListener);
     }
@@ -680,5 +683,29 @@ public class ConvivaAnalyticsIntegration {
             updateSession();
         }
     };
+
+    private EventListener<PlayerEvent.TimeChanged> onVideoTimeChangedListener = new EventListener<PlayerEvent.TimeChanged>() {
+        @Override
+        public void onEvent(PlayerEvent.TimeChanged videoTimeChangedEvent) {
+            Log.d(TAG, "[Player Event] VideoTimeChanged");
+            if (bitmovinPlayer.isLive()) {
+                double playerTimeshiftMax = bitmovinPlayer.getTimeShift();
+                double playerTimeshift = bitmovinPlayer.getMaxTimeShift();
+                long playerDurationMs = -(Math.round(playerTimeshiftMax * 1000));
+                long playerPositionMs = playerDurationMs - -(Math.round(playerTimeshift * 1000));
+                reportPlayHeadTime(playerPositionMs);
+            } else {
+                double currentTime = bitmovinPlayer.getCurrentTime();
+                long playerDurationMs = (long) (currentTime * 1000);
+                reportPlayHeadTime(playerDurationMs);
+            }
+        }
+    };
+
+    private void reportPlayHeadTime(Long playerDurationMs) {
+        if (isSessionActive) {
+            convivaVideoAnalytics.reportPlaybackMetric(PLAY_HEAD_TIME, playerDurationMs);
+        }
+    }
     // endregion
 }
