@@ -374,7 +374,7 @@ public class ConvivaAnalyticsIntegration {
         bitmovinPlayer.on(PlayerEvent.AdFinished.class, onAdFinishedListener);
         bitmovinPlayer.on(PlayerEvent.AdSkipped.class, onAdSkippedListener);
         bitmovinPlayer.on(PlayerEvent.AdError.class, onAdErrorListener);
-        bitmovinPlayer.on(PlayerEvent.TimeChanged.class, onVideoTimeChangedListener);
+        bitmovinPlayer.on(PlayerEvent.TimeChanged.class, onTimeChangedListener);
 
         bitmovinPlayer.on(PlayerEvent.VideoPlaybackQualityChanged.class, onVideoPlaybackQualityChangedListener);
     }
@@ -684,13 +684,13 @@ public class ConvivaAnalyticsIntegration {
         }
     };
 
-    private EventListener<PlayerEvent.TimeChanged> onVideoTimeChangedListener = new EventListener<PlayerEvent.TimeChanged>() {
+    private EventListener<PlayerEvent.TimeChanged> onTimeChangedListener = new EventListener<PlayerEvent.TimeChanged>() {
         @Override
-        public void onEvent(PlayerEvent.TimeChanged videoTimeChangedEvent) {
-            Log.d(TAG, "[Player Event] VideoTimeChanged");
+        public void onEvent(PlayerEvent.TimeChanged timeChangedEvent) {
+            Log.d(TAG, "[Player Event] TimeChanged");
             if (bitmovinPlayer.isLive()) {
-                double playerTimeshiftMax = bitmovinPlayer.getTimeShift();
-                double playerTimeshift = bitmovinPlayer.getMaxTimeShift();
+                double playerTimeshiftMax = bitmovinPlayer.getMaxTimeShift();
+                double playerTimeshift = bitmovinPlayer.getTimeShift();
                 long playerDurationMs = -(Math.round(playerTimeshiftMax * 1000));
                 long playerPositionMs = playerDurationMs - -(Math.round(playerTimeshift * 1000));
                 reportPlayHeadTime(playerPositionMs);
@@ -702,7 +702,7 @@ public class ConvivaAnalyticsIntegration {
         }
     };
 
-    private void reportPlayHeadTime(Long playerDurationMs) {
+    private void reportPlayHeadTime(long playerDurationMs) {
         if (isSessionActive) {
             convivaVideoAnalytics.reportPlaybackMetric(PLAY_HEAD_TIME, playerDurationMs);
         }
