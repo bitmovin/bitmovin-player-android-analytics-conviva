@@ -6,7 +6,6 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
-## 2.3.0 - 2024-03-14
 ### Added
 - New `TimeChanged` callback for reporting Playhead to conviva playback metric. Calculates Live and Vod playback for report.
 
