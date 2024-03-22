@@ -687,7 +687,6 @@ public class ConvivaAnalyticsIntegration {
     private EventListener<PlayerEvent.TimeChanged> onTimeChangedListener = new EventListener<PlayerEvent.TimeChanged>() {
         @Override
         public void onEvent(PlayerEvent.TimeChanged timeChangedEvent) {
-            Log.d(TAG, "[Player Event] TimeChanged");
             if (bitmovinPlayer.isLive()) {
                 double playerTimeshiftMax = bitmovinPlayer.getMaxTimeShift();
                 double playerTimeshift = bitmovinPlayer.getTimeShift();
