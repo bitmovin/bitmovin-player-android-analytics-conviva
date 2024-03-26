@@ -1,7 +1,5 @@
 package com.bitmovin.analytics.conviva;
 
-import static com.conviva.sdk.ConvivaSdkConstants.PLAYBACK.PLAY_HEAD_TIME;
-
 import android.content.Context;
 import android.os.Handler;
 import android.util.Log;
@@ -410,6 +408,7 @@ public class ConvivaAnalyticsIntegration {
         bitmovinPlayer.off(PlayerEvent.AdFinished.class, onAdFinishedListener);
         bitmovinPlayer.off(PlayerEvent.AdSkipped.class, onAdSkippedListener);
         bitmovinPlayer.off(PlayerEvent.AdError.class, onAdErrorListener);
+        bitmovinPlayer.off(PlayerEvent.TimeChanged.class, onTimeChangedListener);
 
         bitmovinPlayer.off(PlayerEvent.VideoPlaybackQualityChanged.class,
                 onVideoPlaybackQualityChangedListener);
@@ -703,7 +702,7 @@ public class ConvivaAnalyticsIntegration {
 
     private void reportPlayHeadTime(long playerDurationMs) {
         if (isSessionActive) {
-            convivaVideoAnalytics.reportPlaybackMetric(PLAY_HEAD_TIME, playerDurationMs);
+            convivaVideoAnalytics.reportPlaybackMetric(ConvivaSdkConstants.PLAYBACK.PLAY_HEAD_TIME, playerDurationMs);
         }
     }
     // endregion
