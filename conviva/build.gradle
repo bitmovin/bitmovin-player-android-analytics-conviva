@@ -36,7 +36,7 @@ dependencies {
     testImplementation testingDependencies.junit
     androidTestImplementation testingDependencies.androidx_junit
     androidTestImplementation testingDependencies.androidx_espresso_core
-    api 'com.conviva.sdk:conviva-core-sdk:4.0.20'
+    api 'com.conviva.sdk:conviva-core-sdk:4.0.35'
     implementation bitmovinPlayerDependencies.bitmovinPlayer
     implementation 'org.apache.commons:commons-text:1.7'
 }
