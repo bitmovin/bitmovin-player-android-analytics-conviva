@@ -95,15 +95,20 @@ convivaConfig.setCustomData(customMapOfKeyValuePairs);
 
 #### Content Metadata handling
 
-If you want to override some content metadata attributes you can do so by adding the following:
+If you want to override some content metadata attributes or track additional custom or standard tags you can do so by adding the following:
 
 ```java
 MetadataOverrides metadata = new MetadataOverrides();
 metadata.setApplicationName("Bitmovin Android Conviva integration example app");
 metadata.setViewerId("awesomeViewerId");
-Map<String, String> customInternTags = new HashMap<>();
-customInternTags.put("contentType", "Episode");
-metadata.setCustom(customInternTags);
+
+Map<String, String> customTags = new HashMap<>();
+customTags.put("custom_tag", "value");
+metadata.setCustom(customTags);
+
+Map<String, Object> standardTags = new HashMap<>();
+standardTags.put("c3.cm.contentType", "VOD");
+metadata.setAdditionalStandardTags(standardTags);
 
 // …
 // Initialize ConvivaAnalyticsIntegration
