@@ -68,10 +68,8 @@ The following example create a ConvivaAnalyticsIntegration object and attaches a
 #### Basic Conviva Reporting
 
 ```java
-// Create your ConvivaConfiguration object
-ConvivaConfiguration convivaConfig = new ConvivaConfig(
-    "ConvivaExample_BitmovinPlayer",
-    "ViewerId1");
+// Create your ConvivaConfig object
+ConvivaConfig convivaConfig = new ConvivaConfig();
 
 // Create ConvivaAnalyticsIntegration
 convivaAnalyticsIntegration = new ConvivaAnalyticsIntegration(bitmovinPlayer, "YOUR-CUSTOMER-KEY", getApplicationContext(), convivaConfig);
@@ -87,9 +85,8 @@ bitmovinPlayer.load(source);
 
 #### Optional Configuration Parameters
 ```java
-
+convivaConfig.setGatewayUrl("YOUR_DEBUG_GATEWAY_URL");
 convivaConfig.setDebugLoggingEnabled(true);
-convivaConfig.setCustomData(customMapOfKeyValuePairs);
 
 ```
 
@@ -102,13 +99,13 @@ MetadataOverrides metadata = new MetadataOverrides();
 metadata.setApplicationName("Bitmovin Android Conviva integration example app");
 metadata.setViewerId("awesomeViewerId");
 
-Map<String, String> customTags = new HashMap<>();
-customTags.put("custom_tag", "value");
-metadata.setCustom(customTags);
-
 Map<String, Object> standardTags = new HashMap<>();
 standardTags.put("c3.cm.contentType", "VOD");
 metadata.setAdditionalStandardTags(standardTags);
+
+Map<String, String> customTags = new HashMap<>();
+customTags.put("custom_tag", "value");
+metadata.setCustom(customTags);
 
 // …
 // Initialize ConvivaAnalyticsIntegration
