@@ -5,7 +5,6 @@ plugins {
 
 android {
     compileSdk rootProject.compileSdkVersion
-    buildToolsVersion "30.0.3"
 
     defaultConfig {
         applicationId "com.bitmovin.analytics.conviva.testapp"
@@ -38,7 +37,7 @@ android {
 }
 
 dependencies {
-    implementation 'androidx.appcompat:appcompat:1.2.0'
+    implementation 'androidx.appcompat:appcompat:1.6.1'
     implementation bitmovinPlayerDependencies.bitmovinPlayer
 
     implementation "com.google.ads.interactivemedia.v3:interactivemedia:$googleImaSdk" // only needed if ads are used:
