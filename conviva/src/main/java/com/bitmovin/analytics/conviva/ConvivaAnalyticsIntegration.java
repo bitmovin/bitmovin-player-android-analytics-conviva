@@ -372,6 +372,7 @@ public class ConvivaAnalyticsIntegration {
         bitmovinPlayer.on(PlayerEvent.AdFinished.class, onAdFinishedListener);
         bitmovinPlayer.on(PlayerEvent.AdSkipped.class, onAdSkippedListener);
         bitmovinPlayer.on(PlayerEvent.AdError.class, onAdErrorListener);
+        bitmovinPlayer.on(PlayerEvent.TimeChanged.class, onTimeChangedListener);
 
         bitmovinPlayer.on(PlayerEvent.VideoPlaybackQualityChanged.class, onVideoPlaybackQualityChangedListener);
     }
@@ -407,6 +408,7 @@ public class ConvivaAnalyticsIntegration {
         bitmovinPlayer.off(PlayerEvent.AdFinished.class, onAdFinishedListener);
         bitmovinPlayer.off(PlayerEvent.AdSkipped.class, onAdSkippedListener);
         bitmovinPlayer.off(PlayerEvent.AdError.class, onAdErrorListener);
+        bitmovinPlayer.off(PlayerEvent.TimeChanged.class, onTimeChangedListener);
 
         bitmovinPlayer.off(PlayerEvent.VideoPlaybackQualityChanged.class,
                 onVideoPlaybackQualityChangedListener);
@@ -680,5 +682,28 @@ public class ConvivaAnalyticsIntegration {
             updateSession();
         }
     };
+
+    private EventListener<PlayerEvent.TimeChanged> onTimeChangedListener = new EventListener<PlayerEvent.TimeChanged>() {
+        @Override
+        public void onEvent(PlayerEvent.TimeChanged timeChangedEvent) {
+            if (bitmovinPlayer.isLive()) {
+                double playerTimeshiftMax = bitmovinPlayer.getMaxTimeShift();
+                double playerTimeshift = bitmovinPlayer.getTimeShift();
+                long playerDurationMs = -(Math.round(playerTimeshiftMax * 1000));
+                long playerPositionMs = playerDurationMs - -(Math.round(playerTimeshift * 1000));
+                reportPlayHeadTime(playerPositionMs);
+            } else {
+                double currentTime = bitmovinPlayer.getCurrentTime();
+                long playerDurationMs = (long) (currentTime * 1000);
+                reportPlayHeadTime(playerDurationMs);
+            }
+        }
+    };
+
+    private void reportPlayHeadTime(long playerDurationMs) {
+        if (isSessionActive) {
+            convivaVideoAnalytics.reportPlaybackMetric(ConvivaSdkConstants.PLAYBACK.PLAY_HEAD_TIME, playerDurationMs);
+        }
+    }
     // endregion
 }

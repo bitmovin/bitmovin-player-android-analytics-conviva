@@ -6,6 +6,14 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+## 2.3.0 - 2024-05-21
+### Added
+- New `TimeChanged` callback for reporting Playhead to conviva playback metric. Calculates Live and Vod playback for report.
+- New `MetadataOverrides.setAdditionalStandardTags` that allows to set additional standard tags for the session. The List of tags can be found here: [Pre-defined Video and Content Metadata](https://pulse.conviva.com/learning-center/content/sensor_developer_center/sensor_integration/android/android_stream_sensor.htm#PredefinedVideoandContentMetadata)
+
+### Changed
+- Updated conviva-core to 4.0.35
+
 ## 2.2.0 - 2023-07-18
 ### Added
 - New `release(Boolean releaseConvivaSdk)` function allows for registering a new `ConvivaAnalyticsIntegration` to a

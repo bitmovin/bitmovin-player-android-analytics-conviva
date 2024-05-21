@@ -46,8 +46,8 @@ allprojects {
 And these lines to your main project
 ```
 dependencies {
-  implementation 'com.conviva.sdk:conviva-core-sdk:4.0.20' // <-- conviva sdk
-  implementation 'com.bitmovin.analytics:conviva:2.1.1'
+  implementation 'com.conviva.sdk:conviva-core-sdk:4.0.35' // <-- conviva sdk
+  implementation 'com.bitmovin.analytics:conviva:2.3.0'
 }
 ```
 
@@ -68,10 +68,8 @@ The following example create a ConvivaAnalyticsIntegration object and attaches a
 #### Basic Conviva Reporting
 
 ```java
-// Create your ConvivaConfiguration object
-ConvivaConfiguration convivaConfig = new ConvivaConfig(
-    "ConvivaExample_BitmovinPlayer",
-    "ViewerId1");
+// Create your ConvivaConfig object
+ConvivaConfig convivaConfig = new ConvivaConfig();
 
 // Create ConvivaAnalyticsIntegration
 convivaAnalyticsIntegration = new ConvivaAnalyticsIntegration(bitmovinPlayer, "YOUR-CUSTOMER-KEY", getApplicationContext(), convivaConfig);
@@ -87,23 +85,27 @@ bitmovinPlayer.load(source);
 
 #### Optional Configuration Parameters
 ```java
-
+convivaConfig.setGatewayUrl("YOUR_DEBUG_GATEWAY_URL");
 convivaConfig.setDebugLoggingEnabled(true);
-convivaConfig.setCustomData(customMapOfKeyValuePairs);
 
 ```
 
 #### Content Metadata handling
 
-If you want to override some content metadata attributes you can do so by adding the following:
+If you want to override some content metadata attributes or track additional custom or standard tags you can do so by adding the following:
 
 ```java
 MetadataOverrides metadata = new MetadataOverrides();
 metadata.setApplicationName("Bitmovin Android Conviva integration example app");
 metadata.setViewerId("awesomeViewerId");
-Map<String, String> customInternTags = new HashMap<>();
-customInternTags.put("contentType", "Episode");
-metadata.setCustom(customInternTags);
+
+Map<String, Object> standardTags = new HashMap<>();
+standardTags.put("c3.cm.contentType", "VOD");
+metadata.setAdditionalStandardTags(standardTags);
+
+Map<String, String> customTags = new HashMap<>();
+customTags.put("custom_tag", "value");
+metadata.setCustom(customTags);
 
 // …
 // Initialize ConvivaAnalyticsIntegration
