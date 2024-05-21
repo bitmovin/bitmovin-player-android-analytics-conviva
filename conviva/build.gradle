@@ -59,22 +59,6 @@ publishing {
             afterEvaluate {
                 from components.release
             }
-
-            pom.withXml {
-                def dependenciesNode = asNode().appendNode('dependencies')
-
-                //Defining configuration names from which dependencies will be taken (debugCompile or releaseCompile and compile)
-                def configurationNames = ['api']
-
-                configurationNames.each { configurationName ->
-                    configurations[configurationName].allDependencies.each {
-                        def dependencyNode = dependenciesNode.appendNode('dependency')
-                        dependencyNode.appendNode('groupId', it.group)
-                        dependencyNode.appendNode('artifactId', it.name)
-                        dependencyNode.appendNode('version', it.version)
-                    }
-                }
-            }
         }
     }
 }
@@ -90,7 +74,7 @@ artifactory {
         }
         defaults {
             // Tell the Artifactory Plugin which artifacts should be published to Artifactory.
-            publications('aar')
+            publications('release')
             publishArtifacts = true
 
             // Properties to be attached to the published artifacts.
