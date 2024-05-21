@@ -7,6 +7,7 @@ def packageName = 'com.bitmovin.analytics'
 def libraryVersion = '2.2.0'
 
 android {
+    namespace 'com.bitmovin.analytics.conviva'
     compileSdk rootProject.compileSdkVersion
 
     defaultConfig {
@@ -30,29 +31,34 @@ android {
     buildFeatures {
         buildConfig true
     }
-    namespace 'com.bitmovin.analytics.conviva'
+    publishing {
+        singleVariant("release") {
+            withSourcesJar()
+        }
+    }
 }
 
 dependencies {
     implementation fileTree(include: ['*.jar'], dir: 'libs')
-    implementation 'androidx.appcompat:appcompat:1.2.0'
+    implementation 'androidx.appcompat:appcompat:1.6.1'
     testImplementation testingDependencies.junit
     androidTestImplementation testingDependencies.androidx_junit
     androidTestImplementation testingDependencies.androidx_espresso_core
-    api 'com.conviva.sdk:conviva-core-sdk:4.0.35'
+    api 'com.conviva.sdk:conviva-core-sdk:4.0.37'
     implementation bitmovinPlayerDependencies.bitmovinPlayer
-    implementation 'org.apache.commons:commons-text:1.7'
+    implementation 'org.apache.commons:commons-text:1.10.0'
 }
 
 publishing {
     publications {
-        aar(MavenPublication) {
+        release(MavenPublication) {
             groupId packageName
             version = libraryVersion
             artifactId project.getName()
 
-            // Tell maven to prepare the generated "*.aar" file for publishing
-            artifact("$buildDir/outputs/aar/${project.getName()}-release.aar")
+            afterEvaluate {
+                from components.release
+            }
 
             pom.withXml {
                 def dependenciesNode = asNode().appendNode('dependencies')
