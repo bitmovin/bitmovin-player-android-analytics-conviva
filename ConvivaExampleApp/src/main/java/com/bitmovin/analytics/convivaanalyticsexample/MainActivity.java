@@ -87,18 +87,22 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 getApplicationContext(),
                 convivaConfig);
 
-
         MetadataOverrides metadata = new MetadataOverrides();
         metadata.setApplicationName("Bitmovin Android Conviva integration example app");
         metadata.setViewerId("awesomeViewerId");
-        Map<String, String> customInternTags = new HashMap<>();
-        customInternTags.put("contentType", "Episode");
-        metadata.setCustom(customInternTags);
+
+        Map<String, Object> standardTags = new HashMap<>();
+        standardTags.put("c3.cm.contentType", "VOD");
+        metadata.setAdditionalStandardTags(standardTags);
+
+        Map<String, String> customTags = new HashMap<>();
+        customTags.put("custom_tag", "Episode");
+        metadata.setCustom(customTags);
+
         convivaAnalyticsIntegration.updateContentMetadata(metadata);
 
         // load source using the created source configuration
         bitmovinPlayer.load(buildSourceConfiguration());
-
     }
 
     private PlayerConfig buildPlayerConfiguration() {
@@ -147,7 +151,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     @Override
-    protected void onDestroy() {    
+    protected void onDestroy() {
         bitmovinPlayerView.onDestroy();
         convivaAnalyticsIntegration.release();
         super.onDestroy();

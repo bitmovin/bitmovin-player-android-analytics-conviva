@@ -14,6 +14,7 @@ public class MetadataOverrides {
     private String applicationName;
     private Map<String, String> custom;
     private Integer duration;
+    private Map<String, Object> additionalStandardTags;
 
     // Dynamic
     private Integer encodedFrameRate;
@@ -66,6 +67,18 @@ public class MetadataOverrides {
 
     public void setDuration(Integer duration) {
         this.duration = duration;
+    }
+
+    public Map<String, Object> getAdditionalStandardTags() {
+        return additionalStandardTags;
+    }
+
+    /**
+     * Standard Conviva tags that aren't covered by the other fields in this class.
+     * List of tags can be found here: <a href="https://pulse.conviva.com/learning-center/content/sensor_developer_center/sensor_integration/android/android_stream_sensor.htm#PredefinedVideoandContentMetadata">Pre-defined Video and Content Metadata</a>
+     */
+    public void setAdditionalStandardTags(Map<String, Object> additionalStandardTags) {
+        this.additionalStandardTags = additionalStandardTags;
     }
 
     public Integer getEncodedFrameRate() {
