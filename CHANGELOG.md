@@ -5,6 +5,13 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
+### Changed
+- Updated Bitmovin Player to `3.69.0`
+- Updated IMA SDK to `3.31.0`
+- Updated Kotlin to `1.9.23`
+- Updated conviva-core to `4.0.37`
+- Updated Gradle wrapper to `8.2` and AGP to `8.2.2`
+- Updated compile and target SDK version to `34`
 
 ## 2.3.0 - 2024-05-21
 ### Added
