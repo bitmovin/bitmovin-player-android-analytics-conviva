@@ -2,8 +2,6 @@ package com.bitmovin.analytics.conviva;
 
 import android.util.Log;
 import com.conviva.sdk.ConvivaSdkConstants;
-import org.apache.commons.lang3.ObjectUtils;
-
 import java.util.HashMap;
 import java.util.Map;
 

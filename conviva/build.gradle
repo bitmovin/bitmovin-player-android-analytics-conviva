@@ -7,7 +7,8 @@ def packageName = 'com.bitmovin.analytics'
 def libraryVersion = '2.3.0'
 
 android {
-    compileSdkVersion rootProject.compileSdkVersion
+    namespace 'com.bitmovin.analytics.conviva'
+    compileSdk rootProject.compileSdkVersion
 
     defaultConfig {
         minSdkVersion rootProject.minSdkVersion
@@ -27,44 +28,34 @@ android {
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8
     }
-    namespace 'com.bitmovin.analytics.conviva'
+    buildFeatures {
+        buildConfig true
+    }
+    publishing {
+        singleVariant("release") {
+            withSourcesJar()
+        }
+    }
 }
 
 dependencies {
-    implementation fileTree(include: ['*.jar'], dir: 'libs')
-    implementation 'androidx.appcompat:appcompat:1.2.0'
+    api 'com.conviva.sdk:conviva-core-sdk:4.0.37'
+    implementation bitmovinPlayerDependencies.bitmovinPlayer
+
     testImplementation testingDependencies.junit
     androidTestImplementation testingDependencies.androidx_junit
     androidTestImplementation testingDependencies.androidx_espresso_core
-    api 'com.conviva.sdk:conviva-core-sdk:4.0.35'
-    implementation bitmovinPlayerDependencies.bitmovinPlayer
-    implementation 'org.apache.commons:commons-text:1.7'
 }
 
 publishing {
     publications {
-        aar(MavenPublication) {
+        release(MavenPublication) {
             groupId packageName
             version = libraryVersion
             artifactId project.getName()
 
-            // Tell maven to prepare the generated "*.aar" file for publishing
-            artifact("$buildDir/outputs/aar/${project.getName()}-release.aar")
-
-            pom.withXml {
-                def dependenciesNode = asNode().appendNode('dependencies')
-
-                //Defining configuration names from which dependencies will be taken (debugCompile or releaseCompile and compile)
-                def configurationNames = ['api']
-
-                configurationNames.each { configurationName ->
-                    configurations[configurationName].allDependencies.each {
-                        def dependencyNode = dependenciesNode.appendNode('dependency')
-                        dependencyNode.appendNode('groupId', it.group)
-                        dependencyNode.appendNode('artifactId', it.name)
-                        dependencyNode.appendNode('version', it.version)
-                    }
-                }
+            afterEvaluate {
+                from components.release
             }
         }
     }
@@ -81,7 +72,7 @@ artifactory {
         }
         defaults {
             // Tell the Artifactory Plugin which artifacts should be published to Artifactory.
-            publications('aar')
+            publications('release')
             publishArtifacts = true
 
             // Properties to be attached to the published artifacts.

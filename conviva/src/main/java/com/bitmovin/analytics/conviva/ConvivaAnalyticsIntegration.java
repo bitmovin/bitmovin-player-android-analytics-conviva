@@ -114,9 +114,7 @@ public class ConvivaAnalyticsIntegration {
      * If no source was loaded this method will throw an error.
      */
     public void initializeSession() throws ConvivaAnalyticsException {
-        if ((bitmovinPlayer.getSource() == null ||
-                bitmovinPlayer.getSource().getConfig() == null
-                || bitmovinPlayer.getSource().getConfig().getTitle() == null)
+        if ((bitmovinPlayer.getSource() == null || bitmovinPlayer.getSource().getConfig().getTitle() == null)
                 && this.contentMetadataBuilder.getAssetName() == null) {
             throw new ConvivaAnalyticsException(
                     "AssetName is missing. Load player source (with Title) first or set assetName via updateContentMetadata"
@@ -300,13 +298,7 @@ public class ConvivaAnalyticsIntegration {
             SourceConfig sourceConfig = source.getConfig();
             String overriddenAssetName = metadataOverrides != null ? metadataOverrides.getAssetName() : null;
 
-            if (sourceConfig != null) {
-                contentMetadataBuilder.setAssetName(overriddenAssetName != null ? overriddenAssetName : sourceConfig.getTitle());
-            } else {
-                if(overriddenAssetName != null) {
-                    contentMetadataBuilder.setAssetName(overriddenAssetName);
-                }
-            }
+            contentMetadataBuilder.setAssetName(overriddenAssetName != null ? overriddenAssetName : sourceConfig.getTitle());
         }
         this.buildDynamicContentMetadata();
     }
