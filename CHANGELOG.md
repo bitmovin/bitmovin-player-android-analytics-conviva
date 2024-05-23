@@ -11,7 +11,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Updated Kotlin to `1.9.23`
 - Updated conviva-core to `4.0.37`
 - Updated Gradle wrapper to `8.2` and AGP to `8.2.2`
-- Updated compile and target SDK version to `34`
+- Increased minimum required `compileSdk` version to `34` 
+- Increased `compileSdk` and `targetSdkVersion` to `34`
 
 ### Fixed
 - The pom file now also includes the `com.bitmovin.player` dependency which was missing before
