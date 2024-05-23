@@ -1,6 +1,5 @@
 package com.bitmovin.analytics.conviva;
 
-import androidx.annotation.Nullable;
 import com.bitmovin.player.api.Player;
 
 class BitmovinPlayerHelper {
@@ -14,7 +13,6 @@ class BitmovinPlayerHelper {
         return Player.getSdkVersion();
     }
 
-    @Nullable
     String getStreamType() {
         if (player.getSource() == null) {
             return null;
@@ -23,7 +21,6 @@ class BitmovinPlayerHelper {
         }
     }
 
-    @Nullable
     String getStreamUrl() {
         if (player.getSource() == null) {
             return null;

@@ -39,14 +39,12 @@ android {
 }
 
 dependencies {
-    implementation fileTree(include: ['*.jar'], dir: 'libs')
-    implementation 'androidx.appcompat:appcompat:1.6.1'
+    api 'com.conviva.sdk:conviva-core-sdk:4.0.37'
+    implementation bitmovinPlayerDependencies.bitmovinPlayer
+
     testImplementation testingDependencies.junit
     androidTestImplementation testingDependencies.androidx_junit
     androidTestImplementation testingDependencies.androidx_espresso_core
-    api 'com.conviva.sdk:conviva-core-sdk:4.0.37'
-    implementation bitmovinPlayerDependencies.bitmovinPlayer
-    implementation 'org.apache.commons:commons-text:1.10.0'
 }
 
 publishing {
