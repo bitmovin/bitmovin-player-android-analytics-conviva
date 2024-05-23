@@ -13,6 +13,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Updated Gradle wrapper to `8.2` and AGP to `8.2.2`
 - Updated compile and target SDK version to `34`
 
+### Fixed
+- The pom file now also includes the `com.bitmovin.player` dependency which was missing before
+
 ## 2.3.0 - 2024-05-21
 ### Added
 - New `TimeChanged` callback for reporting Playhead to conviva playback metric. Calculates Live and Vod playback for report.
