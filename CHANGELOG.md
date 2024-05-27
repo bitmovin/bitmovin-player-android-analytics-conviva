@@ -5,6 +5,9 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
+### Added
+- Ad analytics for ad event reporting
+
 ### Changed
 - Updated Bitmovin Player to `3.69.0`
 - Updated IMA SDK to `3.31.0`
@@ -13,6 +16,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Updated Gradle wrapper to `8.2` and AGP to `8.2.2`
 - Increased minimum required `compileSdk` version to `34` 
 - Increased `compileSdk` and `targetSdkVersion` to `34`
+- Ad break started and ended is now reported in `PlayerEvent.AdBreakStarted` and `PlayerEvent.AdBreakFinished`
+
+### Removed
+- Custom event for `AdSkipped` and `AdError`. Replaced by Conviva build in tracking
 
 ### Fixed
 - The pom file now also includes the `com.bitmovin.player` dependency which was missing before
