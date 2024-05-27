@@ -17,7 +17,7 @@ class ContentMetadataBuilder {
     private boolean playbackStarted;
 
     ContentMetadataBuilder() {
-        contentInfo = new HashMap<String, Object>();
+        contentInfo = new HashMap<>();
         metadata = new MetadataOverrides();
         metadataOverrides = new MetadataOverrides();
     }
@@ -25,7 +25,6 @@ class ContentMetadataBuilder {
     /**
      * This method is used for custom content metadata updates during / before a session.
      *
-     * @param metadataOverrides
      */
     public void setOverrides(MetadataOverrides metadataOverrides) {
         if (playbackStarted) {
@@ -62,7 +61,7 @@ class ContentMetadataBuilder {
             Integer duration = ObjectUtils.defaultIfNull(
                     metadataOverrides.getDuration(),
                     metadata.getDuration());
-            Integer convivaDuration = duration != null ? duration : -1;
+            int convivaDuration = duration != null ? duration : -1;
             if (convivaDuration > 0) {
                 contentInfo.put(ConvivaSdkConstants.DURATION, convivaDuration);
             }
@@ -121,7 +120,7 @@ class ContentMetadataBuilder {
         // merge internal and override metadata key-value pairs
         // with override values having higher precedence
         Map<String, String> customInternals = metadata.getCustom();
-        Map<String, String> customs = customInternals != null ? customInternals : new HashMap<String, String>();
+        Map<String, String> customs = customInternals != null ? customInternals : new HashMap<>();
         Map<String, String> customOverrides = metadataOverrides.getCustom();
         if (customOverrides != null) {
             customs.putAll(customOverrides);
@@ -165,6 +164,6 @@ class ContentMetadataBuilder {
         metadataOverrides = new MetadataOverrides();
         metadata = new MetadataOverrides();
         playbackStarted = false;
-        contentInfo = new HashMap<String, Object>();
+        contentInfo = new HashMap<>();
     }
 }

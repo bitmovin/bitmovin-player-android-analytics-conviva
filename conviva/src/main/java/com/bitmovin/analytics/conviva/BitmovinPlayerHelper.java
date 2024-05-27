@@ -3,7 +3,7 @@ package com.bitmovin.analytics.conviva;
 import com.bitmovin.player.api.Player;
 
 class BitmovinPlayerHelper {
-    private Player player;
+    private final Player player;
 
     BitmovinPlayerHelper(Player player) {
         this.player = player;
