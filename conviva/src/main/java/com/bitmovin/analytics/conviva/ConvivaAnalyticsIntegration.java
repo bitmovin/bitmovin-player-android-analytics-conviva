@@ -34,7 +34,6 @@ public class ConvivaAnalyticsIntegration {
     private final BitmovinPlayerHelper playerHelper;
 
     // Helper
-    private Boolean adStarted = false;
     private Boolean isSessionActive = false;
     private Boolean isBumper = false;
     private Boolean isBackgrounded = false;
@@ -370,6 +369,8 @@ public class ConvivaAnalyticsIntegration {
         bitmovinPlayer.on(PlayerEvent.TimeShifted.class, onTimeShiftedListener);
 
         // Ad events
+        bitmovinPlayer.on(PlayerEvent.AdBreakStarted.class, onAdBreakStarted);
+        bitmovinPlayer.on(PlayerEvent.AdBreakFinished.class, onAdBreakFinished);
         bitmovinPlayer.on(PlayerEvent.AdStarted.class, onAdStartedListener);
         bitmovinPlayer.on(PlayerEvent.AdFinished.class, onAdFinishedListener);
         bitmovinPlayer.on(PlayerEvent.AdSkipped.class, onAdSkippedListener);
@@ -420,20 +421,6 @@ public class ConvivaAnalyticsIntegration {
         Log.d(TAG, "Transitioning to :" + state.name());
         convivaVideoAnalytics.reportPlaybackMetric(ConvivaSdkConstants.PLAYBACK.PLAYER_STATE, state);
     }
-
-    // region Helper
-
-    private void trackAdEnd() {
-        if (!adStarted) {
-            // Do not track adEnd if no ad is was shown (possible if an error occurred)
-            return;
-        }
-        adStarted = false;
-
-        Log.d(TAG, "Report ad break ended");
-        convivaVideoAnalytics.reportAdBreakEnded();
-    }
-    // endregion
 
     // region Listeners
     private final EventListener<SourceEvent.Unloaded> onSourceUnloadedListener = event -> {
@@ -596,31 +583,56 @@ public class ConvivaAnalyticsIntegration {
     // endregion
 
     // region Ad events
-    private final EventListener<PlayerEvent.AdStarted> onAdStartedListener = new EventListener<PlayerEvent.AdStarted>() {
+
+    private final EventListener<PlayerEvent.AdBreakStarted> onAdBreakStarted = new EventListener<PlayerEvent.AdBreakStarted>() {
         @Override
-        public void onEvent(PlayerEvent.AdStarted adStartedEvent) {
-            Log.d(TAG, "[Player Event] AdStarted");
-            adStarted = true;
+        public void onEvent(PlayerEvent.AdBreakStarted adBreakStarted) {
+            Log.d(TAG, "[Player Event] AdBreakStarted");
             convivaVideoAnalytics.reportAdBreakStarted(ConvivaSdkConstants.AdPlayer.CONTENT, ConvivaSdkConstants.AdType.CLIENT_SIDE);
         }
     };
 
-    private final EventListener<PlayerEvent.AdFinished> onAdFinishedListener = adFinishedEvent -> {
-        Log.d(TAG, "[Player Event] AdFinished");
-        trackAdEnd();
+    private final EventListener<PlayerEvent.AdBreakFinished> onAdBreakFinished = new EventListener<PlayerEvent.AdBreakFinished>() {
+        @Override
+        public void onEvent(PlayerEvent.AdBreakFinished adBreakFinished) {
+            Log.d(TAG, "[Player Event] AdBreakFinished");
+            convivaVideoAnalytics.reportAdBreakEnded();
+        }
     };
 
-    private final EventListener<PlayerEvent.AdSkipped> onAdSkippedListener = adSkippedEvent -> {
-        Log.d(TAG, "[Player Event] AdSkipped");
-        customEvent(adSkippedEvent);
-        trackAdEnd();
+    private final EventListener<PlayerEvent.AdStarted> onAdStartedListener = new EventListener<PlayerEvent.AdStarted>() {
+        @Override
+        public void onEvent(PlayerEvent.AdStarted adStartedEvent) {
+            Log.d(TAG, "[Player Event] AdStarted");
+            convivaAdAnalytics.reportAdLoaded();
+            convivaAdAnalytics.reportAdStarted();
+        }
     };
 
-    private final EventListener<PlayerEvent.AdError> onAdErrorListener = adErrorEvent -> {
-        Log.d(TAG, "[Player Event] AdError");
-        customEvent(adErrorEvent);
-        trackAdEnd();
+    private final EventListener<PlayerEvent.AdFinished> onAdFinishedListener = new EventListener<PlayerEvent.AdFinished>() {
+        @Override
+        public void onEvent(PlayerEvent.AdFinished adFinished) {
+            Log.d(TAG, "[Player Event] AdFinished");
+            convivaAdAnalytics.reportAdEnded();
+        }
     };
+
+    private final EventListener<PlayerEvent.AdSkipped> onAdSkippedListener = new EventListener<PlayerEvent.AdSkipped>() {
+        @Override
+        public void onEvent(PlayerEvent.AdSkipped adSkipped) {
+            Log.d(TAG, "[Player Event] AdSkipped");
+            convivaAdAnalytics.reportAdSkipped();
+        }
+    };
+
+    private final EventListener<PlayerEvent.AdError> onAdErrorListener = new EventListener<PlayerEvent.AdError>() {
+        @Override
+        public void onEvent(PlayerEvent.AdError adError) {
+            Log.d(TAG, "[Player Event] AdError");
+            convivaAdAnalytics.reportAdFailed(adError.getMessage());
+        }
+    };
+
     // endregion
 
     private final EventListener<PlayerEvent.VideoPlaybackQualityChanged> onVideoPlaybackQualityChangedListener = videoPlaybackQualityChangedEvent -> {
