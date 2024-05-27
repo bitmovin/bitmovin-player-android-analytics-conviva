@@ -12,6 +12,7 @@ import com.bitmovin.player.api.event.SourceEvent;
 import com.bitmovin.player.api.media.video.quality.VideoQuality;
 import com.bitmovin.player.api.source.Source;
 import com.bitmovin.player.api.source.SourceConfig;
+import com.conviva.sdk.ConvivaAdAnalytics;
 import com.conviva.sdk.ConvivaAnalytics;
 import com.conviva.sdk.ConvivaSdkConstants;
 import com.conviva.sdk.ConvivaVideoAnalytics;
@@ -26,6 +27,7 @@ public class ConvivaAnalyticsIntegration {
     private final Player bitmovinPlayer;
     private final ContentMetadataBuilder contentMetadataBuilder = new ContentMetadataBuilder();
     private final ConvivaVideoAnalytics convivaVideoAnalytics;
+    private final ConvivaAdAnalytics convivaAdAnalytics;
     private MetadataOverrides metadataOverrides;
 
     // Wrapper to extract bitmovinPlayer helper methods
@@ -54,29 +56,38 @@ public class ConvivaAnalyticsIntegration {
                                        ConvivaConfig config,
                                        ConvivaVideoAnalytics videoAnalytics
     ) {
+        this(player, customerKey, context, config, videoAnalytics, null);
+    }
+
+    public ConvivaAnalyticsIntegration(Player player,
+                                       String customerKey,
+                                       Context context,
+                                       ConvivaConfig config,
+                                       ConvivaVideoAnalytics videoAnalytics,
+                                       ConvivaAdAnalytics adAnalytics
+    ) {
         this.bitmovinPlayer = player;
         this.playerHelper = new BitmovinPlayerHelper(player);
+        Map<String, Object> settings = new HashMap<>();
         if (config.getGatewayUrl() != null || config.isDebugLoggingEnabled()) {
-            Map<String, Object> settings = new HashMap<>();
             if (config.getGatewayUrl() != null) {
                 settings.put(ConvivaSdkConstants.GATEWAY_URL, config.getGatewayUrl());
             }
             if (config.isDebugLoggingEnabled()) {
                 settings.put(ConvivaSdkConstants.LOG_LEVEL, ConvivaSdkConstants.LogLevel.DEBUG);
             }
-            if (videoAnalytics == null) {
-                ConvivaAnalytics.init(context, customerKey, settings);
-            }
-        } else {
-            if (videoAnalytics == null) {
-                ConvivaAnalytics.init(context, customerKey);
-            }
         }
 
-        if (videoAnalytics != null) {
-            convivaVideoAnalytics = videoAnalytics;
-        } else {
+        if (videoAnalytics == null) {
+            ConvivaAnalytics.init(context, customerKey, settings);
             convivaVideoAnalytics = ConvivaAnalytics.buildVideoAnalytics(context);
+        } else {
+            convivaVideoAnalytics = videoAnalytics;
+        }
+        if (adAnalytics == null) {
+            convivaAdAnalytics = ConvivaAnalytics.buildAdAnalytics(context, convivaVideoAnalytics);
+        } else {
+            convivaAdAnalytics = adAnalytics;
         }
 
         attachBitmovinEventListeners();
@@ -155,6 +166,7 @@ public class ConvivaAnalyticsIntegration {
     }
 
     public void release(Boolean releaseConvivaSdk) {
+        convivaAdAnalytics.release();
         convivaVideoAnalytics.release();
         detachBitmovinEventListeners();
         if (releaseConvivaSdk) {
