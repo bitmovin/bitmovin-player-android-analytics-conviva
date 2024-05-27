@@ -5,6 +5,8 @@ import android.os.Handler;
 import android.util.Log;
 
 import com.bitmovin.player.api.Player;
+import com.bitmovin.player.api.advertising.Ad;
+import com.bitmovin.player.api.advertising.vast.VastAdData;
 import com.bitmovin.player.api.event.Event;
 import com.bitmovin.player.api.event.EventListener;
 import com.bitmovin.player.api.event.PlayerEvent;
@@ -269,6 +271,7 @@ public class ConvivaAnalyticsIntegration {
         playerInfo.put(ConvivaSdkConstants.FRAMEWORK_NAME, "Bitmovin Player Android");
         playerInfo.put(ConvivaSdkConstants.FRAMEWORK_VERSION, playerHelper.getSdkVersionString());
         convivaVideoAnalytics.setPlayerInfo(playerInfo);
+        convivaAdAnalytics.setAdPlayerInfo(playerInfo);
     }
 
     private void internalInitializeSession() {
@@ -604,10 +607,35 @@ public class ConvivaAnalyticsIntegration {
         @Override
         public void onEvent(PlayerEvent.AdStarted adStartedEvent) {
             Log.d(TAG, "[Player Event] AdStarted");
-            convivaAdAnalytics.reportAdLoaded();
-            convivaAdAnalytics.reportAdStarted();
+            Map<String, Object> adInfo = null;
+            if (adStartedEvent.getAd() != null) {
+                adInfo = adToAdInfo(adStartedEvent.getAd());
+            }
+            convivaAdAnalytics.reportAdLoaded(adInfo);
+            convivaAdAnalytics.reportAdStarted(adInfo);
+            convivaAdAnalytics.reportAdMetric(ConvivaSdkConstants.PLAYBACK.PLAYER_STATE, ConvivaSdkConstants.PlayerState.PLAYING);
         }
     };
+
+    private Map<String, Object> adToAdInfo(Ad ad) {
+        Map<String, Object> adInfo = new HashMap<>();
+        adInfo.put("c3.ad.technology", "Client Side");
+
+        if (ad.getMediaFileUrl() != null) {
+            adInfo.put(ConvivaSdkConstants.STREAM_URL, ad.getMediaFileUrl());
+        }
+        if (ad.getId() != null) {
+            adInfo.put("c3.ad.id", ad.getId());
+        }
+
+        if (ad.getData() instanceof VastAdData) {
+            VastAdData vastAdData = (VastAdData) ad.getData();
+            if (vastAdData.getAdTitle() != null) {
+                adInfo.put(ConvivaSdkConstants.ASSET_NAME, vastAdData.getAdTitle());
+            }
+        }
+        return adInfo;
+    }
 
     private final EventListener<PlayerEvent.AdFinished> onAdFinishedListener = new EventListener<PlayerEvent.AdFinished>() {
         @Override
