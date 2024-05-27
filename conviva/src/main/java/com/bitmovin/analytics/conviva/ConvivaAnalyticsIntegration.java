@@ -53,10 +53,10 @@ public class ConvivaAnalyticsIntegration {
                                        Context context,
                                        ConvivaConfig config,
                                        ConvivaVideoAnalytics videoAnalytics
-                                       ) {
+    ) {
         this.bitmovinPlayer = player;
         this.playerHelper = new BitmovinPlayerHelper(player);
-        if(config.getGatewayUrl() != null || config.isDebugLoggingEnabled()) {
+        if (config.getGatewayUrl() != null || config.isDebugLoggingEnabled()) {
             Map<String, Object> settings = new HashMap<>();
             if (config.getGatewayUrl() != null) {
                 settings.put(ConvivaSdkConstants.GATEWAY_URL, config.getGatewayUrl());
@@ -64,16 +64,16 @@ public class ConvivaAnalyticsIntegration {
             if (config.isDebugLoggingEnabled()) {
                 settings.put(ConvivaSdkConstants.LOG_LEVEL, ConvivaSdkConstants.LogLevel.DEBUG);
             }
-            if(videoAnalytics == null) {
+            if (videoAnalytics == null) {
                 ConvivaAnalytics.init(context, customerKey, settings);
             }
         } else {
-            if(videoAnalytics == null) {
+            if (videoAnalytics == null) {
                 ConvivaAnalytics.init(context, customerKey);
             }
         }
 
-        if(videoAnalytics != null) {
+        if (videoAnalytics != null) {
             convivaVideoAnalytics = videoAnalytics;
         } else {
             convivaVideoAnalytics = ConvivaAnalytics.buildVideoAnalytics(context);
@@ -166,7 +166,7 @@ public class ConvivaAnalyticsIntegration {
      * Sends a custom deficiency event during playback to Conviva's Player Insight. If no session is active it will NOT
      * create one.
      *
-     * @param message Message which will be send to conviva
+     * @param message  Message which will be send to conviva
      * @param severity One of FATAL or WARNING
      */
     public void reportPlaybackDeficiency(String message, ConvivaSdkConstants.ErrorSeverity severity) {
@@ -177,8 +177,8 @@ public class ConvivaAnalyticsIntegration {
      * Sends a custom deficiency event during playback to Conviva's Player Insight. If no session is active it will NOT
      * create one.
      *
-     * @param message Message which will be send to conviva
-     * @param severity One of FATAL or WARNING
+     * @param message    Message which will be send to conviva
+     * @param severity   One of FATAL or WARNING
      * @param endSession Boolean flag if session should be closed after reporting the deficiency
      */
     public void reportPlaybackDeficiency(String message, ConvivaSdkConstants.ErrorSeverity severity, Boolean endSession) {
@@ -227,7 +227,7 @@ public class ConvivaAnalyticsIntegration {
      */
     public void reportAppBackgrounded() {
         Log.d(TAG, "appBackgrounded");
-        if(!isBackgrounded) {
+        if (!isBackgrounded) {
             ConvivaAnalytics.reportAppBackgrounded();
             isBackgrounded = true;
         }
@@ -255,13 +255,13 @@ public class ConvivaAnalyticsIntegration {
     private void setupPlayerStateManager() {
         convivaVideoAnalytics.reportPlaybackMetric(ConvivaSdkConstants.PLAYBACK.PLAYER_STATE, ConvivaSdkConstants.PlayerState.STOPPED);
         Map<String, Object> playerInfo = new HashMap<>();
-        playerInfo.put(ConvivaSdkConstants.FRAMEWORK_NAME,"Bitmovin Player Android");
+        playerInfo.put(ConvivaSdkConstants.FRAMEWORK_NAME, "Bitmovin Player Android");
         playerInfo.put(ConvivaSdkConstants.FRAMEWORK_VERSION, playerHelper.getSdkVersionString());
         convivaVideoAnalytics.setPlayerInfo(playerInfo);
     }
 
     private void internalInitializeSession() {
-        if(isSessionActive) {
+        if (isSessionActive) {
             return;
         }
         Log.d(TAG, "internalInitializeSession");
@@ -280,12 +280,12 @@ public class ConvivaAnalyticsIntegration {
         VideoQuality videoQuality = bitmovinPlayer.getPlaybackVideoData();
         if (videoQuality != null) {
             int bitrate = videoQuality.getBitrate() / 1000; // in kbps
-                convivaVideoAnalytics.reportPlaybackMetric(ConvivaSdkConstants.PLAYBACK.RESOLUTION, videoQuality.getHeight(), videoQuality.getWidth());
-                convivaVideoAnalytics.reportPlaybackMetric(ConvivaSdkConstants.PLAYBACK.BITRATE, bitrate);
-                convivaVideoAnalytics.reportPlaybackMetric(ConvivaSdkConstants.PLAYBACK.RENDERED_FRAMERATE, Math.round(videoQuality.getFrameRate()));
+            convivaVideoAnalytics.reportPlaybackMetric(ConvivaSdkConstants.PLAYBACK.RESOLUTION, videoQuality.getHeight(), videoQuality.getWidth());
+            convivaVideoAnalytics.reportPlaybackMetric(ConvivaSdkConstants.PLAYBACK.BITRATE, bitrate);
+            convivaVideoAnalytics.reportPlaybackMetric(ConvivaSdkConstants.PLAYBACK.RENDERED_FRAMERATE, Math.round(videoQuality.getFrameRate()));
         }
 
-        if(isSessionActive) {
+        if (isSessionActive) {
             convivaVideoAnalytics.setContentInfo(contentMetadataBuilder.build());
         }
     }
@@ -322,7 +322,7 @@ public class ConvivaAnalyticsIntegration {
 
     private void internalEndSession() {
         contentMetadataBuilder.reset();
-        if(!isSessionActive) {
+        if (!isSessionActive) {
             return;
         }
         convivaVideoAnalytics.reportPlaybackEnded();
@@ -425,14 +425,14 @@ public class ConvivaAnalyticsIntegration {
 
     // region Listeners
     private final EventListener<SourceEvent.Unloaded> onSourceUnloadedListener = event -> {
-    // The default SDK error handling is that it triggers the onSourceUnloaded before the onError event.
-    // To track errors on Conviva we need to delay the onSourceUnloaded to ensure the onError event is
-    // called first.
-    // TODO: remove this once the event order is fixed on the Android SDK.
-    new Handler().postDelayed(() -> {
-        Log.d(TAG, "[Player Event] SourceUnloaded");
-        internalEndSession();
-    }, 100);
+        // The default SDK error handling is that it triggers the onSourceUnloaded before the onError event.
+        // To track errors on Conviva we need to delay the onSourceUnloaded to ensure the onError event is
+        // called first.
+        // TODO: remove this once the event order is fixed on the Android SDK.
+        new Handler().postDelayed(() -> {
+            Log.d(TAG, "[Player Event] SourceUnloaded");
+            internalEndSession();
+        }, 100);
     };
 
     private final EventListener<PlayerEvent.Error> onPlayerErrorListener = new EventListener<PlayerEvent.Error>() {
@@ -568,7 +568,7 @@ public class ConvivaAnalyticsIntegration {
     private void setSeekStart(int seekTarget) {
         Log.d(TAG, "Sending seek start event");
         convivaVideoAnalytics.reportPlaybackMetric(ConvivaSdkConstants.PLAYBACK.SEEK_STARTED, seekTarget);
-    };
+    }
 
     public void setSeekEnd() {
         Log.d(TAG, "Sending seek end event");

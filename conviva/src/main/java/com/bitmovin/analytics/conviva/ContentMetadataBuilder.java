@@ -1,7 +1,9 @@
 package com.bitmovin.analytics.conviva;
 
 import android.util.Log;
+
 import com.conviva.sdk.ConvivaSdkConstants;
+
 import java.util.HashMap;
 import java.util.Map;
 
@@ -24,7 +26,6 @@ class ContentMetadataBuilder {
 
     /**
      * This method is used for custom content metadata updates during / before a session.
-     *
      */
     public void setOverrides(MetadataOverrides metadataOverrides) {
         if (playbackStarted) {
