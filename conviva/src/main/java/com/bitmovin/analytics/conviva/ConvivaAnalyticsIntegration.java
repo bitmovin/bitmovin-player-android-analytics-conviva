@@ -593,6 +593,9 @@ public class ConvivaAnalyticsIntegration {
         @Override
         public void onEvent(PlayerEvent.AdBreakStarted adBreakStarted) {
             Log.d(TAG, "[Player Event] AdBreakStarted");
+            // For pre-roll ads there is no `PlayerEvent.Play` before the `PlayerEvent.AdBreakStarted`
+            // which means we need to make sure the session is correctly initialized.
+            ensureConvivaSessionIsCreatedAndInitialized();
             convivaVideoAnalytics.reportAdBreakStarted(ConvivaSdkConstants.AdPlayer.CONTENT, ConvivaSdkConstants.AdType.CLIENT_SIDE);
         }
     };
