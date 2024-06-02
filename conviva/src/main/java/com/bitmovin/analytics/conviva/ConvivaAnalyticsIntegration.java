@@ -410,6 +410,8 @@ public class ConvivaAnalyticsIntegration {
         bitmovinPlayer.off(PlayerEvent.TimeShifted.class, onTimeShiftedListener);
 
         // Ad events
+        bitmovinPlayer.off(PlayerEvent.AdBreakStarted.class, onAdBreakStarted);
+        bitmovinPlayer.off(PlayerEvent.AdBreakFinished.class, onAdBreakFinished);
         bitmovinPlayer.off(PlayerEvent.AdStarted.class, onAdStartedListener);
         bitmovinPlayer.off(PlayerEvent.AdFinished.class, onAdFinishedListener);
         bitmovinPlayer.off(PlayerEvent.AdSkipped.class, onAdSkippedListener);
