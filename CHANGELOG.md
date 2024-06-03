@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Ad analytics for ad event reporting
 
 ### Changed
-- Updated Bitmovin Player to `3.69.0`
+- Updated Bitmovin Player to `3.71.0`
 - Updated IMA SDK to `3.31.0`
 - Updated Kotlin to `1.9.23`
 - Updated conviva-core to `4.0.37`
