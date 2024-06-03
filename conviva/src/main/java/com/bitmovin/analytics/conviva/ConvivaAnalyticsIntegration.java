@@ -6,6 +6,8 @@ import android.util.Log;
 
 import com.bitmovin.player.api.Player;
 import com.bitmovin.player.api.advertising.Ad;
+import com.bitmovin.player.api.advertising.AdSourceType;
+import com.bitmovin.player.api.advertising.vast.AdSystem;
 import com.bitmovin.player.api.advertising.vast.VastAdData;
 import com.bitmovin.player.api.event.Event;
 import com.bitmovin.player.api.event.EventListener;
@@ -20,6 +22,7 @@ import com.conviva.sdk.ConvivaSdkConstants;
 import com.conviva.sdk.ConvivaVideoAnalytics;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class ConvivaAnalyticsIntegration {
@@ -612,34 +615,86 @@ public class ConvivaAnalyticsIntegration {
         @Override
         public void onEvent(PlayerEvent.AdStarted adStartedEvent) {
             Log.d(TAG, "[Player Event] AdStarted");
-            Map<String, Object> adInfo = null;
-            if (adStartedEvent.getAd() != null) {
-                adInfo = adToAdInfo(adStartedEvent.getAd());
-            }
+            Map<String, Object> adInfo = adStartedToAdInfo(adStartedEvent);
             convivaAdAnalytics.reportAdLoaded(adInfo);
             convivaAdAnalytics.reportAdStarted(adInfo);
             convivaAdAnalytics.reportAdMetric(ConvivaSdkConstants.PLAYBACK.PLAYER_STATE, ConvivaSdkConstants.PlayerState.PLAYING);
         }
     };
 
-    private Map<String, Object> adToAdInfo(Ad ad) {
+    private Map<String, Object> adStartedToAdInfo(PlayerEvent.AdStarted adStartedEvent) {
         Map<String, Object> adInfo = new HashMap<>();
+
+        adInfo.put("c3.ad.id", "NA");
+        adInfo.put("c3.ad.system", "NA");
+        adInfo.put("c3.ad.mediaFileApiFramework", "NA");
+        adInfo.put("c3.ad.firstAdSystem", "NA");
+        adInfo.put("c3.ad.firstAdId", "NA");
+        adInfo.put("c3.ad.firstCreativeId", "NA");
+
         adInfo.put("c3.ad.technology", "Client Side");
-
-        if (ad.getMediaFileUrl() != null) {
-            adInfo.put(ConvivaSdkConstants.STREAM_URL, ad.getMediaFileUrl());
+        if (adStartedEvent.getClientType() == AdSourceType.Ima) {
+            adInfo.put(ConvivaSdkConstants.FRAMEWORK_NAME, "Google IMA SDK");
+            //tags.put(ConvivaSdkConstants.FRAMEWORK_VERSION, "3.31.0");// todo better way to provide version?
+        } else {
+            adInfo.put(ConvivaSdkConstants.FRAMEWORK_NAME, "Bitmovin");
+            adInfo.put(ConvivaSdkConstants.FRAMEWORK_VERSION, playerHelper.getSdkVersionString());
         }
-        if (ad.getId() != null) {
-            adInfo.put("c3.ad.id", ad.getId());
-        }
+        adInfo.put("c3.ad.position", getAdPosition(adStartedEvent.getTimeOffset()));
+        adInfo.put(ConvivaSdkConstants.DURATION, adStartedEvent.getDuration());
+        adInfo.put(ConvivaSdkConstants.IS_LIVE, convivaVideoAnalytics.getMetadataInfo().get(ConvivaSdkConstants.IS_LIVE));
 
-        if (ad.getData() instanceof VastAdData) {
-            VastAdData vastAdData = (VastAdData) ad.getData();
-            if (vastAdData.getAdTitle() != null) {
-                adInfo.put(ConvivaSdkConstants.ASSET_NAME, vastAdData.getAdTitle());
+        Ad ad = adStartedEvent.getAd();
+        if (ad != null) {
+            if (ad.getMediaFileUrl() != null) {
+                adInfo.put(ConvivaSdkConstants.STREAM_URL, ad.getMediaFileUrl());
+            }
+            if (ad.getId() != null) {
+                adInfo.put("c3.ad.id", ad.getId());
+            }
+
+            if (ad.getData() instanceof VastAdData) {
+                setVastAdMetadata((VastAdData) ad.getData(), adInfo);
             }
         }
         return adInfo;
+    }
+
+    private static void setVastAdMetadata(VastAdData vastAdData, Map<String, Object> adInfo) {
+        if (vastAdData.getAdTitle() != null) {
+            adInfo.put(ConvivaSdkConstants.ASSET_NAME, vastAdData.getAdTitle());
+        }
+        if (vastAdData.getCreative() != null && vastAdData.getCreative().getId() != null) {
+            adInfo.put("c3.ad.creativeId", vastAdData.getCreative().getId());
+        }
+        if (vastAdData.getAdDescription() != null) {
+            adInfo.put("c3.ad.description", vastAdData.getAdDescription());
+        }
+        if (vastAdData.getAdSystem() != null) {
+            adInfo.put("c3.ad.system", vastAdData.getAdSystem().getName());
+        }
+        List<AdSystem> wrapperAdSystems = vastAdData.getWrapperAdSystems();
+        if (!wrapperAdSystems.isEmpty()) {
+            adInfo.put("c3.ad.firstAdSystem", wrapperAdSystems.get(wrapperAdSystems.size() - 1).getName());
+        }
+        String[] wrapperAdIds = vastAdData.getWrapperAdIds();
+        if (wrapperAdIds.length != 0) {
+            adInfo.put("c3.ad.firstAdId", wrapperAdIds[wrapperAdIds.length - 1]);
+        }
+        List<String> wrapperCreativeIds = vastAdData.getWrapperCreativeIds();
+        if (!wrapperCreativeIds.isEmpty()) {
+            adInfo.put("c3.ad.firstCreativeId", wrapperCreativeIds.get(wrapperCreativeIds.size() - 1));
+        }
+    }
+
+    private ConvivaSdkConstants.AdPosition getAdPosition(double timeOffset) {
+        ConvivaSdkConstants.AdPosition adPosition = ConvivaSdkConstants.AdPosition.MIDROLL;
+        if (timeOffset == 0.0) {
+            adPosition = ConvivaSdkConstants.AdPosition.PREROLL;
+        } else if (timeOffset == bitmovinPlayer.getDuration()) {
+            adPosition = ConvivaSdkConstants.AdPosition.POSTROLL;
+        }
+        return adPosition;
     }
 
     private final EventListener<PlayerEvent.AdFinished> onAdFinishedListener = new EventListener<PlayerEvent.AdFinished>() {
