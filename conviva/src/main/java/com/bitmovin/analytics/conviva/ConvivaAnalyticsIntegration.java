@@ -6,6 +6,7 @@ import android.util.Log;
 
 import com.bitmovin.player.api.Player;
 import com.bitmovin.player.api.advertising.Ad;
+import com.bitmovin.player.api.advertising.AdData;
 import com.bitmovin.player.api.advertising.AdSourceType;
 import com.bitmovin.player.api.advertising.vast.AdSystem;
 import com.bitmovin.player.api.advertising.vast.VastAdData;
@@ -18,6 +19,7 @@ import com.bitmovin.player.api.source.Source;
 import com.bitmovin.player.api.source.SourceConfig;
 import com.conviva.sdk.ConvivaAdAnalytics;
 import com.conviva.sdk.ConvivaAnalytics;
+import com.conviva.sdk.ConvivaExperienceAnalytics;
 import com.conviva.sdk.ConvivaSdkConstants;
 import com.conviva.sdk.ConvivaVideoAnalytics;
 
@@ -95,6 +97,22 @@ public class ConvivaAnalyticsIntegration {
         }
 
         attachBitmovinEventListeners();
+        setUpAdAnalyticsCallback();
+    }
+
+    private void setUpAdAnalyticsCallback() {
+        convivaAdAnalytics.setCallback(new ConvivaExperienceAnalytics.ICallback() {
+            @Override
+            public void update() {
+                if (bitmovinPlayer.isAd()) {
+                    convivaAdAnalytics.reportAdMetric(ConvivaSdkConstants.PLAYBACK.PLAY_HEAD_TIME, ((long) (bitmovinPlayer.getCurrentTime() * 1000)));
+                }
+            }
+
+            @Override
+            public void update(String s) {
+            }
+        });
     }
 
     // region public methods
@@ -428,6 +446,10 @@ public class ConvivaAnalyticsIntegration {
     private synchronized void transitionState(ConvivaSdkConstants.PlayerState state) {
         Log.d(TAG, "Transitioning to :" + state.name());
         convivaVideoAnalytics.reportPlaybackMetric(ConvivaSdkConstants.PLAYBACK.PLAYER_STATE, state);
+        if (bitmovinPlayer.isAd()) {
+            Log.d(TAG, "Transitioning ad state to: " + state.name());
+            convivaAdAnalytics.reportAdMetric(ConvivaSdkConstants.PLAYBACK.PLAYER_STATE, state);
+        }
     }
 
     // region Listeners
@@ -619,6 +641,16 @@ public class ConvivaAnalyticsIntegration {
             convivaAdAnalytics.reportAdLoaded(adInfo);
             convivaAdAnalytics.reportAdStarted(adInfo);
             convivaAdAnalytics.reportAdMetric(ConvivaSdkConstants.PLAYBACK.PLAYER_STATE, ConvivaSdkConstants.PlayerState.PLAYING);
+            Ad ad = adStartedEvent.getAd();
+            if (ad != null) {
+                if (ad.getWidth() != 0 && ad.getHeight() != 0) {
+                    convivaAdAnalytics.reportAdMetric(ConvivaSdkConstants.PLAYBACK.RESOLUTION, ad.getWidth(), ad.getHeight());
+                }
+                AdData adData = ad.getData();
+                if (adData != null && adData.getBitrate() != null) {
+                    convivaAdAnalytics.reportAdMetric(ConvivaSdkConstants.PLAYBACK.BITRATE, adData.getBitrate());
+                }
+            }
         }
     };
 
