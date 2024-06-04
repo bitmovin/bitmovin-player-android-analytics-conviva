@@ -1,5 +1,5 @@
 ext {
-    bitmovinPlayerVersion = '3.69.0'
+    bitmovinPlayerVersion = '3.71.0'
     googleImaSdk = '3.31.0'
     googlePlayAdsIdentifier = '18.0.1'
 
