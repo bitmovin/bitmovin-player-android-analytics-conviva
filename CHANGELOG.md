@@ -17,6 +17,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Increased minimum required `compileSdk` version to `34` 
 - Increased `compileSdk` and `targetSdkVersion` to `34`
 - Ad break started and ended is now reported in `PlayerEvent.AdBreakStarted` and `PlayerEvent.AdBreakFinished`
+- Increased the `minSdkVersion` to 19
 
 ### Removed
 - Custom event for `AdSkipped` and `AdError`. Replaced by Conviva build in tracking
