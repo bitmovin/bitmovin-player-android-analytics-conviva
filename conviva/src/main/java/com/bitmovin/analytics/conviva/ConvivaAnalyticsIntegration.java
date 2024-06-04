@@ -635,7 +635,7 @@ public class ConvivaAnalyticsIntegration {
         adInfo.put("c3.ad.technology", "Client Side");
         if (adStartedEvent.getClientType() == AdSourceType.Ima) {
             adInfo.put(ConvivaSdkConstants.FRAMEWORK_NAME, "Google IMA SDK");
-            //tags.put(ConvivaSdkConstants.FRAMEWORK_VERSION, "3.31.0");// todo better way to provide version?
+            adInfo.put(ConvivaSdkConstants.FRAMEWORK_VERSION, "NA");
         } else {
             adInfo.put(ConvivaSdkConstants.FRAMEWORK_NAME, "Bitmovin");
             adInfo.put(ConvivaSdkConstants.FRAMEWORK_VERSION, playerHelper.getSdkVersionString());
