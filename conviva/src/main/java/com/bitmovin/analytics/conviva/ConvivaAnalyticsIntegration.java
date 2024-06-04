@@ -635,7 +635,10 @@ public class ConvivaAnalyticsIntegration {
         adInfo.put("c3.ad.technology", "Client Side");
         if (adStartedEvent.getClientType() == AdSourceType.Ima) {
             adInfo.put(ConvivaSdkConstants.FRAMEWORK_NAME, "Google IMA SDK");
-            adInfo.put(ConvivaSdkConstants.FRAMEWORK_VERSION, "NA");
+            adInfo.put(
+                    ConvivaSdkConstants.FRAMEWORK_VERSION,
+                    metadataOverrides.getImaSdkVersion() != null ? metadataOverrides.getImaSdkVersion() : "NA"
+            );
         } else {
             adInfo.put(ConvivaSdkConstants.FRAMEWORK_NAME, "Bitmovin");
             adInfo.put(ConvivaSdkConstants.FRAMEWORK_VERSION, playerHelper.getSdkVersionString());

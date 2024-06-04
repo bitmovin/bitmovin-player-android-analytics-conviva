@@ -20,6 +20,7 @@ public class MetadataOverrides {
     private Integer encodedFrameRate;
     private String defaultResource;
     private String streamUrl;
+    private String imaSdkVersion;
 
     public String getAssetName() {
         return assetName;
@@ -103,5 +104,17 @@ public class MetadataOverrides {
 
     public void setStreamUrl(String streamUrl) {
         this.streamUrl = streamUrl;
+    }
+
+    public String getImaSdkVersion() {
+        return imaSdkVersion;
+    }
+
+    /**
+     * Set the IMA SDK version to be tracked with client side ads of type
+     * {@link com.bitmovin.player.api.advertising.AdSourceType#Ima}.
+     */
+    public void setImaSdkVersion(String imaSdkVersion) {
+        this.imaSdkVersion = imaSdkVersion;
     }
 }

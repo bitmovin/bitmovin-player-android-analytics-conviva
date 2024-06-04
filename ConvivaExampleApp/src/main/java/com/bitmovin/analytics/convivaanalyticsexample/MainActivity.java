@@ -103,6 +103,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         customTags.put("custom_tag", "Episode");
         metadata.setCustom(customTags);
 
+        metadata.setImaSdkVersion("3.31.0");
+
         convivaAnalyticsIntegration.updateContentMetadata(metadata);
 
         // load source using the created source configuration
