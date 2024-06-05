@@ -17,5 +17,4 @@ jobs:
         with:
           distribution: 'zulu'
           java-version: '17'
-          architecture: ${{ inputs.architecture }}
       - run: ./gradlew build
