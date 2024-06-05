@@ -18,4 +18,4 @@ jobs:
           distribution: 'zulu'
           java-version: '17'
           architecture: ${{ inputs.architecture }}
-      - run: ./gradlew assemble
+      - run: ./gradlew build
