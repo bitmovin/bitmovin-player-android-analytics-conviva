@@ -3,7 +3,7 @@ package com.bitmovin.analytics.conviva;
 import com.bitmovin.player.api.Player;
 
 class BitmovinPlayerHelper {
-    private Player player;
+    private final Player player;
 
     BitmovinPlayerHelper(Player player) {
         this.player = player;
@@ -14,7 +14,7 @@ class BitmovinPlayerHelper {
     }
 
     String getStreamType() {
-        if (player.getSource() == null || player.getSource().getConfig() == null) {
+        if (player.getSource() == null) {
             return null;
         } else {
             return player.getSource().getConfig().getType().name();
@@ -22,7 +22,7 @@ class BitmovinPlayerHelper {
     }
 
     String getStreamUrl() {
-        if (player.getSource() == null || player.getSource().getConfig() == null) {
+        if (player.getSource() == null) {
             return null;
         } else {
             return player.getSource().getConfig().getUrl();

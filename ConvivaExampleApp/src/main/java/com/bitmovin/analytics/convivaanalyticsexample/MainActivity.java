@@ -9,11 +9,12 @@ import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.Switch;
 
-import com.bitmovin.analytics.conviva.ConvivaAnalyticsIntegration;;
+import com.bitmovin.analytics.conviva.ConvivaAnalyticsIntegration;
 import com.bitmovin.analytics.conviva.ConvivaConfig;
 import com.bitmovin.analytics.conviva.MetadataOverrides;
 import com.bitmovin.player.api.Player;
 import com.bitmovin.player.PlayerView;
+import com.bitmovin.player.api.PlayerBuilder;
 import com.bitmovin.player.api.source.SourceConfig;
 import com.bitmovin.player.api.PlayerConfig;
 import com.bitmovin.player.api.advertising.AdItem;
@@ -63,7 +64,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     protected void setupBitmovinPlayer() {
-        this.bitmovinPlayer = Player.create(this, buildPlayerConfiguration());
+        this.bitmovinPlayer = new PlayerBuilder(this)
+                .setPlayerConfig(buildPlayerConfiguration())
+                .disableAnalytics()
+                .build();
         this.bitmovinPlayerView = new PlayerView(this, this.bitmovinPlayer);
 
         LinearLayout playerUIView = this.findViewById(R.id.bitmovinPlayerUIView);
@@ -98,6 +102,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         Map<String, String> customTags = new HashMap<>();
         customTags.put("custom_tag", "Episode");
         metadata.setCustom(customTags);
+
+        metadata.setImaSdkVersion("3.31.0");
 
         convivaAnalyticsIntegration.updateContentMetadata(metadata);
 
