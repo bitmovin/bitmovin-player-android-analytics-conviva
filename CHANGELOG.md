@@ -4,20 +4,20 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-## [Unreleased]
+## 2.4.0 - 2024-06-06
 ### Added
 - Ad analytics for ad event reporting
 
 ### Changed
 - Updated Bitmovin Player to `3.71.0`
 - Updated IMA SDK to `3.31.0`
-- Updated Kotlin to `1.9.23`
 - Updated conviva-core to `4.0.37`
-- Updated Gradle wrapper to `8.2` and AGP to `8.2.2`
-- Increased minimum required `compileSdk` version to `34` 
+- Increased minimum required `compileSdk` version to `34`
 - Increased `compileSdk` and `targetSdkVersion` to `34`
+- Increased `minSdkVersion` to `19`
 - Ad break started and ended is now reported in `PlayerEvent.AdBreakStarted` and `PlayerEvent.AdBreakFinished`
-- Increased the `minSdkVersion` to 19
+- Updated Kotlin to `1.9.23`
+- Updated Gradle wrapper to `8.2` and AGP to `8.2.2`
 
 ### Removed
 - Custom event for `AdSkipped` and `AdError`. Replaced by Conviva build in tracking
