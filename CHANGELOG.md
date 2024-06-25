@@ -4,6 +4,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## Unreleased
+
+### Fixed
+- Potential exception when determining the IMA SDK version on ad start
+
 ## 2.4.0 - 2024-06-06
 ### Added
 - Ad analytics for ad event reporting
