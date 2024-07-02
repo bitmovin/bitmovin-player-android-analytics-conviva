@@ -2,6 +2,7 @@ package com.bitmovin.analytics.conviva.ssai;
 
 import android.util.Log;
 
+import com.bitmovin.player.api.media.video.quality.VideoQuality;
 import com.conviva.sdk.ConvivaAdAnalytics;
 import com.conviva.sdk.ConvivaSdkConstants;
 import com.conviva.sdk.ConvivaVideoAnalytics;
@@ -14,9 +15,9 @@ public class DefaultSsaiApi implements SsaiApi {
     private static final String TAG = "DefaultSsaiApi";
     private final ConvivaVideoAnalytics convivaVideoAnalytics;
     private final ConvivaAdAnalytics convivaAdAnalytics;
-    private final PlaybackStateProvider player;
+    private final PlaybackInfoProvider player;
 
-    public DefaultSsaiApi(ConvivaVideoAnalytics convivaVideoAnalytics, ConvivaAdAnalytics convivaAdAnalytics, PlaybackStateProvider player) {
+    public DefaultSsaiApi(ConvivaVideoAnalytics convivaVideoAnalytics, ConvivaAdAnalytics convivaAdAnalytics, PlaybackInfoProvider player) {
         this.convivaVideoAnalytics = convivaVideoAnalytics;
         this.convivaAdAnalytics = convivaAdAnalytics;
         this.player = player;
@@ -70,7 +71,17 @@ public class DefaultSsaiApi implements SsaiApi {
         }
         Log.d(TAG, "Server side ad started");
         convivaAdAnalytics.reportAdStarted(convertToConvivaAdInfo(adInfo));
+        reportInitialAdMetrics();
+    }
+
+    private void reportInitialAdMetrics() {
         convivaAdAnalytics.reportAdMetric(ConvivaSdkConstants.PLAYBACK.PLAYER_STATE, player.getPlayerState());
+        VideoQuality videoQuality = player.getPlaybackVideoData();
+        if (videoQuality != null) {
+            convivaAdAnalytics.reportAdMetric(ConvivaSdkConstants.PLAYBACK.RESOLUTION, videoQuality.getHeight(), videoQuality.getWidth());
+            convivaAdAnalytics.reportAdMetric(ConvivaSdkConstants.PLAYBACK.BITRATE, videoQuality.getBitrate() / 1000);
+            convivaAdAnalytics.reportAdMetric(ConvivaSdkConstants.PLAYBACK.RENDERED_FRAMERATE, Math.round(videoQuality.getFrameRate()));
+        }
     }
 
     @Override
