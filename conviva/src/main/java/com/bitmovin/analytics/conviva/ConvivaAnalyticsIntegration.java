@@ -472,9 +472,7 @@ public class ConvivaAnalyticsIntegration {
         @Override
         public void onEvent(PlayerEvent.Error event) {
             Log.d(TAG, "[Player Event] Error");
-            String message = String.format("%s - %s", event.getCode(), event.getMessage());
-            convivaVideoAnalytics.reportPlaybackError(message, ConvivaSdkConstants.ErrorSeverity.FATAL);
-            internalEndSession();
+            handleError(String.format("%s - %s", event.getCode(), event.getMessage()));
         }
     };
 
@@ -482,11 +480,15 @@ public class ConvivaAnalyticsIntegration {
         @Override
         public void onEvent(SourceEvent.Error event) {
             Log.d(TAG, "[Source Event] Error");
-            String message = String.format("%s - %s", event.getCode(), event.getMessage());
-            convivaVideoAnalytics.reportPlaybackError(message, ConvivaSdkConstants.ErrorSeverity.FATAL);
-            internalEndSession();
+            handleError(String.format("%s - %s", event.getCode(), event.getMessage()));
         }
     };
+
+    private void handleError(String message) {
+        ConvivaSdkConstants.ErrorSeverity severity = ConvivaSdkConstants.ErrorSeverity.FATAL;
+        convivaVideoAnalytics.reportPlaybackError(message, severity);
+        internalEndSession();
+    }
 
     private final EventListener<PlayerEvent.Warning> onPlayerWarningListener = new EventListener<PlayerEvent.Warning>() {
         @Override
