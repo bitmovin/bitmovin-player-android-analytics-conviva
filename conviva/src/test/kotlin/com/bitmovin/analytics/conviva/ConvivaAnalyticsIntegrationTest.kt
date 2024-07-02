@@ -1,19 +1,31 @@
 package com.bitmovin.analytics.conviva
 
 import android.content.Context
+import android.os.Handler
 import android.util.Log
+import com.bitmovin.analytics.conviva.ssai.DefaultSsaiApi
 import com.bitmovin.player.api.Player
+import com.bitmovin.player.api.deficiency.PlayerErrorCode
 import com.bitmovin.player.api.event.Event
 import com.bitmovin.player.api.event.EventListener
 import com.bitmovin.player.api.event.PlayerEvent
 import com.bitmovin.player.api.event.SourceEvent
 import com.conviva.sdk.ConvivaAdAnalytics
+import com.conviva.sdk.ConvivaSdkConstants
 import com.conviva.sdk.ConvivaVideoAnalytics
 import io.mockk.clearMocks
 import io.mockk.every
+import io.mockk.just
 import io.mockk.mockk
+import io.mockk.mockkConstructor
 import io.mockk.mockkStatic
+import io.mockk.runs
+import io.mockk.unmockkConstructor
+import io.mockk.unmockkStatic
+import io.mockk.verify
 import org.junit.After
+import org.junit.AfterClass
+import org.junit.Before
 import org.junit.BeforeClass
 import org.junit.Test
 import strikt.api.expectThat
@@ -26,43 +38,69 @@ class ConvivaAnalyticsIntegrationTest {
     private val player: MockPlayer = MockPlayer(mockedPlayer)
     private val videoAnalytics: ConvivaVideoAnalytics = mockk(relaxed = true)
     private val adAnalytics: ConvivaAdAnalytics = mockk(relaxed = true)
+    private val ssaiApi: DefaultSsaiApi = mockk()
     private val context: Context = mockk()
 
     private lateinit var convivaAnalyticsIntegration: ConvivaAnalyticsIntegration
 
-    @After
-    fun afterTest() {
-        clearMocks(mockedPlayer)
-    }
+    @Before
+    fun beforeTest() {
+        with(ssaiApi) {
+            every { isAdBreakActive } returns false
+            every { reset() } just runs
+        }
 
-    @Test
-    fun `initializing subscribes to player events`() {
         convivaAnalyticsIntegration = ConvivaAnalyticsIntegration(
                 player,
                 "",
                 context,
                 ConvivaConfig(),
                 videoAnalytics,
-                adAnalytics
+                adAnalytics,
+                ssaiApi,
         )
+    }
 
+    @After
+    fun afterTest() {
+        clearMocks(mockedPlayer, ssaiApi, videoAnalytics, adAnalytics)
+    }
+
+    @Test
+    fun `initializing subscribes to player events`() {
         expectThat(player.listeners.keys).containsExactlyInAnyOrder(attachedPlayerEvents)
     }
 
     @Test
     fun `releasing unsubscribes from all events`() {
-        convivaAnalyticsIntegration = ConvivaAnalyticsIntegration(
-                player,
-                "",
-                context,
-                ConvivaConfig(),
-                videoAnalytics,
-                adAnalytics
-        )
-
         convivaAnalyticsIntegration.release()
 
         expectThat(player.listeners.values.flatten()).isEmpty()
+    }
+
+    @Test
+    fun `reports error to ad analytics during an SSAI ad break`() {
+        every { ssaiApi.isAdBreakActive } returns true
+
+        player.listeners[PlayerEvent.Error::class]?.forEach { it(PlayerEvent.Error(PlayerErrorCode.General, "error")) }
+        verify { adAnalytics.reportAdError(any(), ConvivaSdkConstants.ErrorSeverity.FATAL) }
+    }
+
+    @Test
+    fun `reports player state changes to ad analytics during an SSAI ad break`() {
+        every { ssaiApi.isAdBreakActive } returns true
+
+        player.listeners[PlayerEvent.Playing::class]?.forEach { it(PlayerEvent.Playing(0.0)) }
+        verify { adAnalytics.reportAdMetric(ConvivaSdkConstants.PLAYBACK.PLAYER_STATE, ConvivaSdkConstants.PlayerState.PLAYING) }
+
+        player.listeners[PlayerEvent.Paused::class]?.forEach { it(PlayerEvent.Paused(0.0)) }
+        verify { adAnalytics.reportAdMetric(ConvivaSdkConstants.PLAYBACK.PLAYER_STATE, ConvivaSdkConstants.PlayerState.PAUSED) }
+
+        player.listeners[PlayerEvent.StallStarted::class]?.forEach { it(PlayerEvent.StallStarted()) }
+        verify { adAnalytics.reportAdMetric(ConvivaSdkConstants.PLAYBACK.PLAYER_STATE, ConvivaSdkConstants.PlayerState.BUFFERING) }
+
+        player.listeners[PlayerEvent.StallEnded::class]?.forEach { it(PlayerEvent.StallEnded()) }
+        verify { adAnalytics.reportAdMetric(ConvivaSdkConstants.PLAYBACK.PLAYER_STATE, ConvivaSdkConstants.PlayerState.PLAYING) }
     }
 
     companion object {
@@ -74,6 +112,19 @@ class ConvivaAnalyticsIntegrationTest {
             every { Log.d(any(), any()) } returns 0
             every { Log.i(any(), any()) } returns 0
             every { Log.e(any(), any()) } returns 0
+
+            mockkConstructor(Handler::class)
+            every { anyConstructed<Handler>().postDelayed(any(), any()) } answers {
+                firstArg<Runnable>().run()
+                true
+            }
+        }
+
+        @JvmStatic
+        @AfterClass
+        fun afterClass() {
+            unmockkStatic(Log::class)
+            unmockkConstructor(Handler::class)
         }
     }
 }
