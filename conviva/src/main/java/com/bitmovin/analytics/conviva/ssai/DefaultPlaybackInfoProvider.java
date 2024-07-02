@@ -1,12 +1,13 @@
 package com.bitmovin.analytics.conviva.ssai;
 
 import com.bitmovin.player.api.Player;
+import com.bitmovin.player.api.media.video.quality.VideoQuality;
 import com.conviva.sdk.ConvivaSdkConstants;
 
-public class DefaultPlaybackStateProvider implements PlaybackStateProvider {
+public class DefaultPlaybackInfoProvider implements PlaybackInfoProvider {
     private final Player player;
 
-    public DefaultPlaybackStateProvider(Player player) {
+    public DefaultPlaybackInfoProvider(Player player) {
         this.player = player;
     }
 
@@ -21,5 +22,10 @@ public class DefaultPlaybackStateProvider implements PlaybackStateProvider {
             state = ConvivaSdkConstants.PlayerState.PLAYING;
         }
         return state;
+    }
+
+    @Override
+    public VideoQuality getPlaybackVideoData() {
+        return player.getPlaybackVideoData();
     }
 }

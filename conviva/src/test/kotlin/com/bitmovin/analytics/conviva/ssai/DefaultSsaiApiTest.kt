@@ -1,6 +1,7 @@
 package com.bitmovin.analytics.conviva.ssai
 
 import android.util.Log
+import com.bitmovin.player.api.media.video.quality.VideoQuality
 import com.conviva.sdk.ConvivaAdAnalytics
 import com.conviva.sdk.ConvivaSdkConstants
 import com.conviva.sdk.ConvivaVideoAnalytics
@@ -29,29 +30,42 @@ import strikt.assertions.isTrue
 class DefaultSsaiApiTest {
     private val videoAnalytics: ConvivaVideoAnalytics = mockk(relaxed = true)
     private val adAnalytics: ConvivaAdAnalytics = mockk()
-    private val playbackStateProvider = mockk<PlaybackStateProvider>()
-    private val ssaiApi = DefaultSsaiApi(
-            videoAnalytics,
-            adAnalytics,
-            playbackStateProvider,
-    )
+    private val playbackInfoProvider = mockk<PlaybackInfoProvider>()
+    private lateinit var ssaiApi: DefaultSsaiApi
 
     @Before
     fun beforeTest() {
-        every { playbackStateProvider.playerState } returns ConvivaSdkConstants.PlayerState.PLAYING
+        every { playbackInfoProvider.playerState } returns ConvivaSdkConstants.PlayerState.PLAYING
+        every { playbackInfoProvider.playbackVideoData } returns VideoQuality(
+                "videoQualityId",
+                "videoQualityLabel",
+                1000,
+                "codec",
+                60.1F,
+                1600,
+                800,
+        )
         with(adAnalytics) {
             every { reportAdMetric(ConvivaSdkConstants.PLAYBACK.PLAYER_STATE, any()) } just runs
+            every { reportAdMetric(ConvivaSdkConstants.PLAYBACK.RESOLUTION, any(), any()) } just runs
+            every { reportAdMetric(ConvivaSdkConstants.PLAYBACK.BITRATE, any()) } just runs
+            every { reportAdMetric(ConvivaSdkConstants.PLAYBACK.RENDERED_FRAMERATE, any()) } just runs
             every { reportAdStarted(any()) } just runs
             every { reportAdEnded() } just runs
             every { reportAdSkipped() } just runs
             every { setAdInfo(any()) } just runs
         }
+
+        ssaiApi = DefaultSsaiApi(
+                videoAnalytics,
+                adAnalytics,
+                playbackInfoProvider,
+        )
     }
 
     @After
     fun afterTest() {
-        clearMocks(videoAnalytics, adAnalytics, playbackStateProvider)
-        ssaiApi.reset()
+        clearMocks(videoAnalytics, adAnalytics, playbackInfoProvider)
     }
 
 
@@ -122,7 +136,7 @@ class DefaultSsaiApiTest {
 
     @Test
     fun `reports ad playback state playing to conviva when ad starts while paused`() {
-        every { playbackStateProvider.playerState } returns ConvivaSdkConstants.PlayerState.PAUSED
+        every { playbackInfoProvider.playerState } returns ConvivaSdkConstants.PlayerState.PAUSED
 
         ssaiApi.reportAdBreakStarted()
         ssaiApi.reportAdStarted(SsaiApi.AdInfo())
@@ -137,7 +151,7 @@ class DefaultSsaiApiTest {
 
     @Test
     fun `reports ad playback state buffering to conviva when ad starts while stalling`() {
-        every { playbackStateProvider.playerState } returns
+        every { playbackInfoProvider.playerState } returns
                 ConvivaSdkConstants.PlayerState.BUFFERING
 
         ssaiApi.reportAdBreakStarted()
@@ -148,6 +162,18 @@ class DefaultSsaiApiTest {
                     ConvivaSdkConstants.PLAYBACK.PLAYER_STATE,
                     ConvivaSdkConstants.PlayerState.BUFFERING,
             )
+        }
+    }
+
+    @Test
+    fun `reports current playback video quality to conviva on ad start`() {
+        ssaiApi.reportAdBreakStarted()
+        ssaiApi.reportAdStarted(SsaiApi.AdInfo())
+
+        verify {
+            adAnalytics.reportAdMetric(ConvivaSdkConstants.PLAYBACK.BITRATE, 1)
+            adAnalytics.reportAdMetric(ConvivaSdkConstants.PLAYBACK.RESOLUTION, 800, 1600)
+            adAnalytics.reportAdMetric(ConvivaSdkConstants.PLAYBACK.RENDERED_FRAMERATE, 60)
         }
     }
 
