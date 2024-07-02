@@ -145,6 +145,10 @@ public class ConvivaAnalyticsIntegration {
     }
 
     // region public methods
+    public SsaiApi getSsai() {
+        return ssai;
+    }
+
     public void sendCustomApplicationEvent(String name) {
         sendCustomApplicationEvent(name, new HashMap<>());
     }
