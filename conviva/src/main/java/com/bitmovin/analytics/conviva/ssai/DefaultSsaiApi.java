@@ -89,7 +89,6 @@ public class DefaultSsaiApi implements SsaiApi {
             Log.d(TAG, "No ad break active");
             return;
         }
-        isAdBreakActive = false;
         Log.d(TAG, "Server side ad skipped");
         convivaAdAnalytics.reportAdSkipped();
     }
