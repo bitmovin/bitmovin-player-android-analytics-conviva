@@ -1,6 +1,7 @@
 apply plugin: 'com.android.library'
 apply plugin: 'com.jfrog.artifactory'
 apply plugin: 'maven-publish'
+apply plugin: 'kotlin-android'
 apply from: "../bitmovinpropertiesloader.gradle"
 
 def packageName = 'com.bitmovin.analytics'
@@ -31,6 +32,9 @@ android {
     buildFeatures {
         buildConfig true
     }
+    kotlinOptions {
+        jvmTarget = '1.8'
+    }
     publishing {
         singleVariant("release") {
             withSourcesJar()
@@ -43,6 +47,8 @@ dependencies {
     implementation bitmovinPlayerDependencies.bitmovinPlayer
 
     testImplementation testingDependencies.junit
+    testImplementation testingDependencies.mockk
+    testImplementation testingDependencies.strikt
     androidTestImplementation testingDependencies.androidx_junit
     androidTestImplementation testingDependencies.androidx_espresso_core
 }
@@ -53,6 +59,16 @@ publishing {
             groupId packageName
             version = libraryVersion
             artifactId project.getName()
+
+            // Exclude kotlin-stdlib from the pom file as it is only needed for testing
+            pom.withXml {
+                Node pomNode = asNode()
+                pomNode.dependencies.'*'.findAll() {
+                    it.artifactId.text() == 'kotlin-stdlib'
+                }.each() {
+                    it.parent().remove(it)
+                }
+            }
 
             afterEvaluate {
                 from components.release
