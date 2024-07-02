@@ -35,6 +35,8 @@ public interface SsaiApi {
 
     /**
      * Reports the start of a server-side ad.
+     * <p>
+     * Has to be called after calling the <code>reportAdBreakStarted</code> method.
      *
      * @param adInfo Object containing metadata about the server-side ad.
      */
