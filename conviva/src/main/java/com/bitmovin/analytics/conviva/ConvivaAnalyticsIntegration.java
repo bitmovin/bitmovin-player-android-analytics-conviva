@@ -104,7 +104,7 @@ public class ConvivaAnalyticsIntegration {
         convivaAdAnalytics.setCallback(new ConvivaExperienceAnalytics.ICallback() {
             @Override
             public void update() {
-                if (bitmovinPlayer.isAd()) {
+                if (isAdActive()) {
                     convivaAdAnalytics.reportAdMetric(ConvivaSdkConstants.PLAYBACK.PLAY_HEAD_TIME, ((long) (bitmovinPlayer.getCurrentTime() * 1000)));
                 }
             }
@@ -113,6 +113,10 @@ public class ConvivaAnalyticsIntegration {
             public void update(String s) {
             }
         });
+    }
+
+    private boolean isAdActive() {
+        return bitmovinPlayer.isAd();
     }
 
     // region public methods
@@ -446,7 +450,7 @@ public class ConvivaAnalyticsIntegration {
     private synchronized void transitionState(ConvivaSdkConstants.PlayerState state) {
         Log.d(TAG, "Transitioning to :" + state.name());
         convivaVideoAnalytics.reportPlaybackMetric(ConvivaSdkConstants.PLAYBACK.PLAYER_STATE, state);
-        if (bitmovinPlayer.isAd()) {
+        if (isAdActive()) {
             Log.d(TAG, "Transitioning ad state to: " + state.name());
             convivaAdAnalytics.reportAdMetric(ConvivaSdkConstants.PLAYBACK.PLAYER_STATE, state);
         }
@@ -468,9 +472,7 @@ public class ConvivaAnalyticsIntegration {
         @Override
         public void onEvent(PlayerEvent.Error event) {
             Log.d(TAG, "[Player Event] Error");
-            String message = String.format("%s - %s", event.getCode(), event.getMessage());
-            convivaVideoAnalytics.reportPlaybackError(message, ConvivaSdkConstants.ErrorSeverity.FATAL);
-            internalEndSession();
+            handleError(String.format("%s - %s", event.getCode(), event.getMessage()));
         }
     };
 
@@ -478,11 +480,15 @@ public class ConvivaAnalyticsIntegration {
         @Override
         public void onEvent(SourceEvent.Error event) {
             Log.d(TAG, "[Source Event] Error");
-            String message = String.format("%s - %s", event.getCode(), event.getMessage());
-            convivaVideoAnalytics.reportPlaybackError(message, ConvivaSdkConstants.ErrorSeverity.FATAL);
-            internalEndSession();
+            handleError(String.format("%s - %s", event.getCode(), event.getMessage()));
         }
     };
+
+    private void handleError(String message) {
+        ConvivaSdkConstants.ErrorSeverity severity = ConvivaSdkConstants.ErrorSeverity.FATAL;
+        convivaVideoAnalytics.reportPlaybackError(message, severity);
+        internalEndSession();
+    }
 
     private final EventListener<PlayerEvent.Warning> onPlayerWarningListener = new EventListener<PlayerEvent.Warning>() {
         @Override
