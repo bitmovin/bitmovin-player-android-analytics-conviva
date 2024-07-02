@@ -4,6 +4,9 @@ import android.content.Context;
 import android.os.Handler;
 import android.util.Log;
 
+import com.bitmovin.analytics.conviva.ssai.DefaultPlaybackStateProvider;
+import com.bitmovin.analytics.conviva.ssai.DefaultSsaiApi;
+import com.bitmovin.analytics.conviva.ssai.SsaiApi;
 import com.bitmovin.player.api.Player;
 import com.bitmovin.player.api.advertising.Ad;
 import com.bitmovin.player.api.advertising.AdData;
@@ -36,6 +39,8 @@ public class ConvivaAnalyticsIntegration {
     private final ConvivaVideoAnalytics convivaVideoAnalytics;
     private final ConvivaAdAnalytics convivaAdAnalytics;
     private MetadataOverrides metadataOverrides;
+    private final DefaultSsaiApi ssai;
+
 
     // Wrapper to extract bitmovinPlayer helper methods
     private final BitmovinPlayerHelper playerHelper;
@@ -72,6 +77,20 @@ public class ConvivaAnalyticsIntegration {
                                        ConvivaVideoAnalytics videoAnalytics,
                                        ConvivaAdAnalytics adAnalytics
     ) {
+        this(player, customerKey, context, config, videoAnalytics, adAnalytics, null);
+    }
+
+    /**
+     * For testing purposes only.
+     */
+    ConvivaAnalyticsIntegration(Player player,
+                                String customerKey,
+                                Context context,
+                                ConvivaConfig config,
+                                ConvivaVideoAnalytics videoAnalytics,
+                                ConvivaAdAnalytics adAnalytics,
+                                DefaultSsaiApi ssai
+    ) {
         this.bitmovinPlayer = player;
         this.playerHelper = new BitmovinPlayerHelper(player);
         Map<String, Object> settings = new HashMap<>();
@@ -94,6 +113,12 @@ public class ConvivaAnalyticsIntegration {
             convivaAdAnalytics = ConvivaAnalytics.buildAdAnalytics(context, convivaVideoAnalytics);
         } else {
             convivaAdAnalytics = adAnalytics;
+        }
+
+        if (ssai == null) {
+            this.ssai = new DefaultSsaiApi(convivaVideoAnalytics, convivaAdAnalytics, new DefaultPlaybackStateProvider(player));
+        } else {
+            this.ssai = ssai;
         }
 
         attachBitmovinEventListeners();
