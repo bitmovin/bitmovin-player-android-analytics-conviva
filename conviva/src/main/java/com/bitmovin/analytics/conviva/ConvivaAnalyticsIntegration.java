@@ -141,7 +141,7 @@ public class ConvivaAnalyticsIntegration {
     }
 
     private boolean isAdActive() {
-        return bitmovinPlayer.isAd();
+        return bitmovinPlayer.isAd() || ssai.isAdBreakActive();
     }
 
     // region public methods
@@ -389,6 +389,7 @@ public class ConvivaAnalyticsIntegration {
     }
 
     private void internalEndSession() {
+        ssai.reset();
         contentMetadataBuilder.reset();
         if (!isSessionActive) {
             return;
