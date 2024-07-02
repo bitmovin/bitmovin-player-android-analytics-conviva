@@ -516,6 +516,9 @@ public class ConvivaAnalyticsIntegration {
 
     private void handleError(String message) {
         ConvivaSdkConstants.ErrorSeverity severity = ConvivaSdkConstants.ErrorSeverity.FATAL;
+        if (ssai.isAdBreakActive()) {
+            convivaAdAnalytics.reportAdError(message, severity);
+        }
         convivaVideoAnalytics.reportPlaybackError(message, severity);
         internalEndSession();
     }
