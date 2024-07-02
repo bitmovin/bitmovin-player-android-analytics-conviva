@@ -8,7 +8,9 @@ import androidx.test.core.app.ApplicationProvider
 import com.bitmovin.analytics.conviva.ConvivaAnalyticsIntegration
 import com.bitmovin.analytics.conviva.ConvivaConfig
 import com.bitmovin.analytics.conviva.MetadataOverrides
+import com.bitmovin.analytics.conviva.testapp.framework.Sources
 import com.bitmovin.player.api.source.Source
+import com.bitmovin.player.api.source.SourceBuilder
 import com.bitmovin.player.api.source.SourceConfig
 import com.bitmovin.player.api.source.SourceType
 import com.conviva.sdk.ConvivaAnalytics
@@ -32,12 +34,7 @@ open class TestBase {
     ) as HashMap<String, String>
     val CUSTOM_ERROR_MESSAGE = "CUSTOM_ERROR_MESSAGE"
 
-    val DEFAULT_DASH_VOD_SOURCE = Source.create(
-        SourceConfig(
-            "https://bitmovin-a.akamaihd.net/content/MI201109210084_1/mpds/f08e80da-bf1d-4e3d-8899-f0f6155f6efa.mpd",
-            SourceType.Dash
-        )
-    )
+    val DEFAULT_DASH_VOD_SOURCE = SourceBuilder(Sources.Dash.basic).build()
     val DEFAULT_DASH_VOD_SOURCE_DURATION = 210
     val DEFAULT_DASH_LIVE_SOURCE = Source.create(
         SourceConfig(
