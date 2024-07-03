@@ -11,8 +11,10 @@ import io.mockk.mockk
 import io.mockk.mockkStatic
 import io.mockk.runs
 import io.mockk.slot
+import io.mockk.unmockkStatic
 import io.mockk.verify
 import org.junit.After
+import org.junit.AfterClass
 import org.junit.Before
 import org.junit.BeforeClass
 import org.junit.Test
@@ -189,7 +191,7 @@ class DefaultSsaiApiTest {
         ssaiApi.reportAdSkipped()
 
         verify { adAnalytics.reportAdSkipped() }
-        expectThat(ssaiApi.isAdBreakActive).isFalse()
+        expectThat(ssaiApi.isAdBreakActive).isTrue()
     }
 
     @Test
@@ -244,6 +246,12 @@ class DefaultSsaiApiTest {
             every { Log.d(any(), any()) } returns 0
             every { Log.i(any(), any()) } returns 0
             every { Log.e(any(), any()) } returns 0
+        }
+
+        @JvmStatic
+        @AfterClass
+        fun afterClass() {
+            unmockkStatic(Log::class)
         }
     }
 }
