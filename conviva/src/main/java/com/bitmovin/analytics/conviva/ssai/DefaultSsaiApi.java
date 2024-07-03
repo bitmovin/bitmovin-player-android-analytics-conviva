@@ -70,7 +70,7 @@ public class DefaultSsaiApi implements SsaiApi {
             return;
         }
         Log.d(TAG, "Server side ad started");
-        convivaAdAnalytics.reportAdStarted(convertToConvivaAdInfo(adInfo));
+        convivaAdAnalytics.reportAdStarted(convertToConvivaAdInfo(adInfo, convivaVideoAnalytics.getMetadataInfo()));
         convivaAdAnalytics.reportAdMetric(ConvivaSdkConstants.PLAYBACK.PLAYER_STATE, player.getPlayerState());
     }
 
@@ -102,11 +102,27 @@ public class DefaultSsaiApi implements SsaiApi {
         }
         Log.d(TAG, "Setting ad info");
 
-        convivaAdAnalytics.setAdInfo(convertToConvivaAdInfo(adInfo));
+        convivaAdAnalytics.setAdInfo(convertToConvivaAdInfo(adInfo, convivaVideoAnalytics.getMetadataInfo()));
     }
 
-    private static Map<String, Object> convertToConvivaAdInfo(AdInfo adInfo) {
+    private static Map<String, Object> convertToConvivaAdInfo(
+            AdInfo adInfo,
+            Map<String, Object> mainContentMetadata
+    ) {
         HashMap<String, Object> convivaAdInfo = new HashMap<>();
+
+        setDefaults(convivaAdInfo);
+        setFromMainContent(mainContentMetadata, convivaAdInfo);
+        setFromAdInfo(adInfo, convivaAdInfo);
+
+        if (adInfo.getAdditionalMetadata() != null) {
+            convivaAdInfo.putAll(adInfo.getAdditionalMetadata());
+        }
+
+        return convivaAdInfo;
+    }
+
+    private static void setDefaults(HashMap<String, Object> convivaAdInfo) {
         convivaAdInfo.put("c3.ad.id", "NA");
         convivaAdInfo.put("c3.ad.system", "NA");
         convivaAdInfo.put("c3.ad.mediaFileApiFramework", "NA");
@@ -114,7 +130,25 @@ public class DefaultSsaiApi implements SsaiApi {
         convivaAdInfo.put("c3.ad.firstAdId", "NA");
         convivaAdInfo.put("c3.ad.firstCreativeId", "NA");
         convivaAdInfo.put("c3.ad.technology", "Server Side");
+    }
 
+    private static void setFromMainContent(Map<String, Object> mainContentMetadata, HashMap<String, Object> convivaAdInfo) {
+        maybeCopyFromMainContent(mainContentMetadata, convivaAdInfo, ConvivaSdkConstants.STREAM_URL);
+        maybeCopyFromMainContent(mainContentMetadata, convivaAdInfo, ConvivaSdkConstants.ASSET_NAME);
+        maybeCopyFromMainContent(mainContentMetadata, convivaAdInfo, ConvivaSdkConstants.IS_LIVE);
+        maybeCopyFromMainContent(mainContentMetadata, convivaAdInfo, ConvivaSdkConstants.DEFAULT_RESOURCE);
+        maybeCopyFromMainContent(mainContentMetadata, convivaAdInfo, ConvivaSdkConstants.ENCODED_FRAMERATE);
+        maybeCopyFromMainContent(mainContentMetadata, convivaAdInfo, "streamType");
+        maybeCopyFromMainContent(mainContentMetadata, convivaAdInfo, "integrationVersion");
+    }
+
+    private static void maybeCopyFromMainContent(Map<String, Object> mainContentMetadata, HashMap<String, Object> convivaAdInfo, String key) {
+        if (mainContentMetadata.containsKey(key)) {
+            convivaAdInfo.put(key, mainContentMetadata.get(key));
+        }
+    }
+
+    private static void setFromAdInfo(AdInfo adInfo, HashMap<String, Object> convivaAdInfo) {
         convivaAdInfo.put("c3.ad.isSlate", adInfo.isSlate());
 
         if (adInfo.getTitle() != null) {
@@ -135,11 +169,6 @@ public class DefaultSsaiApi implements SsaiApi {
         if (adInfo.getAdStitcher() != null) {
             convivaAdInfo.put("c3.ad.stitcher", adInfo.getAdStitcher());
         }
-        if (adInfo.getAdditionalMetadata() != null) {
-            convivaAdInfo.putAll(adInfo.getAdditionalMetadata());
-        }
-
-        return convivaAdInfo;
     }
 
     private static ConvivaSdkConstants.AdPosition toConvivaAdPosition(AdPosition position) {
