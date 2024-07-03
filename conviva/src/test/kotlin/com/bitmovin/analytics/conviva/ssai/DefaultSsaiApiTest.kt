@@ -189,6 +189,29 @@ class DefaultSsaiApiTest {
     }
 
     @Test
+    fun `reports ad start with main content metadata when ad starts without overwriting it`() {
+        every { videoAnalytics.metadataInfo } returns mapOf(
+                "streamType" to "mainContentStreamType",
+                ConvivaSdkConstants.ASSET_NAME to "mainContentTitle",
+        )
+
+        ssaiApi.reportAdBreakStarted()
+        ssaiApi.reportAdStarted(SsaiApi.AdInfo().apply {
+            title = "overwrittenTitle"
+        })
+
+        val slot = slot<MutableMap<String, Any>>()
+        verify {
+            adAnalytics.reportAdStarted(capture(slot))
+        }
+
+        expectThat(slot){
+            get { captured[ConvivaSdkConstants.ASSET_NAME] }.isEqualTo("overwrittenTitle")
+            get { captured["streamType"] }.isEqualTo("mainContentStreamType")
+        }
+    }
+
+    @Test
     fun `reports ad end to conviva when ad finished`() {
         ssaiApi.reportAdBreakStarted()
         ssaiApi.reportAdStarted(SsaiApi.AdInfo())
