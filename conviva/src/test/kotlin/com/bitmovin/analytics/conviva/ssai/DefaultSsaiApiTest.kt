@@ -256,10 +256,14 @@ class DefaultSsaiApiTest {
     }
 
     @Test
-    fun `sets the ad break state to false when resetting`() {
+    fun `ends potential ads and ad breaks when resetting`() {
         ssaiApi.reportAdBreakStarted()
+        ssaiApi.reportAdStarted(SsaiApi.AdInfo())
+
         ssaiApi.reset()
 
+        verify { adAnalytics.reportAdEnded() }
+        verify { videoAnalytics.reportAdBreakEnded() }
         expectThat(ssaiApi.isAdBreakActive).isFalse()
     }
 

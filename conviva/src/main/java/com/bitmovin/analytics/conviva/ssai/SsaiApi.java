@@ -7,7 +7,7 @@ import java.util.Map;
  */
 public interface SsaiApi {
     /**
-     * Checks if a server-side ad break is currently active.
+     * Reports if a server-side ad break is currently active.
      *
      * @return <code>true</code> if a server-side ad break is active, <code>false</code> otherwise.
      */
@@ -35,6 +35,8 @@ public interface SsaiApi {
 
     /**
      * Reports the start of a server-side ad.
+     * <p>
+     * Has to be called after calling the <code>reportAdBreakStarted</code> method.
      *
      * @param adInfo Object containing metadata about the server-side ad.
      */

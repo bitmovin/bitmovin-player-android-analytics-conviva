@@ -36,7 +36,8 @@ public class DefaultSsaiApi implements SsaiApi {
     }
 
     public void reset() {
-        isAdBreakActive = false;
+        reportAdFinished();
+        reportAdBreakFinished();
     }
 
     @Override
