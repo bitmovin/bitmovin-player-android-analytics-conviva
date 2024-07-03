@@ -31,6 +31,8 @@ import java.util.List;
 import java.util.Map;
 
 public class ConvivaAnalyticsIntegration {
+    public static final String STREAM_TYPE = "streamType";
+    public static final String INTEGRATION_VERSION = "integrationVersion";
 
     private static final String TAG = "ConvivaAnalyticsInt";
 
@@ -374,8 +376,8 @@ public class ConvivaAnalyticsIntegration {
         // streamType could be missing at time of session initialization
         // as source information could be unavailable at that time
         Map<String, String> customInternTags = new HashMap<>();
-        customInternTags.put("streamType", playerHelper.getStreamType());
-        customInternTags.put("integrationVersion", BuildConfig.VERSION_NAME);
+        customInternTags.put(STREAM_TYPE, playerHelper.getStreamType());
+        customInternTags.put(INTEGRATION_VERSION, BuildConfig.VERSION_NAME);
         contentMetadataBuilder.setCustom(customInternTags);
 
         if (bitmovinPlayer.isLive()) {

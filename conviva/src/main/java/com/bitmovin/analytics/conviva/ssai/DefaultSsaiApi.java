@@ -2,6 +2,7 @@ package com.bitmovin.analytics.conviva.ssai;
 
 import android.util.Log;
 
+import com.bitmovin.analytics.conviva.ConvivaAnalyticsIntegration;
 import com.conviva.sdk.ConvivaAdAnalytics;
 import com.conviva.sdk.ConvivaSdkConstants;
 import com.conviva.sdk.ConvivaVideoAnalytics;
@@ -138,8 +139,8 @@ public class DefaultSsaiApi implements SsaiApi {
         maybeCopyFromMainContent(mainContentMetadata, convivaAdInfo, ConvivaSdkConstants.IS_LIVE);
         maybeCopyFromMainContent(mainContentMetadata, convivaAdInfo, ConvivaSdkConstants.DEFAULT_RESOURCE);
         maybeCopyFromMainContent(mainContentMetadata, convivaAdInfo, ConvivaSdkConstants.ENCODED_FRAMERATE);
-        maybeCopyFromMainContent(mainContentMetadata, convivaAdInfo, "streamType");
-        maybeCopyFromMainContent(mainContentMetadata, convivaAdInfo, "integrationVersion");
+        maybeCopyFromMainContent(mainContentMetadata, convivaAdInfo, ConvivaAnalyticsIntegration.STREAM_TYPE);
+        maybeCopyFromMainContent(mainContentMetadata, convivaAdInfo, ConvivaAnalyticsIntegration.INTEGRATION_VERSION);
     }
 
     private static void maybeCopyFromMainContent(Map<String, Object> mainContentMetadata, HashMap<String, Object> convivaAdInfo, String key) {
