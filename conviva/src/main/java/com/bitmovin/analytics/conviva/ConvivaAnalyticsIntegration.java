@@ -345,15 +345,21 @@ public class ConvivaAnalyticsIntegration {
     }
 
     private void updateSession() {
-        this.buildDynamicContentMetadata();
-
-        HashMap<String, Object[]> playbackVideoData = playbackInfoProvider.getPlaybackVideoData();
-        for (Map.Entry<String, Object[]> entry : playbackVideoData.entrySet()) {
-            convivaVideoAnalytics.reportPlaybackMetric(entry.getKey(), entry.getValue());
-        }
+        updatePlaybackVideoData();
+        buildDynamicContentMetadata();
 
         if (isSessionActive) {
             convivaVideoAnalytics.setContentInfo(contentMetadataBuilder.build());
+        }
+    }
+
+    private void updatePlaybackVideoData() {
+        HashMap<String, Object[]> playbackVideoData = playbackInfoProvider.getPlaybackVideoData();
+        for (Map.Entry<String, Object[]> entry : playbackVideoData.entrySet()) {
+            convivaVideoAnalytics.reportPlaybackMetric(entry.getKey(), entry.getValue());
+            if (ssai.isAdBreakActive()) {
+                convivaAdAnalytics.reportAdMetric(entry.getKey(), entry.getValue());
+            }
         }
     }
 
