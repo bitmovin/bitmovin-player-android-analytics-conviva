@@ -1,9 +1,11 @@
 package com.bitmovin.analytics.conviva.ssai;
 
-import com.bitmovin.player.api.media.video.quality.VideoQuality;
 import com.conviva.sdk.ConvivaSdkConstants;
+
+import java.util.HashMap;
 
 public interface PlaybackInfoProvider {
     ConvivaSdkConstants.PlayerState getPlayerState();
-    VideoQuality getPlaybackVideoData();
+
+    HashMap<String, Object[]> getPlaybackVideoData();
 }

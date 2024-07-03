@@ -2,7 +2,6 @@ package com.bitmovin.analytics.conviva.ssai;
 
 import android.util.Log;
 
-import com.bitmovin.player.api.media.video.quality.VideoQuality;
 import com.conviva.sdk.ConvivaAdAnalytics;
 import com.conviva.sdk.ConvivaSdkConstants;
 import com.conviva.sdk.ConvivaVideoAnalytics;
@@ -77,11 +76,9 @@ public class DefaultSsaiApi implements SsaiApi {
 
     private void reportInitialAdMetrics() {
         convivaAdAnalytics.reportAdMetric(ConvivaSdkConstants.PLAYBACK.PLAYER_STATE, player.getPlayerState());
-        VideoQuality videoQuality = player.getPlaybackVideoData();
-        if (videoQuality != null) {
-            convivaAdAnalytics.reportAdMetric(ConvivaSdkConstants.PLAYBACK.RESOLUTION, videoQuality.getHeight(), videoQuality.getWidth());
-            convivaAdAnalytics.reportAdMetric(ConvivaSdkConstants.PLAYBACK.BITRATE, videoQuality.getBitrate() / 1000);
-            convivaAdAnalytics.reportAdMetric(ConvivaSdkConstants.PLAYBACK.RENDERED_FRAMERATE, Math.round(videoQuality.getFrameRate()));
+        HashMap<String, Object[]> playbackVideoData = player.getPlaybackVideoData();
+        for (Map.Entry<String, Object[]> entry : playbackVideoData.entrySet()) {
+            convivaAdAnalytics.reportAdMetric(entry.getKey(), entry.getValue());
         }
     }
 

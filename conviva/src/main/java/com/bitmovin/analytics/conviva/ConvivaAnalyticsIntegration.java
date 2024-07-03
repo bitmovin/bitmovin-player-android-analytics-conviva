@@ -6,6 +6,7 @@ import android.util.Log;
 
 import com.bitmovin.analytics.conviva.ssai.DefaultPlaybackInfoProvider;
 import com.bitmovin.analytics.conviva.ssai.DefaultSsaiApi;
+import com.bitmovin.analytics.conviva.ssai.PlaybackInfoProvider;
 import com.bitmovin.analytics.conviva.ssai.SsaiApi;
 import com.bitmovin.player.api.Player;
 import com.bitmovin.player.api.advertising.Ad;
@@ -17,7 +18,6 @@ import com.bitmovin.player.api.event.Event;
 import com.bitmovin.player.api.event.EventListener;
 import com.bitmovin.player.api.event.PlayerEvent;
 import com.bitmovin.player.api.event.SourceEvent;
-import com.bitmovin.player.api.media.video.quality.VideoQuality;
 import com.bitmovin.player.api.source.Source;
 import com.bitmovin.player.api.source.SourceConfig;
 import com.conviva.sdk.ConvivaAdAnalytics;
@@ -38,6 +38,7 @@ public class ConvivaAnalyticsIntegration {
     private final ContentMetadataBuilder contentMetadataBuilder = new ContentMetadataBuilder();
     private final ConvivaVideoAnalytics convivaVideoAnalytics;
     private final ConvivaAdAnalytics convivaAdAnalytics;
+    private final PlaybackInfoProvider playbackInfoProvider;
     private MetadataOverrides metadataOverrides;
     private final DefaultSsaiApi ssai;
 
@@ -114,9 +115,10 @@ public class ConvivaAnalyticsIntegration {
         } else {
             convivaAdAnalytics = adAnalytics;
         }
+        playbackInfoProvider = new DefaultPlaybackInfoProvider(player);
 
         if (ssai == null) {
-            this.ssai = new DefaultSsaiApi(convivaVideoAnalytics, convivaAdAnalytics, new DefaultPlaybackInfoProvider(player));
+            this.ssai = new DefaultSsaiApi(convivaVideoAnalytics, convivaAdAnalytics, playbackInfoProvider);
         } else {
             this.ssai = ssai;
         }
@@ -345,12 +347,9 @@ public class ConvivaAnalyticsIntegration {
     private void updateSession() {
         this.buildDynamicContentMetadata();
 
-        VideoQuality videoQuality = bitmovinPlayer.getPlaybackVideoData();
-        if (videoQuality != null) {
-            int bitrate = videoQuality.getBitrate() / 1000; // in kbps
-            convivaVideoAnalytics.reportPlaybackMetric(ConvivaSdkConstants.PLAYBACK.RESOLUTION, videoQuality.getHeight(), videoQuality.getWidth());
-            convivaVideoAnalytics.reportPlaybackMetric(ConvivaSdkConstants.PLAYBACK.BITRATE, bitrate);
-            convivaVideoAnalytics.reportPlaybackMetric(ConvivaSdkConstants.PLAYBACK.RENDERED_FRAMERATE, Math.round(videoQuality.getFrameRate()));
+        HashMap<String, Object[]> playbackVideoData = playbackInfoProvider.getPlaybackVideoData();
+        for (Map.Entry<String, Object[]> entry : playbackVideoData.entrySet()) {
+            convivaVideoAnalytics.reportPlaybackMetric(entry.getKey(), entry.getValue());
         }
 
         if (isSessionActive) {

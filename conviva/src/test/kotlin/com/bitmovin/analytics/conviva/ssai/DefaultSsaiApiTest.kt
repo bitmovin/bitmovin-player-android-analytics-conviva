@@ -1,7 +1,6 @@
 package com.bitmovin.analytics.conviva.ssai
 
 import android.util.Log
-import com.bitmovin.player.api.media.video.quality.VideoQuality
 import com.conviva.sdk.ConvivaAdAnalytics
 import com.conviva.sdk.ConvivaSdkConstants
 import com.conviva.sdk.ConvivaVideoAnalytics
@@ -36,14 +35,10 @@ class DefaultSsaiApiTest {
     @Before
     fun beforeTest() {
         every { playbackInfoProvider.playerState } returns ConvivaSdkConstants.PlayerState.PLAYING
-        every { playbackInfoProvider.playbackVideoData } returns VideoQuality(
-                "videoQualityId",
-                "videoQualityLabel",
-                1000,
-                "codec",
-                60.1F,
-                1600,
-                800,
+        every { playbackInfoProvider.playbackVideoData } returns hashMapOf<String, Array<Any>>(
+                ConvivaSdkConstants.PLAYBACK.BITRATE to arrayOf(1),
+                ConvivaSdkConstants.PLAYBACK.RESOLUTION to arrayOf(800, 1600),
+                ConvivaSdkConstants.PLAYBACK.RENDERED_FRAMERATE to arrayOf(60),
         )
         with(adAnalytics) {
             every { reportAdMetric(ConvivaSdkConstants.PLAYBACK.PLAYER_STATE, any()) } just runs
