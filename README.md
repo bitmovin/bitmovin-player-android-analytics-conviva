@@ -133,6 +133,37 @@ A session can be ended using following method call:
 `convivaAnalyticsIntegration.endSession()`
 Since the `BitmovinPlayer` automatically pauses the video if no background playback is configured the session creation after the app is in foreground again is handled automatically.
 
+#### Server Side Ad Tracking
+
+In order to track server side ads you can use the functions provided in `ConvivaAnalyticsIntegration.getSsai()`. The following example shows basic server side ad tracking:
+```java
+SsaiApi ssai = convivaAnalyticsIntegration.getSsai();
+
+ssai.reportAdBreakStarted();
+
+SsaiApi.AdInfo adInfo = new SsaiApi.AdInfo();
+adInfo.setPosition(AdPosition.PREROLL);
+adInfo.setTitle("My ad title");
+adInfo.setDuration(30);
+ssai.reportAdStarted(adInfo);
+
+...
+
+ssai.reportAdFinished();
+ssai.reportAdBreakFinished();
+```
+
+In addition to the metadata provided in the `AdInfo` object at ad start, the following metadata will be auto collected from the main content metadata:
+- ConvivaSdkConstants.STREAM_URL
+- ConvivaSdkConstants.ASSET_NAME
+- ConvivaSdkConstants.IS_LIVE
+- ConvivaSdkConstants.DEFAULT_RESOURCE 
+- ConvivaSdkConstants.ENCODED_FRAMERATE
+- streamType
+- integrationVersion
+
+Metadata in the `AdInfo` overwrites all auto collected metadata.
+
 #### Clean up
 
 At end of app instance lifecycle, the convivaAnalyticsIntegration should be released:
