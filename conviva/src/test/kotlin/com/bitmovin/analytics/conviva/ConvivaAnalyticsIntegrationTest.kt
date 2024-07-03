@@ -10,6 +10,7 @@ import com.bitmovin.player.api.event.Event
 import com.bitmovin.player.api.event.EventListener
 import com.bitmovin.player.api.event.PlayerEvent
 import com.bitmovin.player.api.event.SourceEvent
+import com.bitmovin.player.api.media.video.quality.VideoQuality
 import com.conviva.sdk.ConvivaAdAnalytics
 import com.conviva.sdk.ConvivaSdkConstants
 import com.conviva.sdk.ConvivaVideoAnalytics
@@ -101,6 +102,29 @@ class ConvivaAnalyticsIntegrationTest {
 
         player.listeners[PlayerEvent.StallEnded::class]?.forEach { it(PlayerEvent.StallEnded()) }
         verify { adAnalytics.reportAdMetric(ConvivaSdkConstants.PLAYBACK.PLAYER_STATE, ConvivaSdkConstants.PlayerState.PLAYING) }
+    }
+
+    @Test
+    fun `reports video playback quality changes to ad analytics during an SSAI ad break`() {
+        every { ssaiApi.isAdBreakActive } returns true
+        val newVideoQuality = VideoQuality(
+                id = "id",
+                label = "label",
+                bitrate = 1000,
+                codec = "codec",
+                frameRate = 10.3F,
+                width = 400,
+                height = 300,
+        )
+        every { mockedPlayer.playbackVideoData } returns newVideoQuality
+
+        player.listeners[PlayerEvent.VideoPlaybackQualityChanged::class]?.forEach { onEvent ->
+            onEvent(PlayerEvent.VideoPlaybackQualityChanged(null, newVideoQuality))
+        }
+
+        verify { adAnalytics.reportAdMetric(ConvivaSdkConstants.PLAYBACK.BITRATE, 1) }
+        verify { adAnalytics.reportAdMetric(ConvivaSdkConstants.PLAYBACK.RESOLUTION, 400, 300) }
+        verify { adAnalytics.reportAdMetric(ConvivaSdkConstants.PLAYBACK.RENDERED_FRAMERATE, 10) }
     }
 
     companion object {
