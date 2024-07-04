@@ -65,7 +65,7 @@ For more information about permissions and collected network types please look a
 
 The following example create a ConvivaAnalyticsIntegration object and attaches at Bitmovin Native SDK to it
 
-#### Basic Conviva Reporting
+### Basic Conviva Reporting
 
 ```java
 // Create your ConvivaConfig object
@@ -83,14 +83,14 @@ Source source = Source.create(sourceConfig);
 bitmovinPlayer.load(source);
 ```
 
-#### Optional Configuration Parameters
+### Optional Configuration Parameters
 ```java
 convivaConfig.setGatewayUrl("YOUR_DEBUG_GATEWAY_URL");
 convivaConfig.setDebugLoggingEnabled(true);
 
 ```
 
-#### Content Metadata handling
+### Content Metadata handling
 
 If you want to override some content metadata attributes or track additional custom or standard tags you can do so by adding the following:
 
@@ -116,7 +116,7 @@ convivaAnalyticsIntegration.updateContentMetadata(metadata);
 
 Those values will be cleaned up after the session is closed.
 
-#### Consecutive playback
+### Consecutive playback
 	
 If you want to use the same player instance for multiple playback, just load a new source with player.load(…). The integration will close the active session.
 	
@@ -124,7 +124,7 @@ If you want to use the same player instance for multiple playback, just load a n
 player.load(…);
 ```
 
-#### Background handling
+### Background handling
 
 If your app stops playback when entering background conviva suggests to end the active session. Since the integration can't know if your app supports background playback this can't be done automatically.
 
@@ -133,7 +133,7 @@ A session can be ended using following method call:
 `convivaAnalyticsIntegration.endSession()`
 Since the `BitmovinPlayer` automatically pauses the video if no background playback is configured the session creation after the app is in foreground again is handled automatically.
 
-#### Server Side Ad Tracking
+### Server Side Ad Tracking
 
 In order to track server side ads you can use the functions provided in `ConvivaAnalyticsIntegration.getSsai()`. The following example shows basic server side ad tracking:
 ```java
@@ -166,7 +166,7 @@ In addition to the metadata provided in the `AdInfo` object at ad start, the fol
 
 Metadata in the `AdInfo` overwrites all auto collected metadata.
 
-#### Clean up
+### Clean up
 
 At end of app instance lifecycle, the convivaAnalyticsIntegration should be released:
 
