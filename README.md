@@ -159,6 +159,8 @@ In addition to the metadata provided in the `AdInfo` object at ad start, the fol
 - ConvivaSdkConstants.IS_LIVE
 - ConvivaSdkConstants.DEFAULT_RESOURCE 
 - ConvivaSdkConstants.ENCODED_FRAMERATE
+- ConvivaSdkConstants.VIEWER_ID
+- ConvivaSdkConstants.PLAYER_NAME
 - streamType
 - integrationVersion
 
