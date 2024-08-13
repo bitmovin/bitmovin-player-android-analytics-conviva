@@ -110,7 +110,9 @@ class ConvivaAnalyticsIntegrationTest {
         val newVideoQuality = VideoQuality(
                 id = "id",
                 label = "label",
-                bitrate = 1000,
+                bitrate = 2000,
+                averageBitrate = 1000,
+                peakBitrate = 2000,
                 codec = "codec",
                 frameRate = 10.3F,
                 width = 400,
@@ -122,7 +124,8 @@ class ConvivaAnalyticsIntegrationTest {
             onEvent(PlayerEvent.VideoPlaybackQualityChanged(null, newVideoQuality))
         }
 
-        verify { adAnalytics.reportAdMetric(ConvivaSdkConstants.PLAYBACK.BITRATE, 1) }
+        verify { adAnalytics.reportAdMetric(ConvivaSdkConstants.PLAYBACK.BITRATE, 2) }
+        verify { adAnalytics.reportAdMetric(ConvivaSdkConstants.PLAYBACK.AVG_BITRATE, 1) }
         verify { adAnalytics.reportAdMetric(ConvivaSdkConstants.PLAYBACK.RESOLUTION, 400, 300) }
         verify { adAnalytics.reportAdMetric(ConvivaSdkConstants.PLAYBACK.RENDERED_FRAMERATE, 10) }
     }
