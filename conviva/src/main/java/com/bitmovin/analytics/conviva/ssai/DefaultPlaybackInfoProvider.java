@@ -32,8 +32,11 @@ public class DefaultPlaybackInfoProvider implements PlaybackInfoProvider {
         VideoQuality playbackVideoData = player.getPlaybackVideoData();
         if (playbackVideoData != null) {
             videoData.put(ConvivaSdkConstants.PLAYBACK.RESOLUTION, new Object[]{playbackVideoData.getWidth(), playbackVideoData.getHeight()});
-            videoData.put(ConvivaSdkConstants.PLAYBACK.BITRATE, new Object[]{playbackVideoData.getBitrate() / 1000});
-            int averageBitrate = playbackVideoData.getAverageBitrate();
+            final int peakBitrate = playbackVideoData.getPeakBitrate();
+            if (peakBitrate != VideoQuality.BITRATE_NO_VALUE) {
+                videoData.put(ConvivaSdkConstants.PLAYBACK.BITRATE, new Object[]{peakBitrate / 1000});
+            }
+            final int averageBitrate = playbackVideoData.getAverageBitrate();
             if (averageBitrate != VideoQuality.BITRATE_NO_VALUE) {
                 videoData.put(ConvivaSdkConstants.PLAYBACK.AVG_BITRATE, new Object[]{averageBitrate / 1000});
             }

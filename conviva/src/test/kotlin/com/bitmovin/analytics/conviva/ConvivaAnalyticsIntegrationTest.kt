@@ -10,6 +10,7 @@ import com.bitmovin.player.api.event.Event
 import com.bitmovin.player.api.event.EventListener
 import com.bitmovin.player.api.event.PlayerEvent
 import com.bitmovin.player.api.event.SourceEvent
+import com.bitmovin.player.api.media.Quality
 import com.bitmovin.player.api.media.video.quality.VideoQuality
 import com.conviva.sdk.ConvivaAdAnalytics
 import com.conviva.sdk.ConvivaSdkConstants
@@ -126,6 +127,35 @@ class ConvivaAnalyticsIntegrationTest {
 
         verify { adAnalytics.reportAdMetric(ConvivaSdkConstants.PLAYBACK.BITRATE, 2) }
         verify { adAnalytics.reportAdMetric(ConvivaSdkConstants.PLAYBACK.AVG_BITRATE, 1) }
+        verify { adAnalytics.reportAdMetric(ConvivaSdkConstants.PLAYBACK.RESOLUTION, 400, 300) }
+        verify { adAnalytics.reportAdMetric(ConvivaSdkConstants.PLAYBACK.RENDERED_FRAMERATE, 10) }
+    }
+
+    @Test
+    fun `does not report bitrate, if not available`() {
+        every { ssaiApi.isAdBreakActive } returns true
+        Quality.Companion.BITRATE_NO_VALUE
+        val newVideoQuality = VideoQuality(
+            id = "id",
+            label = "label",
+            bitrate = Quality.Companion.BITRATE_NO_VALUE,
+            averageBitrate = Quality.Companion.BITRATE_NO_VALUE,
+            peakBitrate = Quality.Companion.BITRATE_NO_VALUE,
+            codec = "codec",
+            frameRate = 10.3F,
+            width = 400,
+            height = 300,
+        )
+        every { mockedPlayer.playbackVideoData } returns newVideoQuality
+
+        player.listeners[PlayerEvent.VideoPlaybackQualityChanged::class]?.forEach { onEvent ->
+            onEvent(PlayerEvent.VideoPlaybackQualityChanged(null, newVideoQuality))
+        }
+
+        verify(exactly = 0) {
+            adAnalytics.reportAdMetric(ConvivaSdkConstants.PLAYBACK.BITRATE, any())
+            adAnalytics.reportAdMetric(ConvivaSdkConstants.PLAYBACK.AVG_BITRATE, any())
+        }
         verify { adAnalytics.reportAdMetric(ConvivaSdkConstants.PLAYBACK.RESOLUTION, 400, 300) }
         verify { adAnalytics.reportAdMetric(ConvivaSdkConstants.PLAYBACK.RENDERED_FRAMERATE, 10) }
     }
