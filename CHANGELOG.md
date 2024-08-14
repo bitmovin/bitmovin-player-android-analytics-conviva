@@ -12,7 +12,6 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Changed
 - Updated Bitmovin Player to `3.78.2`
 
-
 ## 2.5.0 - 2024-07-05
 ### Added
 - `ConvivaAnalyticsIntegration.ssai` namespace to enable server side ad tracking
