@@ -2,6 +2,9 @@ package com.bitmovin.analytics.conviva.ssai;
 
 import android.util.Log;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+
 import com.bitmovin.analytics.conviva.ConvivaAnalyticsIntegration;
 import com.conviva.sdk.ConvivaAdAnalytics;
 import com.conviva.sdk.ConvivaSdkConstants;
@@ -15,12 +18,19 @@ public class DefaultSsaiApi implements SsaiApi {
     private static final String TAG = "DefaultSsaiApi";
     private final ConvivaVideoAnalytics convivaVideoAnalytics;
     private final ConvivaAdAnalytics convivaAdAnalytics;
-    private final PlaybackInfoProvider player;
+    @Nullable
+    private PlayerAdapter playerAdapter;
 
-    public DefaultSsaiApi(ConvivaVideoAnalytics convivaVideoAnalytics, ConvivaAdAnalytics convivaAdAnalytics, PlaybackInfoProvider player) {
+    public DefaultSsaiApi(
+            ConvivaVideoAnalytics convivaVideoAnalytics,
+            ConvivaAdAnalytics convivaAdAnalytics
+    ) {
         this.convivaVideoAnalytics = convivaVideoAnalytics;
         this.convivaAdAnalytics = convivaAdAnalytics;
-        this.player = player;
+    }
+
+    public void setPlayerAdapter(@NonNull PlayerAdapter playerAdapter) {
+        this.playerAdapter = playerAdapter;
     }
 
     private boolean isAdBreakActive = false;
@@ -70,14 +80,18 @@ public class DefaultSsaiApi implements SsaiApi {
             Log.d(TAG, "No server side ad break active");
             return;
         }
+        if (playerAdapter == null) {
+            Log.d(TAG, "Player not yet set. Cannot report ad started.");
+            return;
+        }
         Log.d(TAG, "Server side ad started");
         convivaAdAnalytics.reportAdStarted(convertToConvivaAdInfo(adInfo, convivaVideoAnalytics.getMetadataInfo()));
-        reportInitialAdMetrics();
+        reportInitialAdMetrics(playerAdapter);
     }
 
-    private void reportInitialAdMetrics() {
-        convivaAdAnalytics.reportAdMetric(ConvivaSdkConstants.PLAYBACK.PLAYER_STATE, player.getPlayerState());
-        HashMap<String, Object[]> playbackVideoData = player.getPlaybackVideoData();
+    private void reportInitialAdMetrics(@NonNull PlayerAdapter playerAdapter) {
+        convivaAdAnalytics.reportAdMetric(ConvivaSdkConstants.PLAYBACK.PLAYER_STATE, playerAdapter.getPlayerState());
+        HashMap<String, Object[]> playbackVideoData = playerAdapter.getPlaybackVideoData();
         for (Map.Entry<String, Object[]> entry : playbackVideoData.entrySet()) {
             convivaAdAnalytics.reportAdMetric(entry.getKey(), entry.getValue());
         }

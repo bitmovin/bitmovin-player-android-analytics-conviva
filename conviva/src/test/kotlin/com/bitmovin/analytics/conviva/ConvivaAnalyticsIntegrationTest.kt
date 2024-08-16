@@ -49,6 +49,7 @@ class ConvivaAnalyticsIntegrationTest {
         with(ssaiApi) {
             every { isAdBreakActive } returns false
             every { reset() } just runs
+            every { setPlayerAdapter(any()) } just runs
         }
 
         convivaAnalyticsIntegration = ConvivaAnalyticsIntegration(
@@ -136,6 +137,7 @@ class ConvivaAnalyticsIntegrationTest {
             every { Log.d(any(), any()) } returns 0
             every { Log.i(any(), any()) } returns 0
             every { Log.e(any(), any()) } returns 0
+            every { Log.w(any(), any<String>()) } returns 0
 
             mockkConstructor(Handler::class)
             every { anyConstructed<Handler>().postDelayed(any(), any()) } answers {

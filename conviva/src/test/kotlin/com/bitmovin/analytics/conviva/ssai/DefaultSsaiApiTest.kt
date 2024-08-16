@@ -29,13 +29,13 @@ import strikt.assertions.isTrue
 class DefaultSsaiApiTest {
     private val videoAnalytics: ConvivaVideoAnalytics = mockk(relaxed = true)
     private val adAnalytics: ConvivaAdAnalytics = mockk()
-    private val playbackInfoProvider = mockk<PlaybackInfoProvider>()
+    private val playerAdapter = mockk<PlayerAdapter>()
     private lateinit var ssaiApi: DefaultSsaiApi
 
     @Before
     fun beforeTest() {
-        every { playbackInfoProvider.playerState } returns ConvivaSdkConstants.PlayerState.PLAYING
-        every { playbackInfoProvider.playbackVideoData } returns hashMapOf<String, Array<Any>>(
+        every { playerAdapter.playerState } returns ConvivaSdkConstants.PlayerState.PLAYING
+        every { playerAdapter.playbackVideoData } returns hashMapOf<String, Array<Any>>(
                 ConvivaSdkConstants.PLAYBACK.BITRATE to arrayOf(1),
                 ConvivaSdkConstants.PLAYBACK.RESOLUTION to arrayOf(800, 1600),
                 ConvivaSdkConstants.PLAYBACK.RENDERED_FRAMERATE to arrayOf(60),
@@ -54,18 +54,18 @@ class DefaultSsaiApiTest {
         ssaiApi = DefaultSsaiApi(
                 videoAnalytics,
                 adAnalytics,
-                playbackInfoProvider,
         )
+        ssaiApi.setPlayerAdapter(playerAdapter)
     }
 
     @After
     fun afterTest() {
-        clearMocks(videoAnalytics, adAnalytics, playbackInfoProvider)
+        clearMocks(videoAnalytics, adAnalytics, playerAdapter)
     }
 
 
     @Test
-    fun `reports server side ad break start to conviva after  ad break started`() {
+    fun `reports server side ad break start to conviva after ad break started`() {
         ssaiApi.reportAdBreakStarted()
         verify {
             videoAnalytics.reportAdBreakStarted(
@@ -131,7 +131,7 @@ class DefaultSsaiApiTest {
 
     @Test
     fun `reports ad playback state playing to conviva when ad starts while paused`() {
-        every { playbackInfoProvider.playerState } returns ConvivaSdkConstants.PlayerState.PAUSED
+        every { playerAdapter.playerState } returns ConvivaSdkConstants.PlayerState.PAUSED
 
         ssaiApi.reportAdBreakStarted()
         ssaiApi.reportAdStarted(SsaiApi.AdInfo())
@@ -146,7 +146,7 @@ class DefaultSsaiApiTest {
 
     @Test
     fun `reports ad playback state buffering to conviva when ad starts while stalling`() {
-        every { playbackInfoProvider.playerState } returns
+        every { playerAdapter.playerState } returns
                 ConvivaSdkConstants.PlayerState.BUFFERING
 
         ssaiApi.reportAdBreakStarted()
@@ -205,7 +205,7 @@ class DefaultSsaiApiTest {
             adAnalytics.reportAdStarted(capture(slot))
         }
 
-        expectThat(slot){
+        expectThat(slot) {
             get { captured[ConvivaSdkConstants.ASSET_NAME] }.isEqualTo("overwrittenTitle")
             get { captured["streamType"] }.isEqualTo("mainContentStreamType")
         }
@@ -294,6 +294,7 @@ class DefaultSsaiApiTest {
             every { Log.d(any(), any()) } returns 0
             every { Log.i(any(), any()) } returns 0
             every { Log.e(any(), any()) } returns 0
+            every { Log.w(any<String>(), any<String>()) } returns 0
         }
 
         @JvmStatic
