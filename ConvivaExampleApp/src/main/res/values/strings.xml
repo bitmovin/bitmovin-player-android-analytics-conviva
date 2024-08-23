@@ -4,4 +4,5 @@
     <string name="release">Release</string>
     <string name="create">Create</string>
     <string name="include_ads">Include Ads</string>
+    <string name="start_session">Start Session</string>
 </resources>
