@@ -59,6 +59,30 @@ public class ConvivaAnalyticsIntegration {
     private Boolean isBumper = false;
     private Boolean isBackgrounded = false;
 
+    public ConvivaAnalyticsIntegration(String customerKey, Context context) {
+        this(
+            null,
+            customerKey,
+            context,
+            new ConvivaConfig(),
+            null,
+            null,
+            null
+        );
+    }
+
+    public ConvivaAnalyticsIntegration(String customerKey, Context context, ConvivaConfig config) {
+        this(
+            null,
+            customerKey,
+            context,
+            config,
+            null,
+            null,
+            null
+        );
+    }
+
     public ConvivaAnalyticsIntegration(Player player, String customerKey, Context context) {
         this(player, customerKey, context, new ConvivaConfig());
     }
@@ -92,13 +116,14 @@ public class ConvivaAnalyticsIntegration {
     /**
      * For testing purposes only.
      */
-    ConvivaAnalyticsIntegration(Player player,
-                                String customerKey,
-                                Context context,
-                                ConvivaConfig config,
-                                ConvivaVideoAnalytics videoAnalytics,
-                                ConvivaAdAnalytics adAnalytics,
-                                DefaultSsaiApi ssai
+    ConvivaAnalyticsIntegration(
+        @Nullable Player player,
+        String customerKey,
+        Context context,
+        ConvivaConfig config,
+        @Nullable ConvivaVideoAnalytics videoAnalytics,
+        @Nullable ConvivaAdAnalytics adAnalytics,
+        @Nullable DefaultSsaiApi ssai
     ) {
 
         Map<String, Object> settings = new HashMap<>();
