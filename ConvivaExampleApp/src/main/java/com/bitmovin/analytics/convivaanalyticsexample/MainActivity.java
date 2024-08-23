@@ -1,26 +1,26 @@
 package com.bitmovin.analytics.convivaanalyticsexample;
 
 import android.os.Bundle;
-import androidx.appcompat.app.AppCompatActivity;
-
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.Switch;
 
+import androidx.appcompat.app.AppCompatActivity;
+
 import com.bitmovin.analytics.conviva.ConvivaAnalyticsIntegration;
 import com.bitmovin.analytics.conviva.ConvivaConfig;
 import com.bitmovin.analytics.conviva.MetadataOverrides;
-import com.bitmovin.player.api.Player;
 import com.bitmovin.player.PlayerView;
+import com.bitmovin.player.api.Player;
 import com.bitmovin.player.api.PlayerBuilder;
-import com.bitmovin.player.api.source.SourceConfig;
 import com.bitmovin.player.api.PlayerConfig;
 import com.bitmovin.player.api.advertising.AdItem;
 import com.bitmovin.player.api.advertising.AdSource;
 import com.bitmovin.player.api.advertising.AdSourceType;
 import com.bitmovin.player.api.advertising.AdvertisingConfig;
+import com.bitmovin.player.api.source.SourceConfig;
 import com.bitmovin.player.api.source.SourceType;
 
 import java.util.HashMap;
@@ -143,6 +143,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     @Override
+    protected void onStart() {
+        super.onStart();
+        bitmovinPlayerView.onStart();
+    }
+
+    @Override
     protected void onResume() {
         super.onResume();
         bitmovinPlayerView.onResume();
@@ -150,15 +156,22 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     @Override
     protected void onPause() {
-        bitmovinPlayerView.onStop();
         super.onPause();
+        bitmovinPlayerView.onPause();
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        bitmovinPlayerView.onStop();
     }
 
     @Override
     protected void onDestroy() {
-        bitmovinPlayerView.onDestroy();
-        convivaAnalyticsIntegration.release();
         super.onDestroy();
+        bitmovinPlayerView.onDestroy();
+        convivaAnalyticsIntegration.endSession();
+        convivaAnalyticsIntegration.release();
     }
 
     private void tearDownPlayer() {
