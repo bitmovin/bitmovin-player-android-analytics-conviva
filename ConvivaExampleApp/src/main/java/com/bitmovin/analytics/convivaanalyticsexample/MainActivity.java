@@ -39,6 +39,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private Button releaseButton;
     private Button createButton;
     private Button sendCustomEventButton;
+    private Button startSessionButton;
     private Switch includeAdsSwitch;
 
     // Conviva
