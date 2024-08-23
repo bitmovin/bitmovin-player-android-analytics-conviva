@@ -1,6 +1,7 @@
 package com.bitmovin.analytics.conviva.ssai
 
 import android.util.Log
+import com.bitmovin.analytics.conviva.PlayerAdapter
 import com.conviva.sdk.ConvivaAdAnalytics
 import com.conviva.sdk.ConvivaSdkConstants
 import com.conviva.sdk.ConvivaVideoAnalytics
@@ -29,13 +30,13 @@ import strikt.assertions.isTrue
 class DefaultSsaiApiTest {
     private val videoAnalytics: ConvivaVideoAnalytics = mockk(relaxed = true)
     private val adAnalytics: ConvivaAdAnalytics = mockk()
-    private val playbackInfoProvider = mockk<PlaybackInfoProvider>()
+    private val playerAdapter = mockk<PlayerAdapter>()
     private lateinit var ssaiApi: DefaultSsaiApi
 
     @Before
     fun beforeTest() {
-        every { playbackInfoProvider.playerState } returns ConvivaSdkConstants.PlayerState.PLAYING
-        every { playbackInfoProvider.playbackVideoData } returns hashMapOf<String, Array<Any>>(
+        every { playerAdapter.playerState } returns ConvivaSdkConstants.PlayerState.PLAYING
+        every { playerAdapter.playbackVideoData } returns hashMapOf<String, Array<Any>>(
                 ConvivaSdkConstants.PLAYBACK.BITRATE to arrayOf(1),
                 ConvivaSdkConstants.PLAYBACK.RESOLUTION to arrayOf(800, 1600),
                 ConvivaSdkConstants.PLAYBACK.RENDERED_FRAMERATE to arrayOf(60),
@@ -54,13 +55,13 @@ class DefaultSsaiApiTest {
         ssaiApi = DefaultSsaiApi(
                 videoAnalytics,
                 adAnalytics,
-                playbackInfoProvider,
+            playerAdapter,
         )
     }
 
     @After
     fun afterTest() {
-        clearMocks(videoAnalytics, adAnalytics, playbackInfoProvider)
+        clearMocks(videoAnalytics, adAnalytics, playerAdapter)
     }
 
 
@@ -131,7 +132,7 @@ class DefaultSsaiApiTest {
 
     @Test
     fun `reports ad playback state playing to conviva when ad starts while paused`() {
-        every { playbackInfoProvider.playerState } returns ConvivaSdkConstants.PlayerState.PAUSED
+        every { playerAdapter.playerState } returns ConvivaSdkConstants.PlayerState.PAUSED
 
         ssaiApi.reportAdBreakStarted()
         ssaiApi.reportAdStarted(SsaiApi.AdInfo())
@@ -146,7 +147,7 @@ class DefaultSsaiApiTest {
 
     @Test
     fun `reports ad playback state buffering to conviva when ad starts while stalling`() {
-        every { playbackInfoProvider.playerState } returns
+        every { playerAdapter.playerState } returns
                 ConvivaSdkConstants.PlayerState.BUFFERING
 
         ssaiApi.reportAdBreakStarted()

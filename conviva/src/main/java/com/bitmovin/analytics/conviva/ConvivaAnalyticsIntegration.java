@@ -4,9 +4,9 @@ import android.content.Context;
 import android.os.Handler;
 import android.util.Log;
 
-import com.bitmovin.analytics.conviva.ssai.DefaultPlaybackInfoProvider;
+import androidx.annotation.NonNull;
+
 import com.bitmovin.analytics.conviva.ssai.DefaultSsaiApi;
-import com.bitmovin.analytics.conviva.ssai.PlaybackInfoProvider;
 import com.bitmovin.analytics.conviva.ssai.SsaiApi;
 import com.bitmovin.player.api.Player;
 import com.bitmovin.player.api.advertising.Ad;
@@ -36,17 +36,13 @@ public class ConvivaAnalyticsIntegration {
 
     private static final String TAG = "ConvivaAnalyticsInt";
 
-    private final Player bitmovinPlayer;
     private final ContentMetadataBuilder contentMetadataBuilder = new ContentMetadataBuilder();
     private final ConvivaVideoAnalytics convivaVideoAnalytics;
     private final ConvivaAdAnalytics convivaAdAnalytics;
-    private final PlaybackInfoProvider playbackInfoProvider;
+    @NonNull
+    private final PlayerAdapter playerAdapter;
     private MetadataOverrides metadataOverrides;
     private final DefaultSsaiApi ssai;
-
-
-    // Wrapper to extract bitmovinPlayer helper methods
-    private final BitmovinPlayerHelper playerHelper;
 
     // Helper
     private Boolean isSessionActive = false;
@@ -94,8 +90,7 @@ public class ConvivaAnalyticsIntegration {
                                 ConvivaAdAnalytics adAnalytics,
                                 DefaultSsaiApi ssai
     ) {
-        this.bitmovinPlayer = player;
-        this.playerHelper = new BitmovinPlayerHelper(player);
+        playerAdapter = new DefaultPlayerAdapter(player);
         Map<String, Object> settings = new HashMap<>();
         if (config.getGatewayUrl() != null || config.isDebugLoggingEnabled()) {
             if (config.getGatewayUrl() != null) {
@@ -117,10 +112,9 @@ public class ConvivaAnalyticsIntegration {
         } else {
             convivaAdAnalytics = adAnalytics;
         }
-        playbackInfoProvider = new DefaultPlaybackInfoProvider(player);
 
         if (ssai == null) {
-            this.ssai = new DefaultSsaiApi(convivaVideoAnalytics, convivaAdAnalytics, playbackInfoProvider);
+            this.ssai = new DefaultSsaiApi(convivaVideoAnalytics, convivaAdAnalytics, playerAdapter);
         } else {
             this.ssai = ssai;
         }
@@ -134,7 +128,7 @@ public class ConvivaAnalyticsIntegration {
             @Override
             public void update() {
                 if (isAdActive()) {
-                    convivaAdAnalytics.reportAdMetric(ConvivaSdkConstants.PLAYBACK.PLAY_HEAD_TIME, ((long) (bitmovinPlayer.getCurrentTime() * 1000)));
+                    convivaAdAnalytics.reportAdMetric(ConvivaSdkConstants.PLAYBACK.PLAY_HEAD_TIME, ((long) (playerAdapter.getPlayHeadTimeMillis())));
                 }
             }
 
@@ -145,7 +139,7 @@ public class ConvivaAnalyticsIntegration {
     }
 
     private boolean isAdActive() {
-        return bitmovinPlayer.isAd() || ssai.isAdBreakActive();
+        return playerAdapter.isAd() || ssai.isAdBreakActive();
     }
 
     // region public methods
@@ -182,7 +176,7 @@ public class ConvivaAnalyticsIntegration {
      * If no source was loaded this method will throw an error.
      */
     public void initializeSession() throws ConvivaAnalyticsException {
-        if ((bitmovinPlayer.getSource() == null || bitmovinPlayer.getSource().getConfig().getTitle() == null)
+        if ((playerAdapter.getStreamTitle() == null)
                 && this.contentMetadataBuilder.getAssetName() == null) {
             throw new ConvivaAnalyticsException(
                     "AssetName is missing. Load player source (with Title) first or set assetName via updateContentMetadata"
@@ -327,7 +321,7 @@ public class ConvivaAnalyticsIntegration {
         convivaVideoAnalytics.reportPlaybackMetric(ConvivaSdkConstants.PLAYBACK.PLAYER_STATE, ConvivaSdkConstants.PlayerState.STOPPED);
         Map<String, Object> playerInfo = new HashMap<>();
         playerInfo.put(ConvivaSdkConstants.FRAMEWORK_NAME, "Bitmovin Player Android");
-        playerInfo.put(ConvivaSdkConstants.FRAMEWORK_VERSION, playerHelper.getSdkVersionString());
+        playerInfo.put(ConvivaSdkConstants.FRAMEWORK_VERSION, Player.getSdkVersion());
         convivaVideoAnalytics.setPlayerInfo(playerInfo);
         convivaAdAnalytics.setAdPlayerInfo(playerInfo);
     }
@@ -356,7 +350,7 @@ public class ConvivaAnalyticsIntegration {
     }
 
     private void updatePlaybackVideoData() {
-        HashMap<String, Object[]> playbackVideoData = playbackInfoProvider.getPlaybackVideoData();
+        HashMap<String, Object[]> playbackVideoData = playerAdapter.getPlaybackVideoData();
         for (Map.Entry<String, Object[]> entry : playbackVideoData.entrySet()) {
             convivaVideoAnalytics.reportPlaybackMetric(entry.getKey(), entry.getValue());
             if (ssai.isAdBreakActive()) {
@@ -366,14 +360,18 @@ public class ConvivaAnalyticsIntegration {
     }
 
     private void createContentMetadata() {
-        Source source = bitmovinPlayer.getSource();
-        if (source != null) {
-            SourceConfig sourceConfig = source.getConfig();
-            String overriddenAssetName = metadataOverrides != null ? metadataOverrides.getAssetName() : null;
-
-            contentMetadataBuilder.setAssetName(overriddenAssetName != null ? overriddenAssetName : sourceConfig.getTitle());
+        String overriddenAssetName = metadataOverrides != null ? metadataOverrides.getAssetName() : null;
+        if (overriddenAssetName != null) {
+            contentMetadataBuilder.setAssetName(overriddenAssetName);
+        } else {
+            if (playerAdapter.getStreamTitle() != null) {
+                contentMetadataBuilder.setAssetName(playerAdapter.getStreamTitle());
+            } else {
+                Log.w(TAG, "No asset name provided for content metadata.");
+            }
         }
-        this.buildDynamicContentMetadata();
+
+        buildDynamicContentMetadata();
     }
 
     private void buildDynamicContentMetadata() {
@@ -381,18 +379,18 @@ public class ConvivaAnalyticsIntegration {
         // streamType could be missing at time of session initialization
         // as source information could be unavailable at that time
         Map<String, String> customInternTags = new HashMap<>();
-        customInternTags.put(STREAM_TYPE, playerHelper.getStreamType());
+        customInternTags.put(STREAM_TYPE, playerAdapter.getStreamType());
         customInternTags.put(INTEGRATION_VERSION, BuildConfig.VERSION_NAME);
         contentMetadataBuilder.setCustom(customInternTags);
 
-        if (bitmovinPlayer.isLive()) {
+        if (playerAdapter.isLive()) {
             contentMetadataBuilder.setStreamType(ConvivaSdkConstants.StreamType.LIVE);
         } else {
             contentMetadataBuilder.setStreamType(ConvivaSdkConstants.StreamType.VOD);
-            contentMetadataBuilder.setDuration((int) bitmovinPlayer.getDuration());
+            contentMetadataBuilder.setDuration((int) playerAdapter.getDuration());
         }
 
-        contentMetadataBuilder.setStreamUrl(playerHelper.getStreamUrl());
+        contentMetadataBuilder.setStreamUrl(playerAdapter.getStreamUrl());
     }
 
     private void internalEndSession() {
@@ -408,80 +406,83 @@ public class ConvivaAnalyticsIntegration {
     // endregion
 
     private void attachBitmovinEventListeners() {
-        bitmovinPlayer.on(SourceEvent.Unloaded.class, onSourceUnloadedListener);
-        bitmovinPlayer.on(PlayerEvent.Error.class, onPlayerErrorListener);
-        bitmovinPlayer.on(SourceEvent.Error.class, onSourceErrorListener);
-        bitmovinPlayer.on(PlayerEvent.Warning.class, onPlayerWarningListener);
-        bitmovinPlayer.on(SourceEvent.Warning.class, onSourceWarningListener);
+        playerAdapter.withEventEmitter(eventEmitter -> {
+            eventEmitter.on(SourceEvent.Unloaded.class, onSourceUnloadedListener);
+            eventEmitter.on(PlayerEvent.Error.class, onPlayerErrorListener);
+            eventEmitter.on(SourceEvent.Error.class, onSourceErrorListener);
+            eventEmitter.on(PlayerEvent.Warning.class, onPlayerWarningListener);
+            eventEmitter.on(SourceEvent.Warning.class, onSourceWarningListener);
 
-        bitmovinPlayer.on(PlayerEvent.Muted.class, onMutedListener);
-        bitmovinPlayer.on(PlayerEvent.Unmuted.class, onUnmutedListener);
+            eventEmitter.on(PlayerEvent.Muted.class, onMutedListener);
+            eventEmitter.on(PlayerEvent.Unmuted.class, onUnmutedListener);
 
-        // Playback state events
-        bitmovinPlayer.on(PlayerEvent.Play.class, onPlayListener);
-        bitmovinPlayer.on(PlayerEvent.Playing.class, onPlayingListener);
-        bitmovinPlayer.on(PlayerEvent.Paused.class, onPausedListener);
-        bitmovinPlayer.on(PlayerEvent.StallEnded.class, onStallEndedListener);
-        bitmovinPlayer.on(PlayerEvent.StallStarted.class, onStallStartedListener);
-        bitmovinPlayer.on(PlayerEvent.PlaybackFinished.class, onPlaybackFinishedListener);
+            // Playback state events
+            eventEmitter.on(PlayerEvent.Play.class, onPlayListener);
+            eventEmitter.on(PlayerEvent.Playing.class, onPlayingListener);
+            eventEmitter.on(PlayerEvent.Paused.class, onPausedListener);
+            eventEmitter.on(PlayerEvent.StallEnded.class, onStallEndedListener);
+            eventEmitter.on(PlayerEvent.StallStarted.class, onStallStartedListener);
+            eventEmitter.on(PlayerEvent.PlaybackFinished.class, onPlaybackFinishedListener);
 
-        // Seek events
-        bitmovinPlayer.on(PlayerEvent.Seeked.class, onSeekedListener);
-        bitmovinPlayer.on(PlayerEvent.Seek.class, onSeekListener);
+            // Seek events
+            eventEmitter.on(PlayerEvent.Seeked.class, onSeekedListener);
+            eventEmitter.on(PlayerEvent.Seek.class, onSeekListener);
 
-        // Timeshift events
-        bitmovinPlayer.on(PlayerEvent.TimeShift.class, onTimeShiftListener);
-        bitmovinPlayer.on(PlayerEvent.TimeShifted.class, onTimeShiftedListener);
+            // Time shift events
+            eventEmitter.on(PlayerEvent.TimeShift.class, onTimeShiftListener);
+            eventEmitter.on(PlayerEvent.TimeShifted.class, onTimeShiftedListener);
 
-        // Ad events
-        bitmovinPlayer.on(PlayerEvent.AdBreakStarted.class, onAdBreakStarted);
-        bitmovinPlayer.on(PlayerEvent.AdBreakFinished.class, onAdBreakFinished);
-        bitmovinPlayer.on(PlayerEvent.AdStarted.class, onAdStartedListener);
-        bitmovinPlayer.on(PlayerEvent.AdFinished.class, onAdFinishedListener);
-        bitmovinPlayer.on(PlayerEvent.AdSkipped.class, onAdSkippedListener);
-        bitmovinPlayer.on(PlayerEvent.AdError.class, onAdErrorListener);
-        bitmovinPlayer.on(PlayerEvent.TimeChanged.class, onTimeChangedListener);
+            // Ad events
+            eventEmitter.on(PlayerEvent.AdBreakStarted.class, onAdBreakStarted);
+            eventEmitter.on(PlayerEvent.AdBreakFinished.class, onAdBreakFinished);
+            eventEmitter.on(PlayerEvent.AdStarted.class, onAdStartedListener);
+            eventEmitter.on(PlayerEvent.AdFinished.class, onAdFinishedListener);
+            eventEmitter.on(PlayerEvent.AdSkipped.class, onAdSkippedListener);
+            eventEmitter.on(PlayerEvent.AdError.class, onAdErrorListener);
+            eventEmitter.on(PlayerEvent.TimeChanged.class, onTimeChangedListener);
 
-        bitmovinPlayer.on(PlayerEvent.VideoPlaybackQualityChanged.class, onVideoPlaybackQualityChangedListener);
+            eventEmitter.on(PlayerEvent.VideoPlaybackQualityChanged.class, onVideoPlaybackQualityChangedListener);
+        });
     }
 
     private void detachBitmovinEventListeners() {
-        bitmovinPlayer.off(SourceEvent.Unloaded.class, onSourceUnloadedListener);
-        bitmovinPlayer.off(PlayerEvent.Error.class, onPlayerErrorListener);
-        bitmovinPlayer.off(SourceEvent.Error.class, onSourceErrorListener);
-        bitmovinPlayer.off(PlayerEvent.Warning.class, onPlayerWarningListener);
-        bitmovinPlayer.off(SourceEvent.Warning.class, onSourceWarningListener);
+        playerAdapter.withEventEmitter(bitmovinPlayer -> {
+            bitmovinPlayer.off(SourceEvent.Unloaded.class, onSourceUnloadedListener);
+            bitmovinPlayer.off(PlayerEvent.Error.class, onPlayerErrorListener);
+            bitmovinPlayer.off(SourceEvent.Error.class, onSourceErrorListener);
+            bitmovinPlayer.off(PlayerEvent.Warning.class, onPlayerWarningListener);
+            bitmovinPlayer.off(SourceEvent.Warning.class, onSourceWarningListener);
 
-        bitmovinPlayer.off(PlayerEvent.Muted.class, onMutedListener);
-        bitmovinPlayer.off(PlayerEvent.Unmuted.class, onUnmutedListener);
+            bitmovinPlayer.off(PlayerEvent.Muted.class, onMutedListener);
+            bitmovinPlayer.off(PlayerEvent.Unmuted.class, onUnmutedListener);
 
-        // Playback state events
-        bitmovinPlayer.off(PlayerEvent.Play.class, onPlayListener);
-        bitmovinPlayer.off(PlayerEvent.Playing.class, onPlayingListener);
-        bitmovinPlayer.off(PlayerEvent.Paused.class, onPausedListener);
-        bitmovinPlayer.off(PlayerEvent.StallEnded.class, onStallEndedListener);
-        bitmovinPlayer.off(PlayerEvent.StallStarted.class, onStallStartedListener);
-        bitmovinPlayer.off(PlayerEvent.PlaybackFinished.class, onPlaybackFinishedListener);
+            // Playback state events
+            bitmovinPlayer.off(PlayerEvent.Play.class, onPlayListener);
+            bitmovinPlayer.off(PlayerEvent.Playing.class, onPlayingListener);
+            bitmovinPlayer.off(PlayerEvent.Paused.class, onPausedListener);
+            bitmovinPlayer.off(PlayerEvent.StallEnded.class, onStallEndedListener);
+            bitmovinPlayer.off(PlayerEvent.StallStarted.class, onStallStartedListener);
+            bitmovinPlayer.off(PlayerEvent.PlaybackFinished.class, onPlaybackFinishedListener);
 
-        // Seek events
-        bitmovinPlayer.off(PlayerEvent.Seeked.class, onSeekedListener);
-        bitmovinPlayer.off(PlayerEvent.Seek.class, onSeekListener);
+            // Seek events
+            bitmovinPlayer.off(PlayerEvent.Seeked.class, onSeekedListener);
+            bitmovinPlayer.off(PlayerEvent.Seek.class, onSeekListener);
 
-        // Timeshift events
-        bitmovinPlayer.off(PlayerEvent.TimeShift.class, onTimeShiftListener);
-        bitmovinPlayer.off(PlayerEvent.TimeShifted.class, onTimeShiftedListener);
+            // Timeshift events
+            bitmovinPlayer.off(PlayerEvent.TimeShift.class, onTimeShiftListener);
+            bitmovinPlayer.off(PlayerEvent.TimeShifted.class, onTimeShiftedListener);
 
-        // Ad events
-        bitmovinPlayer.off(PlayerEvent.AdBreakStarted.class, onAdBreakStarted);
-        bitmovinPlayer.off(PlayerEvent.AdBreakFinished.class, onAdBreakFinished);
-        bitmovinPlayer.off(PlayerEvent.AdStarted.class, onAdStartedListener);
-        bitmovinPlayer.off(PlayerEvent.AdFinished.class, onAdFinishedListener);
-        bitmovinPlayer.off(PlayerEvent.AdSkipped.class, onAdSkippedListener);
-        bitmovinPlayer.off(PlayerEvent.AdError.class, onAdErrorListener);
-        bitmovinPlayer.off(PlayerEvent.TimeChanged.class, onTimeChangedListener);
+            // Ad events
+            bitmovinPlayer.off(PlayerEvent.AdBreakStarted.class, onAdBreakStarted);
+            bitmovinPlayer.off(PlayerEvent.AdBreakFinished.class, onAdBreakFinished);
+            bitmovinPlayer.off(PlayerEvent.AdStarted.class, onAdStartedListener);
+            bitmovinPlayer.off(PlayerEvent.AdFinished.class, onAdFinishedListener);
+            bitmovinPlayer.off(PlayerEvent.AdSkipped.class, onAdSkippedListener);
+            bitmovinPlayer.off(PlayerEvent.AdError.class, onAdErrorListener);
+            bitmovinPlayer.off(PlayerEvent.TimeChanged.class, onTimeChangedListener);
 
-        bitmovinPlayer.off(PlayerEvent.VideoPlaybackQualityChanged.class,
-                onVideoPlaybackQualityChangedListener);
+            bitmovinPlayer.off(PlayerEvent.VideoPlaybackQualityChanged.class, onVideoPlaybackQualityChangedListener);
+        });
     }
 
     private synchronized void transitionState(ConvivaSdkConstants.PlayerState state) {
@@ -605,7 +606,7 @@ public class ConvivaAnalyticsIntegration {
             new Handler().postDelayed(() -> {
                 Log.d(TAG, "[Player Event] StallEnded");
                 ConvivaSdkConstants.PlayerState state = ConvivaSdkConstants.PlayerState.PLAYING;
-                if (bitmovinPlayer.isPaused()) {
+                if (playerAdapter.isPaused()) {
                     state = ConvivaSdkConstants.PlayerState.PAUSED;
                 }
                 transitionState(state);
@@ -651,7 +652,7 @@ public class ConvivaAnalyticsIntegration {
         // Notify of seek buffering complete at this stage.
         Log.d(TAG, "[Player Event] Update state after buffering");
         ConvivaSdkConstants.PlayerState state = ConvivaSdkConstants.PlayerState.PAUSED;
-        if (bitmovinPlayer.isPlaying()) {
+        if (playerAdapter.isPlaying()) {
             state = ConvivaSdkConstants.PlayerState.PLAYING;
         }
         transitionState(state);
@@ -722,7 +723,7 @@ public class ConvivaAnalyticsIntegration {
             adInfo.put(ConvivaSdkConstants.FRAMEWORK_VERSION, imaSdkVersion);
         } else {
             adInfo.put(ConvivaSdkConstants.FRAMEWORK_NAME, "Bitmovin");
-            adInfo.put(ConvivaSdkConstants.FRAMEWORK_VERSION, playerHelper.getSdkVersionString());
+            adInfo.put(ConvivaSdkConstants.FRAMEWORK_VERSION, Player.getSdkVersion());
         }
         adInfo.put("c3.ad.position", getAdPosition(adStartedEvent.getTimeOffset()));
         adInfo.put(ConvivaSdkConstants.DURATION, adStartedEvent.getDuration());
@@ -775,7 +776,7 @@ public class ConvivaAnalyticsIntegration {
         ConvivaSdkConstants.AdPosition adPosition = ConvivaSdkConstants.AdPosition.MIDROLL;
         if (timeOffset == 0.0) {
             adPosition = ConvivaSdkConstants.AdPosition.PREROLL;
-        } else if (timeOffset == bitmovinPlayer.getDuration()) {
+        } else if (timeOffset == playerAdapter.getDuration()) {
             adPosition = ConvivaSdkConstants.AdPosition.POSTROLL;
         }
         return adPosition;
@@ -815,24 +816,10 @@ public class ConvivaAnalyticsIntegration {
     private final EventListener<PlayerEvent.TimeChanged> onTimeChangedListener = new EventListener<PlayerEvent.TimeChanged>() {
         @Override
         public void onEvent(PlayerEvent.TimeChanged timeChangedEvent) {
-            if (bitmovinPlayer.isLive()) {
-                double playerTimeshiftMax = bitmovinPlayer.getMaxTimeShift();
-                double playerTimeshift = bitmovinPlayer.getTimeShift();
-                long playerDurationMs = -(Math.round(playerTimeshiftMax * 1000));
-                long playerPositionMs = playerDurationMs - -(Math.round(playerTimeshift * 1000));
-                reportPlayHeadTime(playerPositionMs);
-            } else {
-                double currentTime = bitmovinPlayer.getCurrentTime();
-                long playerDurationMs = (long) (currentTime * 1000);
-                reportPlayHeadTime(playerDurationMs);
+            if (isSessionActive) {
+                convivaVideoAnalytics.reportPlaybackMetric(ConvivaSdkConstants.PLAYBACK.PLAY_HEAD_TIME, playerAdapter.getPlayHeadTimeMillis());
             }
         }
     };
-
-    private void reportPlayHeadTime(long playerDurationMs) {
-        if (isSessionActive) {
-            convivaVideoAnalytics.reportPlaybackMetric(ConvivaSdkConstants.PLAYBACK.PLAY_HEAD_TIME, playerDurationMs);
-        }
-    }
     // endregion
 }
