@@ -230,6 +230,8 @@ public class ConvivaAnalyticsIntegration {
         if (releaseConvivaSdk) {
             ConvivaAnalytics.release();
         }
+
+        isSessionActive = false;
     }
 
     /**
@@ -282,7 +284,6 @@ public class ConvivaAnalyticsIntegration {
         convivaVideoAnalytics.reportPlaybackEvent(event);
         Log.d(TAG, "Tracking resumed.");
     }
-
     // endregion
 
     private void ensureConvivaSessionIsCreatedAndInitialized() {
