@@ -146,12 +146,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     protected void onResume() {
         super.onResume();
         bitmovinPlayerView.onResume();
-        convivaAnalyticsIntegration.reportAppForegrounded();
     }
 
     @Override
     protected void onPause() {
-        convivaAnalyticsIntegration.reportAppBackgrounded();
         bitmovinPlayerView.onStop();
         super.onPause();
     }
@@ -190,4 +188,3 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
     }
 }
-
