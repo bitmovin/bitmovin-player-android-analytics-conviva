@@ -94,7 +94,6 @@ public class DefaultPlayerAdapter implements PlayerAdapter {
             double playerTimeShift = player.getTimeShift();
             long playerDurationMs = -(Math.round(playerTimeShiftMax * 1000));
             return playerDurationMs - -(Math.round(playerTimeShift * 1000));
-
         } else {
             double currentTime = player.getCurrentTime();
             return (long) (currentTime * 1000);

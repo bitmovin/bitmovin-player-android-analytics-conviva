@@ -53,8 +53,8 @@ class DefaultSsaiApiTest {
         }
 
         ssaiApi = DefaultSsaiApi(
-                videoAnalytics,
-                adAnalytics,
+            videoAnalytics,
+            adAnalytics,
             playerAdapter,
         )
     }
