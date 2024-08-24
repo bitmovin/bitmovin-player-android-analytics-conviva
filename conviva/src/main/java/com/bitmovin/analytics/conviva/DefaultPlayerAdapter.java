@@ -33,7 +33,6 @@ public class DefaultPlayerAdapter implements PlayerAdapter {
         VideoQuality playbackVideoData = player.getPlaybackVideoData();
         if (playbackVideoData != null) {
             videoData.put(ConvivaSdkConstants.PLAYBACK.RESOLUTION, new Object[]{playbackVideoData.getWidth(), playbackVideoData.getHeight()});
-            videoData.put(ConvivaSdkConstants.PLAYBACK.BITRATE, new Object[]{playbackVideoData.getBitrate() / 1000});
             final int peakBitrate = playbackVideoData.getPeakBitrate();
             if (peakBitrate != VideoQuality.BITRATE_NO_VALUE) {
                 videoData.put(ConvivaSdkConstants.PLAYBACK.BITRATE, new Object[]{peakBitrate / 1000});
