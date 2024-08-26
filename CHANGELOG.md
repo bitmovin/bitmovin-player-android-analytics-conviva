@@ -10,6 +10,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   - `ConvivaAnalyticsIntegration(customerKey:config:)` constructor without a `Player`
   - `ConvivaAnalyticsIntegration.attachPlayer()` to attach the `Player` at a later point in the session life-cycle
 
+### Removed
+- Unintentionally public initializers from `ConvivaAnalyticsIntegration` which were not intended to be public and only meant for testing
+
 ## 2.6.0 - 2024-08-13
 ### Added
 - `averageBitrate` to reported video metrics
