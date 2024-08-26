@@ -142,7 +142,7 @@ public class ConvivaAnalyticsIntegration {
             @Override
             public void update() {
                 if (isAdActive() && player != null) {
-                    convivaAdAnalytics.reportAdMetric(ConvivaSdkConstants.PLAYBACK.PLAY_HEAD_TIME, playerAdapter.getPlayHeadTimeMillis());
+                    convivaAdAnalytics.reportAdMetric(ConvivaSdkConstants.PLAYBACK.PLAY_HEAD_TIME, player.getPlayHeadTimeMillis());
                 }
             }
 
@@ -236,8 +236,8 @@ public class ConvivaAnalyticsIntegration {
     public void release(Boolean releaseConvivaSdk) {
         convivaAdAnalytics.release();
         convivaVideoAnalytics.release();
-        if (playerAdapter != null) {
-            detachBitmovinEventListeners(playerAdapter);
+        if (player != null) {
+            detachBitmovinEventListeners(player);
         }
         if (releaseConvivaSdk) {
             ConvivaAnalytics.release();
@@ -336,11 +336,11 @@ public class ConvivaAnalyticsIntegration {
             );
         }
 
-        player = new DefaultPlayerDecorator(player);
+        this.player = new DefaultPlayerDecorator(player);
         updateSession();
 
-        attachBitmovinEventListeners(player);
-        ssai.setPlayer(player);
+        attachBitmovinEventListeners(this.player);
+        ssai.setPlayer(this.player);
     }
 
     // endregion
@@ -385,9 +385,9 @@ public class ConvivaAnalyticsIntegration {
     }
 
     private void updateSession() {
-        if (playerAdapter != null) {
-            updatePlaybackVideoData(playerAdapter);
-            buildDynamicContentMetadata(playerAdapter);
+        if (player != null) {
+            updatePlaybackVideoData(player);
+            buildDynamicContentMetadata(player);
         }
 
         if (isSessionActive) {
