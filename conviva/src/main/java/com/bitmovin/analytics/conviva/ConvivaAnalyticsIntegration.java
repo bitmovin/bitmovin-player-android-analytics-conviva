@@ -4,6 +4,8 @@ import android.content.Context;
 import android.os.Handler;
 import android.util.Log;
 
+import androidx.annotation.VisibleForTesting;
+
 import com.bitmovin.analytics.conviva.ssai.DefaultPlaybackInfoProvider;
 import com.bitmovin.analytics.conviva.ssai.DefaultSsaiApi;
 import com.bitmovin.analytics.conviva.ssai.PlaybackInfoProvider;
@@ -50,6 +52,12 @@ public class ConvivaAnalyticsIntegration {
 
     // Helper
     private Boolean isSessionActive = false;
+
+    @VisibleForTesting(otherwise = VisibleForTesting.NONE)
+    public Boolean getSessionActive() {
+        return isSessionActive;
+    }
+
     private Boolean isBumper = false;
 
     public ConvivaAnalyticsIntegration(Player player, String customerKey, Context context) {
