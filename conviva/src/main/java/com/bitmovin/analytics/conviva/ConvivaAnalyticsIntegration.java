@@ -337,8 +337,11 @@ public class ConvivaAnalyticsIntegration {
     }
 
     /**
-     * Late initialize the player when it is not present at the time of the integration creation.
-     * Must be called before the source is loaded into the player.
+     * Attaches a `Player` instance to the Conviva Analytics object.
+     * This method should be called as soon as the `Player` instance is initialized to not miss any tracking.
+     *
+     * Has no effect if there is already a `Player` instance set. Use the `ConvivaAnalyticsIntegration` constructor
+     * without `player` if you plan to attach a `Player` instance later in the life-cycle.
      */
     public void attachPlayer(@NonNull Player player) {
         playerAdapter = new DefaultPlayerAdapter(player);
