@@ -170,7 +170,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     protected void onDestroy() {
         super.onDestroy();
         bitmovinPlayerView.onDestroy();
-        convivaAnalyticsIntegration.endSession();
         convivaAnalyticsIntegration.release();
     }
 
