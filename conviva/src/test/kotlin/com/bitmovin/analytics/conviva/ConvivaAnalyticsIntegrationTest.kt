@@ -51,7 +51,7 @@ class ConvivaAnalyticsIntegrationTest {
         with(ssaiApi) {
             every { isAdBreakActive } returns false
             every { reset() } just runs
-            every { setPlayerAdapter(any()) } just runs
+            every { setPlayer(any()) } just runs
         }
 
         convivaAnalyticsIntegration = ConvivaAnalyticsIntegration(
