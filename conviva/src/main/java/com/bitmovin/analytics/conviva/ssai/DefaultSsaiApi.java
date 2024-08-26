@@ -82,7 +82,7 @@ public class DefaultSsaiApi implements SsaiApi {
             return;
         }
         if (playerAdapter == null) {
-            Log.d(TAG, "Player not yet set. Cannot report ad started.");
+            Log.w(TAG, "Player not yet set. Cannot report ad started.");
             return;
         }
         Log.d(TAG, "Server side ad started");
