@@ -43,10 +43,6 @@ public class ConvivaAnalyticsIntegration {
     @NonNull
     private final ConvivaAdAnalytics convivaAdAnalytics;
 
-    /**
-     * The playerAdapter is used to get the current state of the player in a decoupled way.
-     * Can be `null` if the player is initialized late.
-     */
     @Nullable
     private PlayerDecorator player;
 
