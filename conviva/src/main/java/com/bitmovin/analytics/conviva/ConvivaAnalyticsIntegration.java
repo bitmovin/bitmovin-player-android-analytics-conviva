@@ -336,6 +336,21 @@ public class ConvivaAnalyticsIntegration {
 
     }
 
+    /**
+     * Late initialize the player when it is not present at the time of the integration creation.
+     * Must be called before the source is loaded into the player.
+     */
+    public void attachPlayer(@NonNull Player player) {
+        playerAdapter = new DefaultPlayerAdapter(player);
+        if (player.getSource() != null) {
+            Log.w(TAG, "Player already has a source loaded. Please call setPlayer before loading the source.");
+        }
+
+        attachBitmovinEventListeners(playerAdapter);
+        ssai.setPlayerAdapter(playerAdapter);
+        updateSession();
+    }
+
     // endregion
 
     private void ensureConvivaSessionIsCreatedAndInitialized() {
@@ -858,19 +873,4 @@ public class ConvivaAnalyticsIntegration {
             }
         }
     };
-
-    /**
-     * Late initialize the player when it is not present at the time of the integration creation.
-     * Must be called before the source is loaded into the player.
-     */
-    public void attachPlayer(@NonNull Player player) {
-        playerAdapter = new DefaultPlayerAdapter(player);
-        if (player.getSource() != null) {
-            Log.w(TAG, "Player already has a source loaded. Please call setPlayer before loading the source.");
-        }
-
-        attachBitmovinEventListeners(playerAdapter);
-        ssai.setPlayerAdapter(playerAdapter);
-        updateSession();
-    }
 }
