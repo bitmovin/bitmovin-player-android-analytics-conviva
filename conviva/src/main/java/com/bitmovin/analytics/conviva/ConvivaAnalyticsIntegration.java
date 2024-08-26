@@ -7,9 +7,9 @@ import android.util.Log;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import com.bitmovin.analytics.conviva.ssai.DefaultPlayerAdapter;
 import com.bitmovin.analytics.conviva.ssai.DefaultSsaiApi;
-import com.bitmovin.analytics.conviva.ssai.PlayerAdapter;
+
+import com.bitmovin.analytics.conviva.ssai.DefaultSsaiApi;
 import com.bitmovin.analytics.conviva.ssai.SsaiApi;
 import com.bitmovin.player.api.Player;
 import com.bitmovin.player.api.advertising.Ad;
@@ -50,7 +50,6 @@ public class ConvivaAnalyticsIntegration {
     @Nullable
     private PlayerAdapter playerAdapter;
 
-    @Nullable
     private MetadataOverrides metadataOverrides;
     @NonNull
     private final DefaultSsaiApi ssai;
@@ -125,7 +124,6 @@ public class ConvivaAnalyticsIntegration {
         @Nullable ConvivaAdAnalytics adAnalytics,
         @Nullable DefaultSsaiApi ssai
     ) {
-
         Map<String, Object> settings = new HashMap<>();
         if (config.getGatewayUrl() != null || config.isDebugLoggingEnabled()) {
             if (config.getGatewayUrl() != null) {
@@ -430,7 +428,7 @@ public class ConvivaAnalyticsIntegration {
             contentMetadataBuilder.setStreamType(ConvivaSdkConstants.StreamType.LIVE);
         } else {
             contentMetadataBuilder.setStreamType(ConvivaSdkConstants.StreamType.VOD);
-            contentMetadataBuilder.setDuration(((int) playerAdapter.getDuration()));
+            contentMetadataBuilder.setDuration((int) playerAdapter.getDuration());
         }
 
         contentMetadataBuilder.setStreamUrl(playerAdapter.getStreamUrl());

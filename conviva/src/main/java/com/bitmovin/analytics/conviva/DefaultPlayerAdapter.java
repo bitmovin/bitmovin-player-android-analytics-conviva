@@ -1,5 +1,6 @@
-package com.bitmovin.analytics.conviva.ssai;
+package com.bitmovin.analytics.conviva;
 
+import com.bitmovin.analytics.conviva.helper.WithEventEmitter;
 import com.bitmovin.player.api.Player;
 import com.bitmovin.player.api.media.video.quality.VideoQuality;
 import com.conviva.sdk.ConvivaSdkConstants;
@@ -93,7 +94,6 @@ public class DefaultPlayerAdapter implements PlayerAdapter {
             double playerTimeShift = player.getTimeShift();
             long playerDurationMs = -(Math.round(playerTimeShiftMax * 1000));
             return playerDurationMs - -(Math.round(playerTimeShift * 1000));
-
         } else {
             double currentTime = player.getCurrentTime();
             return (long) (currentTime * 1000);

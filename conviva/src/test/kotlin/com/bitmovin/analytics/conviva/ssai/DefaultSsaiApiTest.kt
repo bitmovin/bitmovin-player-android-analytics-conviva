@@ -1,6 +1,7 @@
 package com.bitmovin.analytics.conviva.ssai
 
 import android.util.Log
+import com.bitmovin.analytics.conviva.PlayerAdapter
 import com.conviva.sdk.ConvivaAdAnalytics
 import com.conviva.sdk.ConvivaSdkConstants
 import com.conviva.sdk.ConvivaVideoAnalytics
@@ -52,8 +53,8 @@ class DefaultSsaiApiTest {
         }
 
         ssaiApi = DefaultSsaiApi(
-                videoAnalytics,
-                adAnalytics,
+            videoAnalytics,
+            adAnalytics,
         )
         ssaiApi.setPlayerAdapter(playerAdapter)
     }
