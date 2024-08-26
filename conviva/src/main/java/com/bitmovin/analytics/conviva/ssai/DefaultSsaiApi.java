@@ -16,12 +16,16 @@ public class DefaultSsaiApi implements SsaiApi {
     private static final String TAG = "DefaultSsaiApi";
     private final ConvivaVideoAnalytics convivaVideoAnalytics;
     private final ConvivaAdAnalytics convivaAdAnalytics;
-    private final PlayerDecorator playerDecorator;
+    private final PlayerDecorator player;
 
-    public DefaultSsaiApi(ConvivaVideoAnalytics convivaVideoAnalytics, ConvivaAdAnalytics convivaAdAnalytics, PlayerDecorator playerDecorator) {
+    public DefaultSsaiApi(
+        ConvivaVideoAnalytics convivaVideoAnalytics,
+        ConvivaAdAnalytics convivaAdAnalytics,
+        PlayerDecorator player
+    ) {
         this.convivaVideoAnalytics = convivaVideoAnalytics;
         this.convivaAdAnalytics = convivaAdAnalytics;
-        this.playerDecorator = playerDecorator;
+        this.player = player;
     }
 
     private boolean isAdBreakActive = false;
@@ -77,8 +81,8 @@ public class DefaultSsaiApi implements SsaiApi {
     }
 
     private void reportInitialAdMetrics() {
-        convivaAdAnalytics.reportAdMetric(ConvivaSdkConstants.PLAYBACK.PLAYER_STATE, playerDecorator.getPlayerState());
-        HashMap<String, Object[]> playbackVideoData = playerDecorator.getPlaybackVideoData();
+        convivaAdAnalytics.reportAdMetric(ConvivaSdkConstants.PLAYBACK.PLAYER_STATE, player.getPlayerState());
+        HashMap<String, Object[]> playbackVideoData = player.getPlaybackVideoData();
         for (Map.Entry<String, Object[]> entry : playbackVideoData.entrySet()) {
             convivaAdAnalytics.reportAdMetric(entry.getKey(), entry.getValue());
         }
