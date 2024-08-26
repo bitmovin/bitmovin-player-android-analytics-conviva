@@ -344,14 +344,20 @@ public class ConvivaAnalyticsIntegration {
      * without `player` if you plan to attach a `Player` instance later in the life-cycle.
      */
     public void attachPlayer(@NonNull Player player) {
-        playerAdapter = new DefaultPlayerAdapter(player);
+        if (this.playerAdapter != null) {
+            Log.w(TAG, "There is already a Player instance attached! Ignoring new Player instance.");
+            return;
+        }
+
         if (player.getSource() != null) {
             Log.w(TAG, "Player already has a source loaded. Please call setPlayer before loading the source.");
         }
 
+        playerAdapter = new DefaultPlayerAdapter(player);
+        updateSession();
+
         attachBitmovinEventListeners(playerAdapter);
         ssai.setPlayerAdapter(playerAdapter);
-        updateSession();
     }
 
     // endregion
