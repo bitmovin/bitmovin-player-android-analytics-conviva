@@ -23,8 +23,8 @@ public class DefaultSsaiApi implements SsaiApi {
     private PlayerAdapter playerAdapter;
 
     public DefaultSsaiApi(
-            ConvivaVideoAnalytics convivaVideoAnalytics,
-            ConvivaAdAnalytics convivaAdAnalytics
+        ConvivaVideoAnalytics convivaVideoAnalytics,
+        ConvivaAdAnalytics convivaAdAnalytics
     ) {
         this.convivaVideoAnalytics = convivaVideoAnalytics;
         this.convivaAdAnalytics = convivaAdAnalytics;
