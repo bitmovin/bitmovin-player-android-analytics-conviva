@@ -134,12 +134,16 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         if (bitmovinPlayerView != null) {
         bitmovinPlayerView.onResume();
         }
-        convivaAnalyticsIntegration.reportAppForegrounded();
+        if (convivaAnalyticsIntegration != null) {
+            convivaAnalyticsIntegration.reportAppForegrounded();
+        }
     }
 
     @Override
     protected void onPause() {
-        convivaAnalyticsIntegration.reportAppBackgrounded();
+        if (convivaAnalyticsIntegration != null) {
+            convivaAnalyticsIntegration.reportAppBackgrounded();
+        }
         if (bitmovinPlayerView != null) {
             bitmovinPlayerView.onStop();
         }
@@ -151,12 +155,18 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         if (bitmovinPlayerView != null) {
             bitmovinPlayerView.onDestroy();
         }
-        convivaAnalyticsIntegration.release();
+        if (convivaAnalyticsIntegration != null) {
+            convivaAnalyticsIntegration.release();
+            convivaAnalyticsIntegration = null;
+        }
         super.onDestroy();
     }
 
     private void tearDownPlayer() {
-        convivaAnalyticsIntegration.release();
+        if (convivaAnalyticsIntegration != null) {
+            convivaAnalyticsIntegration.release();
+            convivaAnalyticsIntegration = null;
+        }
         ViewGroup parent = null;
         if (bitmovinPlayerView != null) {
             parent = (ViewGroup) bitmovinPlayerView.getParent();
@@ -249,11 +259,17 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         } else if (v == sendCustomEventButton) {
             Map<String, Object> eventAttributes = new HashMap<>();
             eventAttributes.put("Some", "Attributes");
-            this.convivaAnalyticsIntegration.sendCustomPlaybackEvent("Custom Event", eventAttributes);
+            if (this.convivaAnalyticsIntegration != null) {
+                this.convivaAnalyticsIntegration.sendCustomPlaybackEvent("Custom Event", eventAttributes);
+            }
         } else if (v == pauseTrackingButton) {
-            this.convivaAnalyticsIntegration.pauseTracking(false);
+            if (this.convivaAnalyticsIntegration != null) {
+                this.convivaAnalyticsIntegration.pauseTracking(false);
+            }
         } else if (v == resumeTrackingButton) {
-            this.convivaAnalyticsIntegration.resumeTracking();
+            if (this.convivaAnalyticsIntegration != null) {
+                this.convivaAnalyticsIntegration.resumeTracking();
+            }
         } else if (v == startSessionButton) {
             this.startSession();
         }
