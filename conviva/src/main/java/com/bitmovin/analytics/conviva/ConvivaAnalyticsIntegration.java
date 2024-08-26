@@ -66,9 +66,6 @@ public class ConvivaAnalyticsIntegration {
         this(player, customerKey, context, config, null, null, null);
     }
 
-    /**
-     * For testing purposes only.
-     */
     ConvivaAnalyticsIntegration(
         Player player,
         String customerKey,
