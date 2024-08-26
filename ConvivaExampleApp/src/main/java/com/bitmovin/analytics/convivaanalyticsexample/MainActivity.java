@@ -45,6 +45,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     // Conviva
     private static final String customerKey = "YOUR-CUSTOMER-KEY";
     private static String gatewayUrl; // Set only in debug mode
+    @Nullable
     private ConvivaAnalyticsIntegration convivaAnalyticsIntegration;
 
     // Player
