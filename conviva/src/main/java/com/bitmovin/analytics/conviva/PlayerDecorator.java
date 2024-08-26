@@ -5,7 +5,7 @@ import com.conviva.sdk.ConvivaSdkConstants;
 
 import java.util.HashMap;
 
-public interface PlayerAdapter {
+public interface PlayerDecorator {
     ConvivaSdkConstants.PlayerState getPlayerState();
 
     HashMap<String, Object[]> getPlaybackVideoData();

@@ -7,10 +7,10 @@ import com.conviva.sdk.ConvivaSdkConstants;
 
 import java.util.HashMap;
 
-public class DefaultPlayerAdapter implements PlayerAdapter {
+public class DefaultPlayerDecorator implements PlayerDecorator {
     private final Player player;
 
-    public DefaultPlayerAdapter(Player player) {
+    public DefaultPlayerDecorator(Player player) {
         this.player = player;
     }
 

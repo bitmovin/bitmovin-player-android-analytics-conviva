@@ -48,7 +48,7 @@ public class ConvivaAnalyticsIntegration {
      * Can be `null` if the player is initialized late.
      */
     @Nullable
-    private PlayerAdapter playerAdapter;
+    private PlayerDecorator player;
 
     private MetadataOverrides metadataOverrides;
     @NonNull
@@ -161,7 +161,7 @@ public class ConvivaAnalyticsIntegration {
         convivaAdAnalytics.setCallback(new ConvivaExperienceAnalytics.ICallback() {
             @Override
             public void update() {
-                if (isAdActive() && playerAdapter != null) {
+                if (isAdActive() && player != null) {
                     convivaAdAnalytics.reportAdMetric(ConvivaSdkConstants.PLAYBACK.PLAY_HEAD_TIME, playerAdapter.getPlayHeadTimeMillis());
                 }
             }
@@ -173,7 +173,7 @@ public class ConvivaAnalyticsIntegration {
     }
 
     private boolean isAdActive() {
-        return (playerAdapter != null && playerAdapter.isAd()) || ssai.isAdBreakActive();
+        return (player != null && player.isAd()) || ssai.isAdBreakActive();
     }
 
     // region public methods
@@ -211,7 +211,7 @@ public class ConvivaAnalyticsIntegration {
      * calling this method.
      */
     public void initializeSession() throws ConvivaAnalyticsException {
-        if ((playerAdapter == null || playerAdapter.getStreamTitle() == null)
+        if ((player == null || player.getStreamTitle() == null)
                 && this.contentMetadataBuilder.getAssetName() == null) {
             throw new ConvivaAnalyticsException(
                     "AssetName is missing. Load player source (with Title) and attach player first or set assetName via updateContentMetadata"
@@ -344,7 +344,7 @@ public class ConvivaAnalyticsIntegration {
      * without `player` if you plan to attach a `Player` instance later in the life-cycle.
      */
     public void attachPlayer(@NonNull Player player) {
-        if (this.playerAdapter != null) {
+        if (this.player != null) {
             Log.w(TAG, "There is already a Player instance attached! Ignoring new Player instance.");
             return;
         }
@@ -356,11 +356,11 @@ public class ConvivaAnalyticsIntegration {
             );
         }
 
-        playerAdapter = new DefaultPlayerAdapter(player);
+        player = new DefaultPlayerDecorator(player);
         updateSession();
 
-        attachBitmovinEventListeners(playerAdapter);
-        ssai.setPlayerAdapter(playerAdapter);
+        attachBitmovinEventListeners(player);
+        ssai.setPlayer(player);
     }
 
     // endregion
@@ -415,8 +415,8 @@ public class ConvivaAnalyticsIntegration {
         }
     }
 
-    private void updatePlaybackVideoData(@NonNull PlayerAdapter playerAdapter) {
-        HashMap<String, Object[]> playbackVideoData = playerAdapter.getPlaybackVideoData();
+    private void updatePlaybackVideoData(@NonNull PlayerDecorator player) {
+        HashMap<String, Object[]> playbackVideoData = player.getPlaybackVideoData();
         for (Map.Entry<String, Object[]> entry : playbackVideoData.entrySet()) {
             convivaVideoAnalytics.reportPlaybackMetric(entry.getKey(), entry.getValue());
             if (ssai.isAdBreakActive()) {
@@ -430,35 +430,35 @@ public class ConvivaAnalyticsIntegration {
         if (overriddenAssetName != null) {
             contentMetadataBuilder.setAssetName(overriddenAssetName);
         } else {
-            if (playerAdapter != null && playerAdapter.getStreamTitle() != null) {
-                contentMetadataBuilder.setAssetName(playerAdapter.getStreamTitle());
+            if (player != null && player.getStreamTitle() != null) {
+                contentMetadataBuilder.setAssetName(player.getStreamTitle());
             } else {
                 Log.w(TAG, "No asset name provided for content metadata.");
             }
         }
 
-        if (playerAdapter != null) {
-            buildDynamicContentMetadata(playerAdapter);
+        if (player != null) {
+            buildDynamicContentMetadata(player);
         }
     }
 
-    private void buildDynamicContentMetadata(PlayerAdapter playerAdapter) {
+    private void buildDynamicContentMetadata(PlayerDecorator player) {
         // Build custom tags here, though this is static metadata but
         // streamType could be missing at time of session initialization
         // as source information could be unavailable at that time
         Map<String, String> customInternTags = new HashMap<>();
-        customInternTags.put(STREAM_TYPE, playerAdapter.getStreamType());
+        customInternTags.put(STREAM_TYPE, player.getStreamType());
         customInternTags.put(INTEGRATION_VERSION, BuildConfig.VERSION_NAME);
         contentMetadataBuilder.setCustom(customInternTags);
 
-        if (playerAdapter.isLive()) {
+        if (player.isLive()) {
             contentMetadataBuilder.setStreamType(ConvivaSdkConstants.StreamType.LIVE);
         } else {
             contentMetadataBuilder.setStreamType(ConvivaSdkConstants.StreamType.VOD);
-            contentMetadataBuilder.setDuration((int) playerAdapter.getDuration());
+            contentMetadataBuilder.setDuration((int) player.getDuration());
         }
 
-        contentMetadataBuilder.setStreamUrl(playerAdapter.getStreamUrl());
+        contentMetadataBuilder.setStreamUrl(player.getStreamUrl());
     }
 
     private void internalEndSession() {
@@ -473,8 +473,8 @@ public class ConvivaAnalyticsIntegration {
     }
     // endregion
 
-    private void attachBitmovinEventListeners(PlayerAdapter playerAdapter) {
-        playerAdapter.withEventEmitter(eventEmitter -> {
+    private void attachBitmovinEventListeners(PlayerDecorator player) {
+        player.withEventEmitter(eventEmitter -> {
             eventEmitter.on(SourceEvent.Unloaded.class, onSourceUnloadedListener);
             eventEmitter.on(PlayerEvent.Error.class, onPlayerErrorListener);
             eventEmitter.on(SourceEvent.Error.class, onSourceErrorListener);
@@ -513,8 +513,8 @@ public class ConvivaAnalyticsIntegration {
         });
     }
 
-    private void detachBitmovinEventListeners(PlayerAdapter playerAdapter) {
-        playerAdapter.withEventEmitter(bitmovinPlayer -> {
+    private void detachBitmovinEventListeners(PlayerDecorator player) {
+        player.withEventEmitter(bitmovinPlayer -> {
             bitmovinPlayer.off(SourceEvent.Unloaded.class, onSourceUnloadedListener);
             bitmovinPlayer.off(PlayerEvent.Error.class, onPlayerErrorListener);
             bitmovinPlayer.off(SourceEvent.Error.class, onSourceErrorListener);
@@ -670,7 +670,7 @@ public class ConvivaAnalyticsIntegration {
             new Handler().postDelayed(() -> {
                 Log.d(TAG, "[Player Event] StallEnded");
                 ConvivaSdkConstants.PlayerState state = ConvivaSdkConstants.PlayerState.PLAYING;
-                if (playerAdapter.isPaused()) {
+                if (player.isPaused()) {
                     state = ConvivaSdkConstants.PlayerState.PAUSED;
                 }
                 transitionState(state);
@@ -716,7 +716,7 @@ public class ConvivaAnalyticsIntegration {
         // Notify of seek buffering complete at this stage.
         Log.d(TAG, "[Player Event] Update state after buffering");
         ConvivaSdkConstants.PlayerState state = ConvivaSdkConstants.PlayerState.PAUSED;
-        if (playerAdapter != null && playerAdapter.isPlaying()) {
+        if (player != null && player.isPlaying()) {
             state = ConvivaSdkConstants.PlayerState.PLAYING;
         }
         transitionState(state);
@@ -840,7 +840,7 @@ public class ConvivaAnalyticsIntegration {
         ConvivaSdkConstants.AdPosition adPosition = ConvivaSdkConstants.AdPosition.MIDROLL;
         if (timeOffset == 0.0) {
             adPosition = ConvivaSdkConstants.AdPosition.PREROLL;
-        } else if (playerAdapter != null && timeOffset == playerAdapter.getDuration()) {
+        } else if (player != null && timeOffset == player.getDuration()) {
             adPosition = ConvivaSdkConstants.AdPosition.POSTROLL;
         }
         return adPosition;
@@ -881,7 +881,7 @@ public class ConvivaAnalyticsIntegration {
         @Override
         public void onEvent(PlayerEvent.TimeChanged timeChangedEvent) {
             if (isSessionActive) {
-                convivaVideoAnalytics.reportPlaybackMetric(ConvivaSdkConstants.PLAYBACK.PLAY_HEAD_TIME, playerAdapter.getPlayHeadTimeMillis());
+                convivaVideoAnalytics.reportPlaybackMetric(ConvivaSdkConstants.PLAYBACK.PLAY_HEAD_TIME, player.getPlayHeadTimeMillis());
             }
         }
     };
