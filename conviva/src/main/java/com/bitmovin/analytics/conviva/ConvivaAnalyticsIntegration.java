@@ -350,7 +350,10 @@ public class ConvivaAnalyticsIntegration {
         }
 
         if (player.getSource() != null) {
-            Log.w(TAG, "Player already has a source loaded. Please call setPlayer before loading the source.");
+            Log.w(
+                TAG,
+                "Player already has a source loaded. Please provide the player instance before loading a source."
+            );
         }
 
         playerAdapter = new DefaultPlayerAdapter(player);
