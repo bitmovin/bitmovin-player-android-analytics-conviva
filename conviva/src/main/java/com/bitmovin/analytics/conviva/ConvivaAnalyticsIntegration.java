@@ -51,42 +51,23 @@ public class ConvivaAnalyticsIntegration {
         this(player, customerKey, context, new ConvivaConfig());
     }
 
-    public ConvivaAnalyticsIntegration(Player player,
-                                       String customerKey,
-                                       Context context,
-                                       ConvivaConfig config) {
-        this(player, customerKey, context, config, null);
-    }
-
-    public ConvivaAnalyticsIntegration(Player player,
-                                       String customerKey,
-                                       Context context,
-                                       ConvivaConfig config,
-                                       ConvivaVideoAnalytics videoAnalytics
+    public ConvivaAnalyticsIntegration(
+        Player player,
+        String customerKey,
+        Context context,
+        ConvivaConfig config
     ) {
-        this(player, customerKey, context, config, videoAnalytics, null);
+        this(player, customerKey, context, config, null, null, null);
     }
 
-    public ConvivaAnalyticsIntegration(Player player,
-                                       String customerKey,
-                                       Context context,
-                                       ConvivaConfig config,
-                                       ConvivaVideoAnalytics videoAnalytics,
-                                       ConvivaAdAnalytics adAnalytics
-    ) {
-        this(player, customerKey, context, config, videoAnalytics, adAnalytics, null);
-    }
-
-    /**
-     * For testing purposes only.
-     */
-    ConvivaAnalyticsIntegration(Player player,
-                                String customerKey,
-                                Context context,
-                                ConvivaConfig config,
-                                ConvivaVideoAnalytics videoAnalytics,
-                                ConvivaAdAnalytics adAnalytics,
-                                DefaultSsaiApi ssai
+    ConvivaAnalyticsIntegration(
+        Player player,
+        String customerKey,
+        Context context,
+        ConvivaConfig config,
+        ConvivaVideoAnalytics videoAnalytics,
+        ConvivaAdAnalytics adAnalytics,
+        DefaultSsaiApi ssai
     ) {
         this.player = new DefaultPlayerDecorator(player);
         Map<String, Object> settings = new HashMap<>();
