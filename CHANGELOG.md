@@ -5,6 +5,11 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
+### Added
+- Possibility to start session tracking without a `Player` instance
+  - `ConvivaAnalyticsIntegration(customerKey:config:)` constructor without a `Player`
+  - `ConvivaAnalyticsIntegration.attachPlayer()` to attach the `Player` at a later point in the session life-cycle
+
 ### Removed
 - Unintentionally public initializers from `ConvivaAnalyticsIntegration` which were not intended to be public and only meant for testing
 

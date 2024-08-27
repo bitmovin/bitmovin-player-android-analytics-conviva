@@ -166,6 +166,39 @@ In addition to the metadata provided in the `AdInfo` object at ad start, the fol
 
 Metadata in the `AdInfo` overwrites all auto collected metadata.
 
+### External VST tracking
+
+If your app needs additional setup steps which should be included in VST tracking, such as DRM token generation, before the `Player` instance can be initialized,
+the `ConvivaAnalyticsIntegration` can be initialized without a `Player` instance. Once the `Player` instance is created it can be attached.
+
+1. Create the `ConvivaAnalyticsIntegration` instance with your `customerKey` and configuration.
+
+```java
+ConvivaAnalyticsIntegration convivaAnalyticsIntegration = new ConvivaAnalyticsIntegration(
+    customerKey,
+    getApplicationContext(),
+    convivaConfig
+);
+```
+
+2. Conviva requires that the `assetName` is set at session initialization. Therefore ensure that you provide using the `MetadataOverrides` **before** initializing the tracking session.
+
+```java
+MetadataOverrides metadata = new MetadataOverrides();
+metadata.setAssetName("Your Asset Name");
+convivaAnalyticsIntegration.updateContentMetadata(metadata);
+
+// Initialize tracking session
+convivaAnalyticsIntegration.initializeSession();
+```
+
+3. Once your `Player` instance is ready attach it to the `ConvivaAnalyticsIntegration` instance.
+
+```java
+// ... Additional setup steps
+convivaAnalyticsIntegration.attachPlayer(player);
+``` 
+
 ### Clean up
 
 At end of app instance lifecycle, the convivaAnalyticsIntegration should be released:
