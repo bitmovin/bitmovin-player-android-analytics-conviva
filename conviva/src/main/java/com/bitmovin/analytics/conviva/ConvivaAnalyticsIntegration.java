@@ -59,6 +59,7 @@ public class ConvivaAnalyticsIntegration {
     }
 
     private Boolean isBumper = false;
+    private Boolean isBackgrounded = false;
 
     public ConvivaAnalyticsIntegration(Player player, String customerKey, Context context) {
         this(player, customerKey, context, new ConvivaConfig());
@@ -292,6 +293,33 @@ public class ConvivaAnalyticsIntegration {
         convivaVideoAnalytics.reportPlaybackEvent(event);
         Log.d(TAG, "Tracking resumed.");
     }
+
+    /**
+     * This should be called when the app is resumed.
+     * <p>
+     * NOTE: This method must not be called, when the analytics is created via `ConvivaAnalytics.buildVideoAnalytics` or `ConvivaAnalytics.buildAdAnalytics` as this is handled internally already!
+     */
+    public void reportAppForegrounded() {
+        Log.d(TAG, "appForegrounded");
+        if (isBackgrounded) {
+            ConvivaAnalytics.reportAppForegrounded();
+            isBackgrounded = false;
+        }
+    }
+
+    /**
+     * This should be called when the app is paused
+     * <p>
+     * NOTE: This method must not be called, when the analytics is created via `ConvivaAnalytics.buildVideoAnalytics` or `ConvivaAnalytics.buildAdAnalytics` as this is handled internally already!
+     */
+    public void reportAppBackgrounded() {
+        Log.d(TAG, "appBackgrounded");
+        if (!isBackgrounded) {
+            ConvivaAnalytics.reportAppBackgrounded();
+            isBackgrounded = true;
+        }
+    }
+
     // endregion
 
     private void ensureConvivaSessionIsCreatedAndInitialized() {
