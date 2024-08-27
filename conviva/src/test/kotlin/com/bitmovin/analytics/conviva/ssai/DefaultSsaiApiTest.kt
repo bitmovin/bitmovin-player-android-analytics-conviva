@@ -1,7 +1,8 @@
 package com.bitmovin.analytics.conviva.ssai
 
-import android.util.Log
 import com.bitmovin.analytics.conviva.PlayerDecorator
+import com.bitmovin.analytics.conviva.helper.mockLogging
+import com.bitmovin.analytics.conviva.helper.unmockLogging
 import com.conviva.sdk.ConvivaAdAnalytics
 import com.conviva.sdk.ConvivaSdkConstants
 import com.conviva.sdk.ConvivaVideoAnalytics
@@ -9,10 +10,8 @@ import io.mockk.clearMocks
 import io.mockk.every
 import io.mockk.just
 import io.mockk.mockk
-import io.mockk.mockkStatic
 import io.mockk.runs
 import io.mockk.slot
-import io.mockk.unmockkStatic
 import io.mockk.verify
 import org.junit.After
 import org.junit.AfterClass
@@ -290,18 +289,13 @@ class DefaultSsaiApiTest {
         @JvmStatic
         @BeforeClass
         fun beforeClass() {
-            mockkStatic(Log::class)
-            every { Log.v(any(), any()) } returns 0
-            every { Log.d(any(), any()) } returns 0
-            every { Log.i(any(), any()) } returns 0
-            every { Log.e(any(), any()) } returns 0
-            every { Log.w(any<String>(), any<String>()) } returns 0
+            mockLogging()
         }
 
         @JvmStatic
         @AfterClass
         fun afterClass() {
-            unmockkStatic(Log::class)
+            unmockLogging()
         }
     }
 }

@@ -2,13 +2,12 @@ package com.bitmovin.analytics.conviva
 
 import android.content.Context
 import android.os.Handler
-import android.util.Log
 import com.bitmovin.analytics.conviva.fixtures.MockPlayer
+import com.bitmovin.analytics.conviva.helper.mockLogging
+import com.bitmovin.analytics.conviva.helper.unmockLogging
 import com.bitmovin.analytics.conviva.ssai.DefaultSsaiApi
 import com.bitmovin.player.api.Player
 import com.bitmovin.player.api.deficiency.PlayerErrorCode
-import com.bitmovin.player.api.event.Event
-import com.bitmovin.player.api.event.EventListener
 import com.bitmovin.player.api.event.PlayerEvent
 import com.bitmovin.player.api.event.SourceEvent
 import com.bitmovin.player.api.media.Quality
@@ -21,10 +20,8 @@ import io.mockk.every
 import io.mockk.just
 import io.mockk.mockk
 import io.mockk.mockkConstructor
-import io.mockk.mockkStatic
 import io.mockk.runs
 import io.mockk.unmockkConstructor
-import io.mockk.unmockkStatic
 import io.mockk.verify
 import org.junit.After
 import org.junit.AfterClass
@@ -34,7 +31,6 @@ import org.junit.Test
 import strikt.api.expectThat
 import strikt.assertions.containsExactlyInAnyOrder
 import strikt.assertions.isEmpty
-import kotlin.reflect.KClass
 
 class ConvivaAnalyticsIntegrationTest {
     private val mockedPlayer: Player = mockk(relaxed = true)
@@ -166,12 +162,7 @@ class ConvivaAnalyticsIntegrationTest {
         @JvmStatic
         @BeforeClass
         fun beforeClass() {
-            mockkStatic(Log::class)
-            every { Log.v(any(), any()) } returns 0
-            every { Log.d(any(), any()) } returns 0
-            every { Log.i(any(), any()) } returns 0
-            every { Log.e(any(), any()) } returns 0
-            every { Log.w(any(), any<String>()) } returns 0
+            mockLogging()
 
             mockkConstructor(Handler::class)
             every { anyConstructed<Handler>().postDelayed(any(), any()) } answers {
@@ -183,7 +174,7 @@ class ConvivaAnalyticsIntegrationTest {
         @JvmStatic
         @AfterClass
         fun afterClass() {
-            unmockkStatic(Log::class)
+            unmockLogging()
             unmockkConstructor(Handler::class)
         }
     }
