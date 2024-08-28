@@ -25,7 +25,6 @@ open class TestBase {
     lateinit var convivaConfig: ConvivaConfig
     var convivaAnalyticsIntegration: ConvivaAnalyticsIntegration? = null
     var videoAnalyticsMock: ConvivaVideoAnalytics? = null
-    var convivaAnalyticsMock: ConvivaAnalytics? = null
     lateinit var activityScenario: ActivityScenario<MainActivity>
 
     val CUSTOM_EVENT_NAME = "CUSTOM_APPLICATION_EVENT"
@@ -93,7 +92,10 @@ open class TestBase {
                 activity.bitmovinPlayer,
                 "test",
                 activity.applicationContext,
-                convivaConfig, videoAnalyticsMock
+                convivaConfig,
+                videoAnalyticsMock,
+                null,
+                null
             )
         )
     }

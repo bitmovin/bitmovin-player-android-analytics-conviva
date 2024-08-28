@@ -96,7 +96,8 @@ public class ConvivaAnalyticsIntegration {
         this(player, customerKey, context, config, null, null, null);
     }
 
-    ConvivaAnalyticsIntegration(
+    @VisibleForTesting()
+    public ConvivaAnalyticsIntegration(
             @Nullable Player player,
             String customerKey,
             Context context,
