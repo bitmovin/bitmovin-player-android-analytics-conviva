@@ -147,7 +147,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     protected void onPause() {
         super.onPause();
         if (bitmovinPlayerView != null) {
-            bitmovinPlayerView.onStop();
+            bitmovinPlayerView.onPause();
         }
     }
 
@@ -167,6 +167,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
         if (convivaAnalyticsIntegration != null) {
             convivaAnalyticsIntegration.release();
+            convivaAnalyticsIntegration = null;
         }
     }
 
