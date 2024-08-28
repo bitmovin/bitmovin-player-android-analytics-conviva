@@ -300,9 +300,9 @@ public class ConvivaAnalyticsIntegration {
 
     /**
      * This should be called when the app is resumed.
-     * <p>
-     * NOTE: This method must not be called, when the analytics is created via `ConvivaAnalytics.buildVideoAnalytics` or `ConvivaAnalytics.buildAdAnalytics` as this is handled internally already!
+     * @deprecated There is no need to call this function. This is handled in the conviva-core sdk internally.
      */
+    @Deprecated
     public void reportAppForegrounded() {
         Log.d(TAG, "appForegrounded");
         if (isBackgrounded) {
@@ -313,9 +313,9 @@ public class ConvivaAnalyticsIntegration {
 
     /**
      * This should be called when the app is paused
-     * <p>
-     * NOTE: This method must not be called, when the analytics is created via `ConvivaAnalytics.buildVideoAnalytics` or `ConvivaAnalytics.buildAdAnalytics` as this is handled internally already!
+     * @deprecated There is no need to call this function. This is handled in the conviva-core sdk internally.
      */
+    @Deprecated
     public void reportAppBackgrounded() {
         Log.d(TAG, "appBackgrounded");
         if (!isBackgrounded) {
