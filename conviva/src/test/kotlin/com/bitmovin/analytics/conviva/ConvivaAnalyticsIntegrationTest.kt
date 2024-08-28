@@ -79,6 +79,16 @@ class ConvivaAnalyticsIntegrationTest {
     }
 
     @Test
+    fun `updating after releasing does nothing`() {
+        convivaAnalyticsIntegration.release()
+
+        expectThat(convivaAnalyticsIntegration.sessionActive == false)
+
+        convivaAnalyticsIntegration.updateContentMetadata(MetadataOverrides())
+        verify(exactly = 0) { videoAnalytics.setContentInfo(any()) }
+    }
+
+    @Test
     fun `reports error to ad analytics during an SSAI ad break`() {
         every { ssaiApi.isAdBreakActive } returns true
 

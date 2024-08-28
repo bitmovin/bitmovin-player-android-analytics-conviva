@@ -19,6 +19,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Changed
 - Updated Bitmovin Player to `3.78.2`
+- Updated conviva-core to `4.0.39`
 
 ## 2.5.0 - 2024-07-05
 ### Added

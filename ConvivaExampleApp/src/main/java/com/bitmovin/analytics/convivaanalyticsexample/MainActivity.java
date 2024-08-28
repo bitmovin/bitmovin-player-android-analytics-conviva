@@ -1,10 +1,6 @@
 package com.bitmovin.analytics.convivaanalyticsexample;
 
 import android.os.Bundle;
-
-import androidx.annotation.Nullable;
-import androidx.appcompat.app.AppCompatActivity;
-
 import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
@@ -12,19 +8,22 @@ import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.Switch;
 
+import androidx.annotation.Nullable;
+import androidx.appcompat.app.AppCompatActivity;
+
 import com.bitmovin.analytics.conviva.ConvivaAnalyticsException;
 import com.bitmovin.analytics.conviva.ConvivaAnalyticsIntegration;
 import com.bitmovin.analytics.conviva.ConvivaConfig;
 import com.bitmovin.analytics.conviva.MetadataOverrides;
-import com.bitmovin.player.api.Player;
 import com.bitmovin.player.PlayerView;
+import com.bitmovin.player.api.Player;
 import com.bitmovin.player.api.PlayerBuilder;
-import com.bitmovin.player.api.source.SourceConfig;
 import com.bitmovin.player.api.PlayerConfig;
 import com.bitmovin.player.api.advertising.AdItem;
 import com.bitmovin.player.api.advertising.AdSource;
 import com.bitmovin.player.api.advertising.AdSourceType;
 import com.bitmovin.player.api.advertising.AdvertisingConfig;
+import com.bitmovin.player.api.source.SourceConfig;
 import com.bitmovin.player.api.source.SourceType;
 
 import java.util.HashMap;
@@ -129,29 +128,40 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     @Override
+    protected void onStart() {
+        super.onStart();
+        if (bitmovinPlayerView != null) {
+            bitmovinPlayerView.onStart();
+        }
+    }
+
+    @Override
     protected void onResume() {
         super.onResume();
         if (bitmovinPlayerView != null) {
-        bitmovinPlayerView.onResume();
-        }
-        if (convivaAnalyticsIntegration != null) {
-            convivaAnalyticsIntegration.reportAppForegrounded();
+            bitmovinPlayerView.onResume();
         }
     }
 
     @Override
     protected void onPause() {
-        if (convivaAnalyticsIntegration != null) {
-            convivaAnalyticsIntegration.reportAppBackgrounded();
+        super.onPause();
+        if (bitmovinPlayerView != null) {
+            bitmovinPlayerView.onPause();
         }
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
         if (bitmovinPlayerView != null) {
             bitmovinPlayerView.onStop();
         }
-        super.onPause();
     }
 
     @Override
     protected void onDestroy() {
+        super.onDestroy();
         if (bitmovinPlayerView != null) {
             bitmovinPlayerView.onDestroy();
         }
@@ -159,7 +169,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             convivaAnalyticsIntegration.release();
             convivaAnalyticsIntegration = null;
         }
-        super.onDestroy();
     }
 
     private void tearDownPlayer() {
@@ -210,16 +219,16 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         if (player != null) {
             convivaAnalyticsIntegration = new ConvivaAnalyticsIntegration(
-                player,
-                customerKey,
-                getApplicationContext(),
-                convivaConfig
+                    player,
+                    customerKey,
+                    getApplicationContext(),
+                    convivaConfig
             );
         } else {
             convivaAnalyticsIntegration = new ConvivaAnalyticsIntegration(
-                customerKey,
-                getApplicationContext(),
-                convivaConfig
+                    customerKey,
+                    getApplicationContext(),
+                    convivaConfig
             );
         }
 
@@ -275,4 +284,3 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
     }
 }
-

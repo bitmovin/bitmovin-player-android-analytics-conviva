@@ -43,7 +43,7 @@ android {
 }
 
 dependencies {
-    api 'com.conviva.sdk:conviva-core-sdk:4.0.37'
+    api 'com.conviva.sdk:conviva-core-sdk:4.0.39'
     implementation bitmovinPlayerDependencies.bitmovinPlayer
 
     testImplementation testingDependencies.junit

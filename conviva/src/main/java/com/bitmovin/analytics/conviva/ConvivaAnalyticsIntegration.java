@@ -6,8 +6,7 @@ import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-
-import com.bitmovin.analytics.conviva.ssai.DefaultSsaiApi;
+import androidx.annotation.VisibleForTesting;
 
 import com.bitmovin.analytics.conviva.ssai.DefaultSsaiApi;
 import com.bitmovin.analytics.conviva.ssai.SsaiApi;
@@ -51,30 +50,36 @@ public class ConvivaAnalyticsIntegration {
     private final DefaultSsaiApi ssai;
 
     private Boolean isSessionActive = false;
+
+    @VisibleForTesting(otherwise = VisibleForTesting.NONE)
+    public Boolean getSessionActive() {
+        return isSessionActive;
+    }
+
     private Boolean isBumper = false;
     private Boolean isBackgrounded = false;
 
     public ConvivaAnalyticsIntegration(String customerKey, Context context) {
         this(
-            null,
-            customerKey,
-            context,
-            new ConvivaConfig(),
-            null,
-            null,
-            null
+                null,
+                customerKey,
+                context,
+                new ConvivaConfig(),
+                null,
+                null,
+                null
         );
     }
 
     public ConvivaAnalyticsIntegration(String customerKey, Context context, ConvivaConfig config) {
         this(
-            null,
-            customerKey,
-            context,
-            config,
-            null,
-            null,
-            null
+                null,
+                customerKey,
+                context,
+                config,
+                null,
+                null,
+                null
         );
     }
 
@@ -83,22 +88,22 @@ public class ConvivaAnalyticsIntegration {
     }
 
     public ConvivaAnalyticsIntegration(
-        Player player,
-        String customerKey,
-        Context context,
-        ConvivaConfig config
+            Player player,
+            String customerKey,
+            Context context,
+            ConvivaConfig config
     ) {
         this(player, customerKey, context, config, null, null, null);
     }
 
     ConvivaAnalyticsIntegration(
-        @Nullable Player player,
-        String customerKey,
-        Context context,
-        ConvivaConfig config,
-        @Nullable ConvivaVideoAnalytics videoAnalytics,
-        @Nullable ConvivaAdAnalytics adAnalytics,
-        @Nullable DefaultSsaiApi ssai
+            @Nullable Player player,
+            String customerKey,
+            Context context,
+            ConvivaConfig config,
+            @Nullable ConvivaVideoAnalytics videoAnalytics,
+            @Nullable ConvivaAdAnalytics adAnalytics,
+            @Nullable DefaultSsaiApi ssai
     ) {
         Map<String, Object> settings = new HashMap<>();
         if (config.getGatewayUrl() != null || config.isDebugLoggingEnabled()) {
@@ -238,6 +243,8 @@ public class ConvivaAnalyticsIntegration {
         if (releaseConvivaSdk) {
             ConvivaAnalytics.release();
         }
+
+        isSessionActive = false;
     }
 
     /**
@@ -292,30 +299,35 @@ public class ConvivaAnalyticsIntegration {
     }
 
     /**
-     * This should be called when the app is resumed
+     * This should be called when the app is resumed.
+     * @deprecated There is no need to call this function. This is handled in the conviva-core sdk internally.
      */
+    @Deprecated
     public void reportAppForegrounded() {
         Log.d(TAG, "appForegrounded");
-        ConvivaAnalytics.reportAppForegrounded();
-        isBackgrounded = false;
+        if (isBackgrounded) {
+            ConvivaAnalytics.reportAppForegrounded();
+            isBackgrounded = false;
+        }
     }
 
     /**
      * This should be called when the app is paused
+     * @deprecated There is no need to call this function. This is handled in the conviva-core sdk internally.
      */
+    @Deprecated
     public void reportAppBackgrounded() {
         Log.d(TAG, "appBackgrounded");
         if (!isBackgrounded) {
             ConvivaAnalytics.reportAppBackgrounded();
             isBackgrounded = true;
         }
-
     }
 
     /**
      * Attaches a `Player` instance to the Conviva Analytics object.
      * This method should be called as soon as the `Player` instance is initialized to not miss any tracking.
-     *
+     * <p>
      * Has no effect if there is already a `Player` instance set. Use the `ConvivaAnalyticsIntegration` constructor
      * without `player` if you plan to attach a `Player` instance later in the life-cycle.
      */
@@ -327,8 +339,8 @@ public class ConvivaAnalyticsIntegration {
 
         if (player.getSource() != null) {
             Log.w(
-                TAG,
-                "Player already has a source loaded. Please provide the player instance before loading a source."
+                    TAG,
+                    "Player already has a source loaded. Please provide the player instance before loading a source."
             );
         }
 
