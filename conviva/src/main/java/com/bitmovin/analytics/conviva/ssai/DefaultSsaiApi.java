@@ -2,7 +2,11 @@ package com.bitmovin.analytics.conviva.ssai;
 
 import android.util.Log;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+
 import com.bitmovin.analytics.conviva.ConvivaAnalyticsIntegration;
+import com.bitmovin.analytics.conviva.PlayerDecorator;
 import com.conviva.sdk.ConvivaAdAnalytics;
 import com.conviva.sdk.ConvivaSdkConstants;
 import com.conviva.sdk.ConvivaVideoAnalytics;
@@ -15,11 +19,18 @@ public class DefaultSsaiApi implements SsaiApi {
     private static final String TAG = "DefaultSsaiApi";
     private final ConvivaVideoAnalytics convivaVideoAnalytics;
     private final ConvivaAdAnalytics convivaAdAnalytics;
-    private final PlaybackInfoProvider player;
+    @Nullable
+    private PlayerDecorator player;
 
-    public DefaultSsaiApi(ConvivaVideoAnalytics convivaVideoAnalytics, ConvivaAdAnalytics convivaAdAnalytics, PlaybackInfoProvider player) {
+    public DefaultSsaiApi(
+        ConvivaVideoAnalytics convivaVideoAnalytics,
+        ConvivaAdAnalytics convivaAdAnalytics
+    ) {
         this.convivaVideoAnalytics = convivaVideoAnalytics;
         this.convivaAdAnalytics = convivaAdAnalytics;
+    }
+
+    public void setPlayer(@NonNull PlayerDecorator player) {
         this.player = player;
     }
 
@@ -70,12 +81,16 @@ public class DefaultSsaiApi implements SsaiApi {
             Log.d(TAG, "No server side ad break active");
             return;
         }
+        if (player == null) {
+            Log.w(TAG, "Player not yet set. Cannot report ad started.");
+            return;
+        }
         Log.d(TAG, "Server side ad started");
         convivaAdAnalytics.reportAdStarted(convertToConvivaAdInfo(adInfo, convivaVideoAnalytics.getMetadataInfo()));
-        reportInitialAdMetrics();
+        reportInitialAdMetrics(player);
     }
 
-    private void reportInitialAdMetrics() {
+    private void reportInitialAdMetrics(@NonNull PlayerDecorator player) {
         convivaAdAnalytics.reportAdMetric(ConvivaSdkConstants.PLAYBACK.PLAYER_STATE, player.getPlayerState());
         HashMap<String, Object[]> playbackVideoData = player.getPlaybackVideoData();
         for (Map.Entry<String, Object[]> entry : playbackVideoData.entrySet()) {

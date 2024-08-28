@@ -1,6 +1,8 @@
 package com.bitmovin.analytics.conviva.ssai
 
-import android.util.Log
+import com.bitmovin.analytics.conviva.PlayerDecorator
+import com.bitmovin.analytics.conviva.helper.mockLogging
+import com.bitmovin.analytics.conviva.helper.unmockLogging
 import com.conviva.sdk.ConvivaAdAnalytics
 import com.conviva.sdk.ConvivaSdkConstants
 import com.conviva.sdk.ConvivaVideoAnalytics
@@ -8,10 +10,8 @@ import io.mockk.clearMocks
 import io.mockk.every
 import io.mockk.just
 import io.mockk.mockk
-import io.mockk.mockkStatic
 import io.mockk.runs
 import io.mockk.slot
-import io.mockk.unmockkStatic
 import io.mockk.verify
 import org.junit.After
 import org.junit.AfterClass
@@ -29,13 +29,13 @@ import strikt.assertions.isTrue
 class DefaultSsaiApiTest {
     private val videoAnalytics: ConvivaVideoAnalytics = mockk(relaxed = true)
     private val adAnalytics: ConvivaAdAnalytics = mockk()
-    private val playbackInfoProvider = mockk<PlaybackInfoProvider>()
+    private val playerDecorator = mockk<PlayerDecorator>()
     private lateinit var ssaiApi: DefaultSsaiApi
 
     @Before
     fun beforeTest() {
-        every { playbackInfoProvider.playerState } returns ConvivaSdkConstants.PlayerState.PLAYING
-        every { playbackInfoProvider.playbackVideoData } returns hashMapOf<String, Array<Any>>(
+        every { playerDecorator.playerState } returns ConvivaSdkConstants.PlayerState.PLAYING
+        every { playerDecorator.playbackVideoData } returns hashMapOf<String, Array<Any>>(
                 ConvivaSdkConstants.PLAYBACK.BITRATE to arrayOf(1),
                 ConvivaSdkConstants.PLAYBACK.RESOLUTION to arrayOf(800, 1600),
                 ConvivaSdkConstants.PLAYBACK.RENDERED_FRAMERATE to arrayOf(60),
@@ -52,20 +52,20 @@ class DefaultSsaiApiTest {
         }
 
         ssaiApi = DefaultSsaiApi(
-                videoAnalytics,
-                adAnalytics,
-                playbackInfoProvider,
+            videoAnalytics,
+            adAnalytics,
         )
+        ssaiApi.setPlayer(playerDecorator)
     }
 
     @After
     fun afterTest() {
-        clearMocks(videoAnalytics, adAnalytics, playbackInfoProvider)
+        clearMocks(videoAnalytics, adAnalytics, playerDecorator)
     }
 
 
     @Test
-    fun `reports server side ad break start to conviva after  ad break started`() {
+    fun `reports server side ad break start to conviva after ad break started`() {
         ssaiApi.reportAdBreakStarted()
         verify {
             videoAnalytics.reportAdBreakStarted(
@@ -131,7 +131,7 @@ class DefaultSsaiApiTest {
 
     @Test
     fun `reports ad playback state playing to conviva when ad starts while paused`() {
-        every { playbackInfoProvider.playerState } returns ConvivaSdkConstants.PlayerState.PAUSED
+        every { playerDecorator.playerState } returns ConvivaSdkConstants.PlayerState.PAUSED
 
         ssaiApi.reportAdBreakStarted()
         ssaiApi.reportAdStarted(SsaiApi.AdInfo())
@@ -146,7 +146,7 @@ class DefaultSsaiApiTest {
 
     @Test
     fun `reports ad playback state buffering to conviva when ad starts while stalling`() {
-        every { playbackInfoProvider.playerState } returns
+        every { playerDecorator.playerState } returns
                 ConvivaSdkConstants.PlayerState.BUFFERING
 
         ssaiApi.reportAdBreakStarted()
@@ -205,7 +205,7 @@ class DefaultSsaiApiTest {
             adAnalytics.reportAdStarted(capture(slot))
         }
 
-        expectThat(slot){
+        expectThat(slot) {
             get { captured[ConvivaSdkConstants.ASSET_NAME] }.isEqualTo("overwrittenTitle")
             get { captured["streamType"] }.isEqualTo("mainContentStreamType")
         }
@@ -289,17 +289,13 @@ class DefaultSsaiApiTest {
         @JvmStatic
         @BeforeClass
         fun beforeClass() {
-            mockkStatic(Log::class)
-            every { Log.v(any(), any()) } returns 0
-            every { Log.d(any(), any()) } returns 0
-            every { Log.i(any(), any()) } returns 0
-            every { Log.e(any(), any()) } returns 0
+            mockLogging()
         }
 
         @JvmStatic
         @AfterClass
         fun afterClass() {
-            unmockkStatic(Log::class)
+            unmockLogging()
         }
     }
 }
