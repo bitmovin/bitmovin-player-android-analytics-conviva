@@ -5,6 +5,7 @@ import com.bitmovin.player.api.Player
 import com.bitmovin.player.api.event.Event
 import com.bitmovin.player.api.event.EventEmitter
 import com.bitmovin.player.api.event.on
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
@@ -21,6 +22,26 @@ const val CONVIVA_GATEWAY_URL = "YOUR-GATEWAY-URL"
 inline fun <reified T : Event> EventEmitter<Event>.expectEvent(
         crossinline condition: (T) -> Boolean = { true }
 ) = runBlocking {
+    suspendCoroutine { continuation ->
+        lateinit var action: ((T) -> Unit)
+        action = {
+            if (condition(it)) {
+                off(action)
+                continuation.resume(Unit)
+            }
+        }
+        on<T>(action)
+    }
+}
+
+/**
+ * Same as  [expectEvent] except that [block] is executed once the event listener is attached.
+ */
+inline fun <reified T : Event> EventEmitter<Event>.callAndExpectEvent(
+        crossinline block: suspend () -> Unit = {},
+        crossinline condition: (T) -> Boolean = { true }
+) = runBlocking {
+    launch { block() }
     suspendCoroutine { continuation ->
         lateinit var action: ((T) -> Unit)
         action = {
