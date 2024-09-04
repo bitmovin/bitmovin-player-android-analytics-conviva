@@ -8,6 +8,8 @@ import com.bitmovin.analytics.conviva.helper.unmockLogging
 import com.bitmovin.analytics.conviva.ssai.DefaultSsaiApi
 import com.bitmovin.player.api.Player
 import com.bitmovin.player.api.deficiency.PlayerErrorCode
+import com.bitmovin.player.api.deficiency.PlayerWarningCode
+import com.bitmovin.player.api.deficiency.SourceWarningCode
 import com.bitmovin.player.api.event.PlayerEvent
 import com.bitmovin.player.api.event.SourceEvent
 import com.bitmovin.player.api.media.Quality
@@ -166,6 +168,22 @@ class ConvivaAnalyticsIntegrationTest {
         }
         verify { adAnalytics.reportAdMetric(ConvivaSdkConstants.PLAYBACK.RESOLUTION, 400, 300) }
         verify { adAnalytics.reportAdMetric(ConvivaSdkConstants.PLAYBACK.RENDERED_FRAMERATE, 10) }
+    }
+
+    @Test
+    fun `does not report a playback error when receiving a player warning event without active conviva session`() {
+        player.listeners[PlayerEvent.Warning::class]?.forEach { onEvent ->
+            onEvent(PlayerEvent.Warning(PlayerWarningCode.General, "warning"))
+        }
+        verify(exactly = 0) { videoAnalytics.reportPlaybackError(any(), any()) }
+    }
+
+    @Test
+    fun `does not report a playback error when receiving a source warning event without active conviva session`() {
+        player.listeners[SourceEvent.Warning::class]?.forEach { onEvent ->
+            onEvent(SourceEvent.Warning(SourceWarningCode.General, "warning"))
+        }
+        verify(exactly = 0) { videoAnalytics.reportPlaybackError(any(), any()) }
     }
 
     companion object {
