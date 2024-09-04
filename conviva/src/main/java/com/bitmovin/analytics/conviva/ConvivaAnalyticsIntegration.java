@@ -588,6 +588,10 @@ public class ConvivaAnalyticsIntegration {
     private final EventListener<PlayerEvent.Warning> onPlayerWarningListener = new EventListener<PlayerEvent.Warning>() {
         @Override
         public void onEvent(PlayerEvent.Warning warningEvent) {
+            if (!isSessionActive) {
+                Log.d(TAG, "[Player Event] Warning outside of active conviva session. Ignoring.");
+                return;
+            }
             Log.d(TAG, "[Player Event] Warning");
             String message = String.format("%s - %s", warningEvent.getCode(), warningEvent.getMessage());
             convivaVideoAnalytics.reportPlaybackError(message, ConvivaSdkConstants.ErrorSeverity.WARNING);
@@ -597,6 +601,10 @@ public class ConvivaAnalyticsIntegration {
     private final EventListener<SourceEvent.Warning> onSourceWarningListener = new EventListener<SourceEvent.Warning>() {
         @Override
         public void onEvent(SourceEvent.Warning warningEvent) {
+            if (!isSessionActive) {
+                Log.d(TAG, "[Source Event] Warning outside of active conviva session. Ignoring.");
+                return;
+            }
             Log.d(TAG, "[Source Event] Warning");
             String message = String.format("%s - %s", warningEvent.getCode(), warningEvent.getMessage());
             convivaVideoAnalytics.reportPlaybackError(message, ConvivaSdkConstants.ErrorSeverity.WARNING);

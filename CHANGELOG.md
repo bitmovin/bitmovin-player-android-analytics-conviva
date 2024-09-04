@@ -5,6 +5,11 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
+### Fixed
+- Potential integration error shown in Touchstone if the player emits a warning outside of an active Conviva session
+
+### Changed
+- Updated Bitmovin Player to `3.81.0`
 
 ## 2.6.0 - 2024-08-28
 ### Added
