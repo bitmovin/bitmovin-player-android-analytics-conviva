@@ -193,7 +193,6 @@ class ConvivaAnalyticsIntegrationTest {
 
     @Test
     fun `reports CSAI ad position based on last ad break schedule time`() {
-
         player.listeners[PlayerEvent.AdBreakStarted::class]?.forEach {
             it(createAdBreakStartedEvent(10.0))
         }
