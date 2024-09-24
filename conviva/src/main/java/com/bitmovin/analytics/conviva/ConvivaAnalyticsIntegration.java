@@ -59,6 +59,8 @@ public class ConvivaAnalyticsIntegration {
 
     private Boolean isBumper = false;
     private Boolean isBackgrounded = false;
+    @Nullable
+    private AdBreak activeAdBreak;
 
     public ConvivaAnalyticsIntegration(String customerKey, Context context) {
         this(
@@ -725,8 +727,6 @@ public class ConvivaAnalyticsIntegration {
 
     // region Ad events
 
-    @Nullable
-    private AdBreak activeAdBreak;
     private final EventListener<PlayerEvent.AdBreakStarted> onAdBreakStarted = new EventListener<PlayerEvent.AdBreakStarted>() {
         @Override
         public void onEvent(PlayerEvent.AdBreakStarted adBreakStarted) {
