@@ -7,6 +7,10 @@ import com.bitmovin.analytics.conviva.helper.mockLogging
 import com.bitmovin.analytics.conviva.helper.unmockLogging
 import com.bitmovin.analytics.conviva.ssai.DefaultSsaiApi
 import com.bitmovin.player.api.Player
+import com.bitmovin.player.api.advertising.Ad
+import com.bitmovin.player.api.advertising.AdBreak
+import com.bitmovin.player.api.advertising.AdData
+import com.bitmovin.player.api.advertising.AdSourceType
 import com.bitmovin.player.api.deficiency.PlayerErrorCode
 import com.bitmovin.player.api.deficiency.PlayerWarningCode
 import com.bitmovin.player.api.deficiency.SourceWarningCode
@@ -16,6 +20,7 @@ import com.bitmovin.player.api.media.Quality
 import com.bitmovin.player.api.media.video.quality.VideoQuality
 import com.conviva.sdk.ConvivaAdAnalytics
 import com.conviva.sdk.ConvivaSdkConstants
+import com.conviva.sdk.ConvivaSdkConstants.AdPosition
 import com.conviva.sdk.ConvivaVideoAnalytics
 import io.mockk.clearMocks
 import io.mockk.every
@@ -186,6 +191,30 @@ class ConvivaAnalyticsIntegrationTest {
         verify(exactly = 0) { videoAnalytics.reportPlaybackError(any(), any()) }
     }
 
+    @Test
+    fun `reports CSAI ad position based on last ad break schedule time`() {
+        player.listeners[PlayerEvent.AdBreakStarted::class]?.forEach {
+            it(createAdBreakStartedEvent(10.0))
+        }
+
+        verify { videoAnalytics.reportAdBreakStarted(any(), any()) }
+        player.listeners[PlayerEvent.AdStarted::class]?.forEach { it(TEST_AD_STARTED_EVENT) }
+        verify {
+            adAnalytics.reportAdStarted(match { it["c3.ad.position"] == AdPosition.MIDROLL })
+        }
+
+        player.listeners[PlayerEvent.AdBreakStarted::class]?.forEach {
+            it(createAdBreakStartedEvent(0.0))
+        }
+
+        verify { videoAnalytics.reportAdBreakStarted(any(), any()) }
+        player.listeners[PlayerEvent.AdStarted::class]?.forEach { it(TEST_AD_STARTED_EVENT) }
+        verify {
+            adAnalytics.reportAdStarted(match { it["c3.ad.position"] == AdPosition.PREROLL })
+        }
+
+    }
+
     companion object {
         @JvmStatic
         @BeforeClass
@@ -235,3 +264,23 @@ private val attachedPlayerEvents = listOf(
         SourceEvent.Error::class,
         SourceEvent.Warning::class,
 )
+
+private val TEST_AD_STARTED_EVENT = PlayerEvent.AdStarted(
+        clientType = AdSourceType.Ima,
+        clickThroughUrl = "clickThroughUrl",
+        duration = 10.0,
+        timeOffset = 10.0,
+        position = "0.0",
+        skipOffset = 10.0,
+        ad = mockk(relaxed = true),
+        indexInQueue = 0,
+)
+
+private fun createAdBreakStartedEvent(scheduleTime: Double): PlayerEvent.AdBreakStarted {
+    val adBreakStarted = PlayerEvent.AdBreakStarted(
+        adBreak = mockk {
+            every { this@mockk.scheduleTime } returns scheduleTime
+        }
+    )
+    return adBreakStarted
+}

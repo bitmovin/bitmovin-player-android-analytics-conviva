@@ -90,4 +90,64 @@ class AdvertisingTests {
         mainHandler.postWaiting { player.destroy() }
         runBlocking { delay(1000) }
     }
+
+    /**
+     * Plays a live stream with a VMAP ad that includes a pre-roll, mid-roll and post-roll ad with
+     * attached [ConvivaAnalyticsIntegration].
+     *
+     * The mid-roll ad is scheduled to play after 15 seconds and must show up in Conviva's Touchstone
+     * with the correct ad position `MIDROLL`.
+     */
+    @Test
+    fun reports_correct_ad_position_on_live_stream_with_vmap_mid_roll() {
+        val context = InstrumentationRegistry.getInstrumentation().targetContext
+        val mainHandler = Handler(context.mainLooper)
+        val player = mainHandler.postWaiting {
+            val player = Player(
+                context,
+                PlayerConfig(
+                    key = BITMOVIN_PLAYER_LICENSE_KEY,
+                    advertisingConfig = AdvertisingConfig(
+                        AdItem(
+                            AdSource(
+                                AdSourceType.Ima,
+                                Sources.Ads.VMAP_PREROLL_MIDROLL_POSTROLL_TAG
+                            )
+                        ),
+                    ),
+                    playbackConfig = PlaybackConfig(
+                        isAutoplayEnabled = true,
+                    ),
+                ),
+                analyticsConfig = AnalyticsPlayerConfig.Disabled,
+            )
+            val convivaAnalyticsIntegration = ConvivaAnalyticsIntegration(
+                player,
+                CONVIVA_CUSTOMER_KEY,
+                context,
+                ConvivaConfig().apply {
+                    isDebugLoggingEnabled = true
+                    gatewayUrl = CONVIVA_GATEWAY_URL
+                },
+            )
+
+            convivaAnalyticsIntegration.updateContentMetadata(
+                MetadataOverrides()
+                    .apply {
+                        applicationName = "Bitmovin Android Conviva integration example app"
+                        viewerId = "testViewerId"
+                    }
+            )
+            player
+        }
+
+        mainHandler.postWaiting { player.load(Sources.Dash.basicLive) }
+
+        // mid-roll ad break is scheduled at 15 seconds, will play immediately in case of the DASH
+        // live stream due to absolute time stamps.
+        player.expectEvent<PlayerEvent.AdBreakStarted> {
+            it.adBreak!!.scheduleTime == 15.0
+        }
+        player.expectEvent<PlayerEvent.AdBreakFinished>()
+    }
 }

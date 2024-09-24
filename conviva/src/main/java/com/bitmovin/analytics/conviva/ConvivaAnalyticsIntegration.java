@@ -12,6 +12,7 @@ import com.bitmovin.analytics.conviva.ssai.DefaultSsaiApi;
 import com.bitmovin.analytics.conviva.ssai.SsaiApi;
 import com.bitmovin.player.api.Player;
 import com.bitmovin.player.api.advertising.Ad;
+import com.bitmovin.player.api.advertising.AdBreak;
 import com.bitmovin.player.api.advertising.AdData;
 import com.bitmovin.player.api.advertising.AdSourceType;
 import com.bitmovin.player.api.advertising.vast.AdSystem;
@@ -58,6 +59,8 @@ public class ConvivaAnalyticsIntegration {
 
     private Boolean isBumper = false;
     private Boolean isBackgrounded = false;
+    @Nullable
+    private AdBreak activeAdBreak;
 
     public ConvivaAnalyticsIntegration(String customerKey, Context context) {
         this(
@@ -301,6 +304,7 @@ public class ConvivaAnalyticsIntegration {
 
     /**
      * This should be called when the app is resumed.
+     *
      * @deprecated There is no need to call this function. This is handled in the conviva-core sdk internally.
      */
     @Deprecated
@@ -314,6 +318,7 @@ public class ConvivaAnalyticsIntegration {
 
     /**
      * This should be called when the app is paused
+     *
      * @deprecated There is no need to call this function. This is handled in the conviva-core sdk internally.
      */
     @Deprecated
@@ -729,6 +734,7 @@ public class ConvivaAnalyticsIntegration {
             // For pre-roll ads there is no `PlayerEvent.Play` before the `PlayerEvent.AdBreakStarted`
             // which means we need to make sure the session is correctly initialized.
             ensureConvivaSessionIsCreatedAndInitialized();
+            activeAdBreak = adBreakStarted.getAdBreak();
             convivaVideoAnalytics.reportAdBreakStarted(ConvivaSdkConstants.AdPlayer.CONTENT, ConvivaSdkConstants.AdType.CLIENT_SIDE);
         }
     };
@@ -738,6 +744,7 @@ public class ConvivaAnalyticsIntegration {
         public void onEvent(PlayerEvent.AdBreakFinished adBreakFinished) {
             Log.d(TAG, "[Player Event] AdBreakFinished");
             convivaVideoAnalytics.reportAdBreakEnded();
+            activeAdBreak = null;
         }
     };
 
@@ -786,7 +793,19 @@ public class ConvivaAnalyticsIntegration {
             adInfo.put(ConvivaSdkConstants.FRAMEWORK_NAME, "Bitmovin");
             adInfo.put(ConvivaSdkConstants.FRAMEWORK_VERSION, Player.getSdkVersion());
         }
-        adInfo.put("c3.ad.position", getAdPosition(adStartedEvent.getTimeOffset()));
+
+        double scheduleTime;
+        if (activeAdBreak != null) {
+            scheduleTime = activeAdBreak.getScheduleTime();
+        } else {
+            Log.w(
+                    TAG,
+                    "No active ad break found. Using ad start time as ad position. " +
+                            "This may result in inaccurate ad position reporting."
+            );
+            scheduleTime = adStartedEvent.getTimeOffset();
+        }
+        adInfo.put("c3.ad.position", getAdPosition(scheduleTime));
         adInfo.put(ConvivaSdkConstants.DURATION, adStartedEvent.getDuration());
         adInfo.put(ConvivaSdkConstants.IS_LIVE, convivaVideoAnalytics.getMetadataInfo().get(ConvivaSdkConstants.IS_LIVE));
 
