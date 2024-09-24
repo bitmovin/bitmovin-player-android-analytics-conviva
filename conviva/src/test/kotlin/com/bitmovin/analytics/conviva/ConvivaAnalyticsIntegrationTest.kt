@@ -199,7 +199,7 @@ class ConvivaAnalyticsIntegrationTest {
         }
 
         verify { videoAnalytics.reportAdBreakStarted(any(), any()) }
-        player.listeners[PlayerEvent.AdStarted::class]?.forEach { it(TEST_AD) }
+        player.listeners[PlayerEvent.AdStarted::class]?.forEach { it(TEST_AD_STARTED_EVENT) }
         verify {
             adAnalytics.reportAdStarted(match { it["c3.ad.position"] == AdPosition.MIDROLL })
         }
@@ -209,7 +209,7 @@ class ConvivaAnalyticsIntegrationTest {
         }
 
         verify { videoAnalytics.reportAdBreakStarted(any(), any()) }
-        player.listeners[PlayerEvent.AdStarted::class]?.forEach { it(TEST_AD) }
+        player.listeners[PlayerEvent.AdStarted::class]?.forEach { it(TEST_AD_STARTED_EVENT) }
         verify {
             adAnalytics.reportAdStarted(match { it["c3.ad.position"] == AdPosition.PREROLL })
         }
@@ -266,7 +266,7 @@ private val attachedPlayerEvents = listOf(
         SourceEvent.Warning::class,
 )
 
-private val TEST_AD = PlayerEvent.AdStarted(
+private val TEST_AD_STARTED_EVENT = PlayerEvent.AdStarted(
         clientType = AdSourceType.Ima,
         clickThroughUrl = "clickThroughUrl",
         duration = 10.0,
