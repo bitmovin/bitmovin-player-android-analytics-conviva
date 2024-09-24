@@ -273,40 +273,14 @@ private val TEST_AD_STARTED_EVENT = PlayerEvent.AdStarted(
         timeOffset = 10.0,
         position = "0.0",
         skipOffset = 10.0,
-        ad = object : Ad {
-            override val clickThroughUrl: String?
-                get() = "clickThroughUrl"
-            override val data: AdData?
-                get() = null
-            override val height: Int
-                get() = 100
-            override val id: String?
-                get() = null
-            override val isLinear: Boolean
-                get() = true
-            override val mediaFileUrl: String?
-                get() = null
-            override val width: Int
-                get() = 200
-
-            override fun clickThroughUrlOpened() {}
-        },
+        ad = mockk(relaxed = true),
         indexInQueue = 0,
 )
 
 private fun createAdBreakStartedEvent(scheduleTime: Double): PlayerEvent.AdBreakStarted {
     val adBreakStarted = PlayerEvent.AdBreakStarted(
-        adBreak = object : AdBreak {
-            override val ads: List<Ad>
-                get() = emptyList()
-            override val id: String
-                get() = ""
-            override val replaceContentDuration: Double?
-                get() = null
-            override val scheduleTime: Double
-                get() {
-                    return scheduleTime
-                }
+        adBreak = mockk {
+            every { this@mockk.scheduleTime } returns scheduleTime
         }
     )
     return adBreakStarted
