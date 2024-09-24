@@ -5,6 +5,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
+
+## 2.7.1 - 2024-09-24
 ### Fixed
 - Reporting wrong ad position for mid-roll VMAP ads
 
