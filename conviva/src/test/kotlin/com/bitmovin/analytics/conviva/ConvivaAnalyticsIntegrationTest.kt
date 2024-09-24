@@ -204,7 +204,7 @@ class ConvivaAnalyticsIntegrationTest {
         }
 
         player.listeners[PlayerEvent.AdBreakStarted::class]?.forEach {
-            it(createAdBreakStartedEvent(00.0))
+            it(createAdBreakStartedEvent(0.0))
         }
 
         verify { videoAnalytics.reportAdBreakStarted(any(), any()) }
