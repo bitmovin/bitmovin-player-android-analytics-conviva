@@ -6,6 +6,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+### Added
+- Default value of `false` for `c3.ad.isSlate` for client side ad insertion per Conviva Custom Ad Manager integration docs
+
 ## 2.7.1 - 2024-09-24
 ### Fixed
 - Reporting wrong ad position for mid-roll VMAP ads

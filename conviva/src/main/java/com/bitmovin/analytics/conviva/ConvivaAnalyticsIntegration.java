@@ -794,6 +794,9 @@ public class ConvivaAnalyticsIntegration {
             adInfo.put(ConvivaSdkConstants.FRAMEWORK_VERSION, Player.getSdkVersion());
         }
 
+        // default value for isSlate is false for Custom Ad Manager integration
+        adInfo.put("c3.ad.isSlate", "false");
+
         double scheduleTime;
         if (activeAdBreak != null) {
             scheduleTime = activeAdBreak.getScheduleTime();
