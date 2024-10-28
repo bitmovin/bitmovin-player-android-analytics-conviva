@@ -6,6 +6,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+## 2.7.2 - 2024-10-28
+
 ### Added
 - Default value of `false` for `c3.ad.isSlate` for client side ad insertion per Conviva Custom Ad Manager integration docs
 
