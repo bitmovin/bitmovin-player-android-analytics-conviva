@@ -40,7 +40,7 @@ dependencies {
     implementation project(':conviva')
 
     //implementation 'com.bitmovin.analytics:conviva:2.1.1'
-    //api 'com.conviva.sdk:conviva-core-sdk:4.0.20'
+    implementation 'com.conviva.sdk:conviva-core-sdk:4.0.33'
 
     implementation "com.google.ads.interactivemedia.v3:interactivemedia:$googleImaSdk" // only needed if ads are used:
     implementation "com.google.android.gms:play-services-ads-identifier:$googlePlayAdsIdentifier" // only needed if ads are used

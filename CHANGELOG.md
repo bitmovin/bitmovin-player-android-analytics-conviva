@@ -6,6 +6,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+### Added
+- Support for reporting the stack trace in case of error events, if provided by the player
+
 ## 2.7.2 - 2024-10-28
 
 ### Added

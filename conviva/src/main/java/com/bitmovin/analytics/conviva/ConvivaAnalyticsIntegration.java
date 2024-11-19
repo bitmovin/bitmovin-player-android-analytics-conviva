@@ -17,6 +17,7 @@ import com.bitmovin.player.api.advertising.AdData;
 import com.bitmovin.player.api.advertising.AdSourceType;
 import com.bitmovin.player.api.advertising.vast.AdSystem;
 import com.bitmovin.player.api.advertising.vast.VastAdData;
+import com.bitmovin.player.api.deficiency.ErrorEvent;
 import com.bitmovin.player.api.event.Event;
 import com.bitmovin.player.api.event.EventListener;
 import com.bitmovin.player.api.event.PlayerEvent;
@@ -366,7 +367,15 @@ public class ConvivaAnalyticsIntegration {
     }
 
     private void customEvent(Event event) {
-        customEvent(event, new HashMap<>());
+        Map<String, Object> eventAttributes = new HashMap<>();
+        if (event instanceof PlayerEvent.Error || event instanceof SourceEvent.Error) {
+            ErrorEvent errorEvent = ((ErrorEvent) event);
+            if (errorEvent.getData() != null) {
+                // Report stack trace to Conviva
+                eventAttributes.put("stack trace", errorEvent.getData().toString());
+            }
+        }
+        customEvent(event, eventAttributes);
     }
 
     private void customEvent(Event event, Map<String, Object> attributes) {
@@ -568,16 +577,15 @@ public class ConvivaAnalyticsIntegration {
         }, 100);
     };
 
-    private final EventListener<PlayerEvent.Error> onPlayerErrorListener = new EventListener<PlayerEvent.Error>() {
-        @Override
-        public void onEvent(PlayerEvent.Error event) {
-            Log.d(TAG, "[Player Event] Error");
-            handleError(String.format("%s - %s", event.getCode(), event.getMessage()));
-        }
+    private final EventListener<PlayerEvent.Error> onPlayerErrorListener = event -> {
+        Log.d(TAG, "[Player Event] Error");
+        customEvent(event); // In case of Error, report current stack trace if available
+        handleError(String.format("%s - %s", event.getCode(), event.getMessage()));
     };
 
     private final EventListener<SourceEvent.Error> onSourceErrorListener = event -> {
         Log.d(TAG, "[Source Event] Error");
+        customEvent(event); // In case of Error, report current stack trace if available
         handleError(String.format("%s - %s", event.getCode(), event.getMessage()));
     };
 
