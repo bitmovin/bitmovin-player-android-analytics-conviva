@@ -1,13 +1,15 @@
 apply plugin: 'com.android.library'
 apply plugin: 'com.jfrog.artifactory'
 apply plugin: 'maven-publish'
+apply plugin: 'kotlin-android'
 apply from: "../bitmovinpropertiesloader.gradle"
 
 def packageName = 'com.bitmovin.analytics'
-def libraryVersion = '2.2.0'
+def libraryVersion = '2.7.2'
 
 android {
-    compileSdkVersion rootProject.compileSdkVersion
+    namespace 'com.bitmovin.analytics.conviva'
+    compileSdk rootProject.compileSdkVersion
 
     defaultConfig {
         minSdkVersion rootProject.minSdkVersion
@@ -27,44 +29,49 @@ android {
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8
     }
-    namespace 'com.bitmovin.analytics.conviva'
+    buildFeatures {
+        buildConfig true
+    }
+    kotlinOptions {
+        jvmTarget = '1.8'
+    }
+    publishing {
+        singleVariant("release") {
+            withSourcesJar()
+        }
+    }
 }
 
 dependencies {
-    implementation fileTree(include: ['*.jar'], dir: 'libs')
-    implementation 'androidx.appcompat:appcompat:1.2.0'
+    api 'com.conviva.sdk:conviva-core-sdk:4.0.39'
+    implementation bitmovinPlayerDependencies.bitmovinPlayer
+
     testImplementation testingDependencies.junit
+    testImplementation testingDependencies.mockk
+    testImplementation testingDependencies.strikt
     androidTestImplementation testingDependencies.androidx_junit
     androidTestImplementation testingDependencies.androidx_espresso_core
-    implementation 'com.conviva.sdk:conviva-core-sdk:4.0.33'
-    implementation bitmovinPlayerDependencies.bitmovinPlayer
-    implementation 'org.apache.commons:commons-text:1.7'
 }
 
 publishing {
     publications {
-        aar(MavenPublication) {
+        release(MavenPublication) {
             groupId packageName
             version = libraryVersion
             artifactId project.getName()
 
-            // Tell maven to prepare the generated "*.aar" file for publishing
-            artifact("$buildDir/outputs/aar/${project.getName()}-release.aar")
-
+            // Exclude kotlin-stdlib from the pom file as it is only needed for testing
             pom.withXml {
-                def dependenciesNode = asNode().appendNode('dependencies')
-
-                //Defining configuration names from which dependencies will be taken (debugCompile or releaseCompile and compile)
-                def configurationNames = ['api']
-
-                configurationNames.each { configurationName ->
-                    configurations[configurationName].allDependencies.each {
-                        def dependencyNode = dependenciesNode.appendNode('dependency')
-                        dependencyNode.appendNode('groupId', it.group)
-                        dependencyNode.appendNode('artifactId', it.name)
-                        dependencyNode.appendNode('version', it.version)
-                    }
+                Node pomNode = asNode()
+                pomNode.dependencies.'*'.findAll() {
+                    it.artifactId.text() == 'kotlin-stdlib'
+                }.each() {
+                    it.parent().remove(it)
                 }
+            }
+
+            afterEvaluate {
+                from components.release
             }
         }
     }
@@ -81,7 +88,7 @@ artifactory {
         }
         defaults {
             // Tell the Artifactory Plugin which artifacts should be published to Artifactory.
-            publications('aar')
+            publications('release')
             publishArtifacts = true
 
             // Properties to be attached to the published artifacts.

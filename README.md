@@ -46,8 +46,8 @@ allprojects {
 And these lines to your main project
 ```
 dependencies {
-  implementation 'com.conviva.sdk:conviva-core-sdk:4.0.20' // <-- conviva sdk
-  implementation 'com.bitmovin.analytics:conviva:2.2.0'
+  implementation 'com.conviva.sdk:conviva-core-sdk:4.0.39' // <-- conviva sdk
+  implementation 'com.bitmovin.analytics:conviva:2.7.2'
 }
 ```
 
@@ -65,13 +65,11 @@ For more information about permissions and collected network types please look a
 
 The following example create a ConvivaAnalyticsIntegration object and attaches at Bitmovin Native SDK to it
 
-#### Basic Conviva Reporting
+### Basic Conviva Reporting
 
 ```java
-// Create your ConvivaConfiguration object
-ConvivaConfiguration convivaConfig = new ConvivaConfig(
-    "ConvivaExample_BitmovinPlayer",
-    "ViewerId1");
+// Create your ConvivaConfig object
+ConvivaConfig convivaConfig = new ConvivaConfig();
 
 // Create ConvivaAnalyticsIntegration
 convivaAnalyticsIntegration = new ConvivaAnalyticsIntegration(bitmovinPlayer, "YOUR-CUSTOMER-KEY", getApplicationContext(), convivaConfig);
@@ -85,25 +83,29 @@ Source source = Source.create(sourceConfig);
 bitmovinPlayer.load(source);
 ```
 
-#### Optional Configuration Parameters
+### Optional Configuration Parameters
 ```java
-
+convivaConfig.setGatewayUrl("YOUR_DEBUG_GATEWAY_URL");
 convivaConfig.setDebugLoggingEnabled(true);
-convivaConfig.setCustomData(customMapOfKeyValuePairs);
 
 ```
 
-#### Content Metadata handling
+### Content Metadata handling
 
-If you want to override some content metadata attributes you can do so by adding the following:
+If you want to override some content metadata attributes or track additional custom or standard tags you can do so by adding the following:
 
 ```java
 MetadataOverrides metadata = new MetadataOverrides();
 metadata.setApplicationName("Bitmovin Android Conviva integration example app");
 metadata.setViewerId("awesomeViewerId");
-Map<String, String> customInternTags = new HashMap<>();
-customInternTags.put("contentType", "Episode");
-metadata.setCustom(customInternTags);
+
+Map<String, Object> standardTags = new HashMap<>();
+standardTags.put("c3.cm.contentType", "VOD");
+metadata.setAdditionalStandardTags(standardTags);
+
+Map<String, String> customTags = new HashMap<>();
+customTags.put("custom_tag", "value");
+metadata.setCustom(customTags);
 
 // …
 // Initialize ConvivaAnalyticsIntegration
@@ -114,7 +116,7 @@ convivaAnalyticsIntegration.updateContentMetadata(metadata);
 
 Those values will be cleaned up after the session is closed.
 
-#### Consecutive playback
+### Consecutive playback
 	
 If you want to use the same player instance for multiple playback, just load a new source with player.load(…). The integration will close the active session.
 	
@@ -122,7 +124,7 @@ If you want to use the same player instance for multiple playback, just load a n
 player.load(…);
 ```
 
-#### Background handling
+### Background handling
 
 If your app stops playback when entering background conviva suggests to end the active session. Since the integration can't know if your app supports background playback this can't be done automatically.
 
@@ -131,7 +133,73 @@ A session can be ended using following method call:
 `convivaAnalyticsIntegration.endSession()`
 Since the `BitmovinPlayer` automatically pauses the video if no background playback is configured the session creation after the app is in foreground again is handled automatically.
 
-#### Clean up
+### Server Side Ad Tracking
+
+In order to track server side ads you can use the functions provided in `ConvivaAnalyticsIntegration.getSsai()`. The following example shows basic server side ad tracking:
+```java
+SsaiApi ssai = convivaAnalyticsIntegration.getSsai();
+
+ssai.reportAdBreakStarted();
+
+SsaiApi.AdInfo adInfo = new SsaiApi.AdInfo();
+adInfo.setPosition(AdPosition.PREROLL);
+adInfo.setTitle("My ad title");
+adInfo.setDuration(30);
+ssai.reportAdStarted(adInfo);
+
+...
+
+ssai.reportAdFinished();
+ssai.reportAdBreakFinished();
+```
+
+In addition to the metadata provided in the `AdInfo` object at ad start, the following metadata will be auto collected from the main content metadata:
+- ConvivaSdkConstants.STREAM_URL
+- ConvivaSdkConstants.ASSET_NAME
+- ConvivaSdkConstants.IS_LIVE
+- ConvivaSdkConstants.DEFAULT_RESOURCE 
+- ConvivaSdkConstants.ENCODED_FRAMERATE
+- ConvivaSdkConstants.VIEWER_ID
+- ConvivaSdkConstants.PLAYER_NAME
+- streamType
+- integrationVersion
+
+Metadata in the `AdInfo` overwrites all auto collected metadata.
+
+### External VST tracking
+
+If your app needs additional setup steps which should be included in VST tracking, such as DRM token generation, before the `Player` instance can be initialized,
+the `ConvivaAnalyticsIntegration` can be initialized without a `Player` instance. Once the `Player` instance is created it can be attached.
+
+1. Create the `ConvivaAnalyticsIntegration` instance with your `customerKey` and configuration.
+
+```java
+ConvivaAnalyticsIntegration convivaAnalyticsIntegration = new ConvivaAnalyticsIntegration(
+    customerKey,
+    getApplicationContext(),
+    convivaConfig
+);
+```
+
+2. Conviva requires that the `assetName` is set at session initialization. Therefore ensure that you provide using the `MetadataOverrides` **before** initializing the tracking session.
+
+```java
+MetadataOverrides metadata = new MetadataOverrides();
+metadata.setAssetName("Your Asset Name");
+convivaAnalyticsIntegration.updateContentMetadata(metadata);
+
+// Initialize tracking session
+convivaAnalyticsIntegration.initializeSession();
+```
+
+3. Once your `Player` instance is ready attach it to the `ConvivaAnalyticsIntegration` instance.
+
+```java
+// ... Additional setup steps
+convivaAnalyticsIntegration.attachPlayer(player);
+``` 
+
+### Clean up
 
 At end of app instance lifecycle, the convivaAnalyticsIntegration should be released:
 

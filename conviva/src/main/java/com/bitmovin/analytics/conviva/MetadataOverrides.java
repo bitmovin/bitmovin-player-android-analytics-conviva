@@ -14,11 +14,13 @@ public class MetadataOverrides {
     private String applicationName;
     private Map<String, String> custom;
     private Integer duration;
+    private Map<String, Object> additionalStandardTags;
 
     // Dynamic
     private Integer encodedFrameRate;
     private String defaultResource;
     private String streamUrl;
+    private String imaSdkVersion;
 
     public String getAssetName() {
         return assetName;
@@ -68,6 +70,18 @@ public class MetadataOverrides {
         this.duration = duration;
     }
 
+    public Map<String, Object> getAdditionalStandardTags() {
+        return additionalStandardTags;
+    }
+
+    /**
+     * Standard Conviva tags that aren't covered by the other fields in this class.
+     * List of tags can be found here: <a href="https://pulse.conviva.com/learning-center/content/sensor_developer_center/sensor_integration/android/android_stream_sensor.htm#PredefinedVideoandContentMetadata">Pre-defined Video and Content Metadata</a>
+     */
+    public void setAdditionalStandardTags(Map<String, Object> additionalStandardTags) {
+        this.additionalStandardTags = additionalStandardTags;
+    }
+
     public Integer getEncodedFrameRate() {
         return encodedFrameRate;
     }
@@ -90,5 +104,17 @@ public class MetadataOverrides {
 
     public void setStreamUrl(String streamUrl) {
         this.streamUrl = streamUrl;
+    }
+
+    public String getImaSdkVersion() {
+        return imaSdkVersion;
+    }
+
+    /**
+     * Set the IMA SDK version to be tracked with client side ads of type
+     * {@link com.bitmovin.player.api.advertising.AdSourceType#Ima}.
+     */
+    public void setImaSdkVersion(String imaSdkVersion) {
+        this.imaSdkVersion = imaSdkVersion;
     }
 }

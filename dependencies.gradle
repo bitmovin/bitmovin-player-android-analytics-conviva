@@ -1,6 +1,6 @@
 ext {
-    bitmovinPlayerVersion = '3.39.0'
-    googleImaSdk = '3.29.0'
+    bitmovinPlayerVersion = '3.81.0'
+    googleImaSdk = '3.31.0'
     googlePlayAdsIdentifier = '18.0.1'
 
     bitmovinPlayerDependencies = [
@@ -12,6 +12,8 @@ ext {
       junit: 'junit:junit:4.12',
       androidx_junit: 'androidx.test.ext:junit:1.1.5',
       androidx_espresso_core: 'androidx.test.espresso:espresso-core:3.5.1',
-      mockk: 'io.mockk:mockk-android:1.12.0'
+      mockk: 'io.mockk:mockk:1.12.0',
+      mockk_android: 'io.mockk:mockk-android:1.12.0',
+      strikt: 'io.strikt:strikt-core:0.31.0',
     ]
 }

@@ -1,46 +1,56 @@
 package com.bitmovin.analytics.convivaanalyticsexample;
 
 import android.os.Bundle;
-import androidx.appcompat.app.AppCompatActivity;
-
+import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.Switch;
 
-import com.bitmovin.analytics.conviva.ConvivaAnalyticsIntegration;;
+import androidx.annotation.Nullable;
+import androidx.appcompat.app.AppCompatActivity;
+
+import com.bitmovin.analytics.conviva.ConvivaAnalyticsException;
+import com.bitmovin.analytics.conviva.ConvivaAnalyticsIntegration;
 import com.bitmovin.analytics.conviva.ConvivaConfig;
 import com.bitmovin.analytics.conviva.MetadataOverrides;
-import com.bitmovin.player.api.Player;
 import com.bitmovin.player.PlayerView;
-import com.bitmovin.player.api.source.SourceConfig;
+import com.bitmovin.player.api.Player;
+import com.bitmovin.player.api.PlayerBuilder;
 import com.bitmovin.player.api.PlayerConfig;
 import com.bitmovin.player.api.advertising.AdItem;
 import com.bitmovin.player.api.advertising.AdSource;
 import com.bitmovin.player.api.advertising.AdSourceType;
 import com.bitmovin.player.api.advertising.AdvertisingConfig;
+import com.bitmovin.player.api.source.SourceConfig;
 import com.bitmovin.player.api.source.SourceType;
 
 import java.util.HashMap;
 import java.util.Map;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
+    private static final String TAG = "Example";
+
     // UI
     private Button pauseTrackingButton;
     private Button resumeTrackingButton;
     private Button releaseButton;
     private Button createButton;
     private Button sendCustomEventButton;
+    private Button startSessionButton;
     private Switch includeAdsSwitch;
 
     // Conviva
     private static final String customerKey = "YOUR-CUSTOMER-KEY";
     private static String gatewayUrl; // Set only in debug mode
+    @Nullable
     private ConvivaAnalyticsIntegration convivaAnalyticsIntegration;
 
     // Player
+    @Nullable
     private Player bitmovinPlayer;
+    @Nullable
     private PlayerView bitmovinPlayerView;
 
     @Override
@@ -53,52 +63,35 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         resumeTrackingButton.setOnClickListener(this);
         releaseButton = findViewById(R.id.release_button);
         releaseButton.setOnClickListener(this);
-        createButton = findViewById(R.id.create_button);
+        createButton = findViewById(R.id.create_player_button);
         createButton.setOnClickListener(this);
         sendCustomEventButton = findViewById(R.id.custom_event_button);
         sendCustomEventButton.setOnClickListener(this);
+        startSessionButton = findViewById(R.id.start_session_button);
+        startSessionButton.setOnClickListener(this);
         includeAdsSwitch = findViewById(R.id.include_ads_switch);
 
         this.setupBitmovinPlayer();
     }
 
     protected void setupBitmovinPlayer() {
-        this.bitmovinPlayer = Player.create(this, buildPlayerConfiguration());
+        this.bitmovinPlayer = new PlayerBuilder(this)
+                .setPlayerConfig(buildPlayerConfiguration())
+                .disableAnalytics()
+                .build();
         this.bitmovinPlayerView = new PlayerView(this, this.bitmovinPlayer);
 
         LinearLayout playerUIView = this.findViewById(R.id.bitmovinPlayerUIView);
         playerUIView.addView(bitmovinPlayerView);
 
-        // Create your ConvivaConfig object
-        ConvivaConfig convivaConfig = new ConvivaConfig();
-
-        // Set only in debug mode
-        if (gatewayUrl != null) {
-            convivaConfig.setGatewayUrl(gatewayUrl);
+        if (convivaAnalyticsIntegration == null) {
+            convivaAnalyticsIntegration = setupConvivaAnalytics(bitmovinPlayer);
+        } else {
+            convivaAnalyticsIntegration.attachPlayer(bitmovinPlayer);
         }
-
-        // Add optional parameters
-        convivaConfig.setDebugLoggingEnabled(true);
-
-        // Create ConvivaAnalytics
-        convivaAnalyticsIntegration = new ConvivaAnalyticsIntegration(
-                bitmovinPlayer,
-                customerKey,
-                getApplicationContext(),
-                convivaConfig);
-
-
-        MetadataOverrides metadata = new MetadataOverrides();
-        metadata.setApplicationName("Bitmovin Android Conviva integration example app");
-        metadata.setViewerId("awesomeViewerId");
-        Map<String, String> customInternTags = new HashMap<>();
-        customInternTags.put("contentType", "Episode");
-        metadata.setCustom(customInternTags);
-        convivaAnalyticsIntegration.updateContentMetadata(metadata);
 
         // load source using the created source configuration
         bitmovinPlayer.load(buildSourceConfiguration());
-
     }
 
     private PlayerConfig buildPlayerConfiguration() {
@@ -107,6 +100,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         if (includeAdsSwitch.isChecked()) {
             playerConfiguration.setAdvertisingConfig(buildAdConfiguration());
         }
+
+        playerConfiguration.getPlaybackConfig().setAutoplayEnabled(true);
 
         return playerConfiguration;
     }
@@ -133,34 +128,135 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     @Override
+    protected void onStart() {
+        super.onStart();
+        if (bitmovinPlayerView != null) {
+            bitmovinPlayerView.onStart();
+        }
+    }
+
+    @Override
     protected void onResume() {
         super.onResume();
-        bitmovinPlayerView.onResume();
-        convivaAnalyticsIntegration.reportAppForegrounded();
+        if (bitmovinPlayerView != null) {
+            bitmovinPlayerView.onResume();
+        }
     }
 
     @Override
     protected void onPause() {
-        convivaAnalyticsIntegration.reportAppBackgrounded();
-        bitmovinPlayerView.onStop();
         super.onPause();
+        if (bitmovinPlayerView != null) {
+            bitmovinPlayerView.onPause();
+        }
     }
 
     @Override
-    protected void onDestroy() {    
-        bitmovinPlayerView.onDestroy();
-        convivaAnalyticsIntegration.release();
+    protected void onStop() {
+        super.onStop();
+        if (bitmovinPlayerView != null) {
+            bitmovinPlayerView.onStop();
+        }
+    }
+
+    @Override
+    protected void onDestroy() {
         super.onDestroy();
+        if (bitmovinPlayerView != null) {
+            bitmovinPlayerView.onDestroy();
+        }
+        if (convivaAnalyticsIntegration != null) {
+            convivaAnalyticsIntegration.release();
+            convivaAnalyticsIntegration = null;
+        }
     }
 
     private void tearDownPlayer() {
-        convivaAnalyticsIntegration.release();
-        ViewGroup parent = (ViewGroup) bitmovinPlayerView.getParent();
+        if (convivaAnalyticsIntegration != null) {
+            convivaAnalyticsIntegration.release();
+            convivaAnalyticsIntegration = null;
+        }
+        ViewGroup parent = null;
+        if (bitmovinPlayerView != null) {
+            parent = (ViewGroup) bitmovinPlayerView.getParent();
+        }
         if (parent != null) {
             parent.removeView(bitmovinPlayerView);
         }
-        bitmovinPlayer.destroy();
-        bitmovinPlayerView.onDestroy();
+        if (bitmovinPlayer != null) {
+            bitmovinPlayer.destroy();
+        }
+        if (bitmovinPlayerView != null) {
+            bitmovinPlayerView.onDestroy();
+        }
+        bitmovinPlayer = null;
+    }
+
+    private void startSession() {
+        ConvivaAnalyticsIntegration convivaAnalyticsIntegration = setupConvivaAnalytics(bitmovinPlayer);
+        convivaAnalyticsIntegration.updateContentMetadata(buildMetadataOverrides("Art of Motion"));
+        try {
+            convivaAnalyticsIntegration.initializeSession();
+
+            this.convivaAnalyticsIntegration = convivaAnalyticsIntegration;
+        } catch (ConvivaAnalyticsException e) {
+            Log.d(TAG, "ConvivaAnalytics initialization failed with error: " + e);
+        }
+    }
+
+    private ConvivaAnalyticsIntegration setupConvivaAnalytics(@Nullable Player player) {
+        // Create your ConvivaConfig object
+        ConvivaConfig convivaConfig = new ConvivaConfig();
+
+        // Set only in debug mode
+        if (gatewayUrl != null) {
+            convivaConfig.setGatewayUrl(gatewayUrl);
+        }
+
+        ConvivaAnalyticsIntegration convivaAnalyticsIntegration = null;
+        // Add optional parameters
+        convivaConfig.setDebugLoggingEnabled(true);
+
+        if (player != null) {
+            convivaAnalyticsIntegration = new ConvivaAnalyticsIntegration(
+                    player,
+                    customerKey,
+                    getApplicationContext(),
+                    convivaConfig
+            );
+        } else {
+            convivaAnalyticsIntegration = new ConvivaAnalyticsIntegration(
+                    customerKey,
+                    getApplicationContext(),
+                    convivaConfig
+            );
+        }
+
+        convivaAnalyticsIntegration.updateContentMetadata(buildMetadataOverrides(null));
+
+        return convivaAnalyticsIntegration;
+    }
+
+    private MetadataOverrides buildMetadataOverrides(@Nullable String assetName) {
+        MetadataOverrides metadata = new MetadataOverrides();
+        metadata.setApplicationName("Bitmovin Android Conviva integration example app");
+        metadata.setViewerId("awesomeViewerId");
+
+        Map<String, Object> standardTags = new HashMap<>();
+        standardTags.put("c3.cm.contentType", "VOD");
+        metadata.setAdditionalStandardTags(standardTags);
+
+        Map<String, String> customTags = new HashMap<>();
+        customTags.put("custom_tag", "Episode");
+        metadata.setCustom(customTags);
+
+        metadata.setImaSdkVersion("3.31.0");
+
+        if (assetName != null) {
+            metadata.setAssetName(assetName);
+        }
+
+        return metadata;
     }
 
     @Override
@@ -172,12 +268,19 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         } else if (v == sendCustomEventButton) {
             Map<String, Object> eventAttributes = new HashMap<>();
             eventAttributes.put("Some", "Attributes");
-            this.convivaAnalyticsIntegration.sendCustomPlaybackEvent("Custom Event", eventAttributes);
+            if (this.convivaAnalyticsIntegration != null) {
+                this.convivaAnalyticsIntegration.sendCustomPlaybackEvent("Custom Event", eventAttributes);
+            }
         } else if (v == pauseTrackingButton) {
-            this.convivaAnalyticsIntegration.pauseTracking(false);
+            if (this.convivaAnalyticsIntegration != null) {
+                this.convivaAnalyticsIntegration.pauseTracking(false);
+            }
         } else if (v == resumeTrackingButton) {
-            this.convivaAnalyticsIntegration.resumeTracking();
+            if (this.convivaAnalyticsIntegration != null) {
+                this.convivaAnalyticsIntegration.resumeTracking();
+            }
+        } else if (v == startSessionButton) {
+            this.startSession();
         }
     }
 }
-
