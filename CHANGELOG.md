@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Added
 - Support for reporting the stack trace in case of error events, if provided by the player
+- New `ConvivaAnalyticsIntegration.setAutoEndSession` to not end Conviva session automatically from certain player events if set to false (true by default).
 
 ## 2.7.2 - 2024-10-28
 
