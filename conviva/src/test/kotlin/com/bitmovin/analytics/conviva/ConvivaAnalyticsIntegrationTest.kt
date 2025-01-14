@@ -66,6 +66,8 @@ class ConvivaAnalyticsIntegrationTest {
                 adAnalytics,
                 ssaiApi,
         )
+        convivaAnalyticsIntegration.initializeSession()
+        clearMocks(videoAnalytics, answers = true)
     }
 
     @After
@@ -177,6 +179,8 @@ class ConvivaAnalyticsIntegrationTest {
 
     @Test
     fun `does not report a playback error when receiving a player warning event without active conviva session`() {
+        convivaAnalyticsIntegration.endSession()
+
         player.listeners[PlayerEvent.Warning::class]?.forEach { onEvent ->
             onEvent(PlayerEvent.Warning(PlayerWarningCode.General, "warning"))
         }
@@ -185,10 +189,24 @@ class ConvivaAnalyticsIntegrationTest {
 
     @Test
     fun `does not report a playback error when receiving a source warning event without active conviva session`() {
+        convivaAnalyticsIntegration.endSession()
+
         player.listeners[SourceEvent.Warning::class]?.forEach { onEvent ->
             onEvent(SourceEvent.Warning(SourceWarningCode.General, "warning"))
         }
         verify(exactly = 0) { videoAnalytics.reportPlaybackError(any(), any()) }
+    }
+
+    @Test
+    fun `does not report a playback stalled without active conviva session`() {
+        convivaAnalyticsIntegration.reportPlaybackStalled()
+        verify(exactly = 1) { videoAnalytics.reportPlaybackMetric(any(), any()) }
+
+        convivaAnalyticsIntegration.endSession()
+        clearMocks(videoAnalytics, answers = true)
+
+        convivaAnalyticsIntegration.reportPlaybackStalled()
+        verify(exactly = 0) { videoAnalytics.reportPlaybackMetric(any(), any()) }
     }
 
     @Test
