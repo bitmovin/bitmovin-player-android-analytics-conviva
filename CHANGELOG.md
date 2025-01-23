@@ -11,6 +11,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - New `ConvivaAnalyticsIntegration.setAutoEndSession` to not end Conviva session automatically from certain player events if set to false (true by default).
 - New `ConvivaAnalyticsIntegration.reportPlaybackStalled` to report a stalled event to Conviva
 
+### Changed
+- Error reporting now uses the error code instead of the error name as prefix
+
 ## 2.7.2 - 2024-10-28
 
 ### Added
