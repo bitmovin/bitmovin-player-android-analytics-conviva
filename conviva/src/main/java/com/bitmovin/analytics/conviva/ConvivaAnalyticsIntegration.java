@@ -600,15 +600,17 @@ public class ConvivaAnalyticsIntegration {
     };
 
     private final EventListener<PlayerEvent.Error> onPlayerErrorListener = event -> {
-        Log.d(TAG, "[Player Event] Error - " + event.getCode().getValue());
+        String errorMessage = String.format("%s - %s", event.getCode().getValue(), event.getMessage());
+        Log.d(TAG, "[Player Event] Error - " + errorMessage);
         customEvent(event); // In case of Error, report current stack trace if available
-        handleError(String.format("%s - %s", event.getCode().getValue(), event.getMessage()));
+        handleError(errorMessage);
     };
 
     private final EventListener<SourceEvent.Error> onSourceErrorListener = event -> {
-        Log.d(TAG, "[Source Event] Error - " + event.getCode().getValue());
+        String errorMessage = String.format("%s - %s", event.getCode().getValue(), event.getMessage());
+        Log.d(TAG, "[Source Event] Error - " + errorMessage);
         customEvent(event); // In case of Error, report current stack trace if available
-        handleError(String.format("%s - %s", event.getCode().getValue(), event.getMessage()));
+        handleError(errorMessage);
     };
 
     private void handleError(String message) {
