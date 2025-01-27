@@ -600,15 +600,17 @@ public class ConvivaAnalyticsIntegration {
     };
 
     private final EventListener<PlayerEvent.Error> onPlayerErrorListener = event -> {
-        Log.d(TAG, "[Player Event] Error");
+        String errorMessage = String.format("%s - %s", event.getCode().getValue(), event.getMessage());
+        Log.d(TAG, "[Player Event] Error - " + errorMessage);
         customEvent(event); // In case of Error, report current stack trace if available
-        handleError(String.format("%s - %s", event.getCode(), event.getMessage()));
+        handleError(errorMessage);
     };
 
     private final EventListener<SourceEvent.Error> onSourceErrorListener = event -> {
-        Log.d(TAG, "[Source Event] Error");
+        String errorMessage = String.format("%s - %s", event.getCode().getValue(), event.getMessage());
+        Log.d(TAG, "[Source Event] Error - " + errorMessage);
         customEvent(event); // In case of Error, report current stack trace if available
-        handleError(String.format("%s - %s", event.getCode(), event.getMessage()));
+        handleError(errorMessage);
     };
 
     private void handleError(String message) {
@@ -627,7 +629,7 @@ public class ConvivaAnalyticsIntegration {
                 return;
             }
             Log.d(TAG, "[Player Event] Warning");
-            String message = String.format("%s - %s", warningEvent.getCode(), warningEvent.getMessage());
+            String message = String.format("%s - %s", warningEvent.getCode().getValue(), warningEvent.getMessage());
             convivaVideoAnalytics.reportPlaybackError(message, ConvivaSdkConstants.ErrorSeverity.WARNING);
         }
     };
@@ -640,7 +642,7 @@ public class ConvivaAnalyticsIntegration {
                 return;
             }
             Log.d(TAG, "[Source Event] Warning");
-            String message = String.format("%s - %s", warningEvent.getCode(), warningEvent.getMessage());
+            String message = String.format("%s - %s", warningEvent.getCode().getValue(), warningEvent.getMessage());
             convivaVideoAnalytics.reportPlaybackError(message, ConvivaSdkConstants.ErrorSeverity.WARNING);
         }
     };
