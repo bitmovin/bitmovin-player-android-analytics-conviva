@@ -17,6 +17,7 @@ import com.bitmovin.player.api.advertising.AdData;
 import com.bitmovin.player.api.advertising.AdSourceType;
 import com.bitmovin.player.api.advertising.vast.AdSystem;
 import com.bitmovin.player.api.advertising.vast.VastAdData;
+import com.bitmovin.player.api.deficiency.ErrorEvent;
 import com.bitmovin.player.api.event.Event;
 import com.bitmovin.player.api.event.EventListener;
 import com.bitmovin.player.api.event.PlayerEvent;
@@ -61,6 +62,8 @@ public class ConvivaAnalyticsIntegration {
     private Boolean isBackgrounded = false;
     @Nullable
     private AdBreak activeAdBreak;
+
+    private Boolean isAutoEndSession = true;
 
     public ConvivaAnalyticsIntegration(String customerKey, Context context) {
         this(
@@ -166,6 +169,14 @@ public class ConvivaAnalyticsIntegration {
         return ssai;
     }
 
+    public Boolean getAutoEndSession() {
+        return isAutoEndSession;
+    }
+
+    public void setAutoEndSession(Boolean autoEndingSession) {
+        isAutoEndSession = autoEndingSession;
+    }
+
     public void sendCustomApplicationEvent(String name) {
         sendCustomApplicationEvent(name, new HashMap<>());
     }
@@ -252,6 +263,16 @@ public class ConvivaAnalyticsIntegration {
     }
 
     /**
+     * Sends a stalled event during playback to Conviva's Player Insight. If no session is active it will NOT
+     * create one.
+     */
+    public void reportPlaybackStalled() {
+        if (isSessionActive) {
+            transitionState(ConvivaSdkConstants.PlayerState.BUFFERING);
+        }
+    }
+
+    /**
      * Sends a custom deficiency event during playback to Conviva's Player Insight. If no session is active it will NOT
      * create one.
      *
@@ -259,7 +280,7 @@ public class ConvivaAnalyticsIntegration {
      * @param severity One of FATAL or WARNING
      */
     public void reportPlaybackDeficiency(String message, ConvivaSdkConstants.ErrorSeverity severity) {
-        reportPlaybackDeficiency(message, severity, true);
+        reportPlaybackDeficiency(message, severity, isAutoEndSession);
     }
 
     /**
@@ -366,7 +387,15 @@ public class ConvivaAnalyticsIntegration {
     }
 
     private void customEvent(Event event) {
-        customEvent(event, new HashMap<>());
+        Map<String, Object> eventAttributes = new HashMap<>();
+        if (event instanceof PlayerEvent.Error || event instanceof SourceEvent.Error) {
+            ErrorEvent errorEvent = ((ErrorEvent) event);
+            if (errorEvent.getData() != null) {
+                // Report stack trace to Conviva
+                eventAttributes.put("stack trace", errorEvent.getData().toString());
+            }
+        }
+        customEvent(event, eventAttributes);
     }
 
     private void customEvent(Event event, Map<String, Object> attributes) {
@@ -564,21 +593,24 @@ public class ConvivaAnalyticsIntegration {
         // TODO: remove this once the event order is fixed on the Android SDK.
         new Handler().postDelayed(() -> {
             Log.d(TAG, "[Player Event] SourceUnloaded");
-            internalEndSession();
+            if (isAutoEndSession) {
+                internalEndSession();
+            }
         }, 100);
     };
 
-    private final EventListener<PlayerEvent.Error> onPlayerErrorListener = new EventListener<PlayerEvent.Error>() {
-        @Override
-        public void onEvent(PlayerEvent.Error event) {
-            Log.d(TAG, "[Player Event] Error");
-            handleError(String.format("%s - %s", event.getCode(), event.getMessage()));
-        }
+    private final EventListener<PlayerEvent.Error> onPlayerErrorListener = event -> {
+        String errorMessage = String.format("%s - %s", event.getCode().getValue(), event.getMessage());
+        Log.d(TAG, "[Player Event] Error - " + errorMessage);
+        customEvent(event); // In case of Error, report current stack trace if available
+        handleError(errorMessage);
     };
 
     private final EventListener<SourceEvent.Error> onSourceErrorListener = event -> {
-        Log.d(TAG, "[Source Event] Error");
-        handleError(String.format("%s - %s", event.getCode(), event.getMessage()));
+        String errorMessage = String.format("%s - %s", event.getCode().getValue(), event.getMessage());
+        Log.d(TAG, "[Source Event] Error - " + errorMessage);
+        customEvent(event); // In case of Error, report current stack trace if available
+        handleError(errorMessage);
     };
 
     private void handleError(String message) {
@@ -586,8 +618,7 @@ public class ConvivaAnalyticsIntegration {
         if (ssai.isAdBreakActive()) {
             convivaAdAnalytics.reportAdError(message, severity);
         }
-        convivaVideoAnalytics.reportPlaybackError(message, severity);
-        internalEndSession();
+        reportPlaybackDeficiency(message, severity);
     }
 
     private final EventListener<PlayerEvent.Warning> onPlayerWarningListener = new EventListener<PlayerEvent.Warning>() {
@@ -598,7 +629,7 @@ public class ConvivaAnalyticsIntegration {
                 return;
             }
             Log.d(TAG, "[Player Event] Warning");
-            String message = String.format("%s - %s", warningEvent.getCode(), warningEvent.getMessage());
+            String message = String.format("%s - %s", warningEvent.getCode().getValue(), warningEvent.getMessage());
             convivaVideoAnalytics.reportPlaybackError(message, ConvivaSdkConstants.ErrorSeverity.WARNING);
         }
     };
@@ -611,7 +642,7 @@ public class ConvivaAnalyticsIntegration {
                 return;
             }
             Log.d(TAG, "[Source Event] Warning");
-            String message = String.format("%s - %s", warningEvent.getCode(), warningEvent.getMessage());
+            String message = String.format("%s - %s", warningEvent.getCode().getValue(), warningEvent.getMessage());
             convivaVideoAnalytics.reportPlaybackError(message, ConvivaSdkConstants.ErrorSeverity.WARNING);
         }
     };
@@ -653,12 +684,14 @@ public class ConvivaAnalyticsIntegration {
     private final EventListener<PlayerEvent.PlaybackFinished> onPlaybackFinishedListener = playbackFinishedEvent -> {
         Log.d(TAG, "[Player Event] PlaybackFinished");
         transitionState(ConvivaSdkConstants.PlayerState.STOPPED);
-        internalEndSession();
+        if (isAutoEndSession) {
+            internalEndSession();
+        }
     };
 
     private final EventListener<PlayerEvent.StallStarted> onStallStartedListener = stallStartedEvent -> {
         Log.d(TAG, "[Player Event] StallStarted");
-        transitionState(ConvivaSdkConstants.PlayerState.BUFFERING);
+        reportPlaybackStalled();
     };
 
     private final EventListener<PlayerEvent.StallEnded> onStallEndedListener = new EventListener<PlayerEvent.StallEnded>() {

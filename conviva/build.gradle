@@ -5,7 +5,7 @@ apply plugin: 'kotlin-android'
 apply from: "../bitmovinpropertiesloader.gradle"
 
 def packageName = 'com.bitmovin.analytics'
-def libraryVersion = '2.7.2'
+def libraryVersion = '2.8.0'
 
 android {
     namespace 'com.bitmovin.analytics.conviva'
